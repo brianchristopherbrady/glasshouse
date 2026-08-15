@@ -18,7 +18,7 @@ export function registerValidateWorld(server: McpServer): void {
     {
       title: "Validate World",
       description:
-        "Run the Float's deterministic validator against the current on-disk world data and return { valid, issues, checkedAt }.",
+        "Run the deterministic validator against the current on-disk world data and return { valid, issues, checkedAt }.",
       inputSchema: InputShape,
       annotations: { readOnlyHint: true, idempotentHint: true },
     },

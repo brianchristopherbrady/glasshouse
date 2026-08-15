@@ -1,10 +1,10 @@
-// The Float, visualized as a relationship web — not the event-flow graph.
+// The world, visualized as a relationship web — not the event-flow graph.
 // Every character, institution, and relationship shown here is read live
 // from world/*.json on disk, so this view persists across page loads and
 // reflects the true current state of the world the agents are editing, not
 // client-side/session state. Nodes are characters/institutions; edges are
 // relationships, colored by status (active/corrected/severed/redirected/
-// constrained/unresolved) per meta_correction.md.
+// constrained/unresolved).
 import { useEffect, useState } from "react";
 import {
   ReactFlow,
@@ -77,10 +77,10 @@ export function WorldMapPanel() {
   }, []);
 
   if (error) {
-    return <div className="inspector-empty">The Float could not be read: {error}</div>;
+    return <div className="inspector-empty">World data could not be read: {error}</div>;
   }
   if (!data) {
-    return <div className="inspector-empty">Reading the Float…</div>;
+    return <div className="inspector-empty">Reading the world…</div>;
   }
 
   const { world, validation } = data;
@@ -122,7 +122,7 @@ export function WorldMapPanel() {
     })),
   ];
 
-  const flowEdges: Edge[] = world.float.relationships.map((rel) => {
+  const flowEdges: Edge[] = world.relationships.relationships.map((rel) => {
     const meta = STATUS_META[rel.status];
     return {
       id: rel.id,
@@ -158,10 +158,10 @@ export function WorldMapPanel() {
       </div>
 
       <div className="panel world-map-side">
-        <p className="panel-title">The Float</p>
+        <p className="panel-title">World Map</p>
         <div className={`world-validity ${validation.valid ? "world-valid" : "world-invalid"}`}>
           {validation.valid
-            ? "The Float is structurally consistent."
+            ? "The world is structurally consistent."
             : `${validation.issues.length} validator issue${validation.issues.length === 1 ? "" : "s"} found`}
         </div>
         {!validation.valid && (

@@ -15,7 +15,7 @@ export function registerInspectWorld(server: McpServer): void {
     {
       title: "Inspect World",
       description:
-        "Load the Float's world data (Meridian) and return a compact summary: counts and status breakdowns for relationships, corrections, anomalies (including Bloomrot candidates/confirmed), characters (including open-provenance identities), and institutions.",
+        "Load the world data (relationships, corrections, anomalies, characters, institutions) and return a compact summary: counts and status breakdowns for relationships, corrections, anomalies (including systemic candidates/confirmed), characters (including open-provenance identities), and institutions.",
       inputSchema: InputShape,
       annotations: { readOnlyHint: true, idempotentHint: true },
     },

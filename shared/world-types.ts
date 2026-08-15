@@ -1,11 +1,16 @@
-// Zod schemas describing the on-disk shape of world/*.json for THE FLOAT —
-// Meridian's consensus-reality substrate, per prompt.md and 03-15_*.md.
+// Zod schemas describing the on-disk shape of world/*.json — a generic
+// relational world model (entities, relationships, corrections, anomalies,
+// institutions) for tracking a system's structure and the changes made to
+// it over time. This repo ships a "City Hall" example world (a municipal
+// government managing a city, standing in for a team managing a codebase)
+// to demonstrate the pattern -- a consuming repo should replace world/*.json's
+// content with its own domain while keeping this shape.
 // Kept loose (permissive optional fields) since this is a small,
-// hand-authored fictional world, not a production data model.
+// hand-authored example world, not a production data model.
 import { z } from "zod";
 
-// --- world/float.json --------------------------------------------------
-// Every recognized relationship holding the Float together.
+// --- world/relationships.json -------------------------------------------
+// Every recognized relationship between entities in the world.
 
 export const RelationshipStatusSchema = z.enum([
   "active",
@@ -35,7 +40,7 @@ export const RelationshipSchema = z.object({
   notes: z.string().optional(),
 });
 
-export const FloatSchema = z.object({
+export const RelationshipsFileSchema = z.object({
   relationships: z.array(RelationshipSchema),
 });
 
@@ -86,8 +91,8 @@ export const AnomalyProvenanceSchema = z.enum([
   "local_pressure",
   "correction_residue",
   "displaced_consequence",
-  "bloomrot_candidate",
-  "bloomrot_confirmed",
+  "systemic_candidate",
+  "systemic_confirmed",
   "unresolvable",
   "unresolved",
 ]);
@@ -144,7 +149,7 @@ export const InstitutionsFileSchema = z.object({
 export type RelationshipStatus = z.infer<typeof RelationshipStatusSchema>;
 export type ProvenanceKind = z.infer<typeof ProvenanceKindSchema>;
 export type Relationship = z.infer<typeof RelationshipSchema>;
-export type FloatFile = z.infer<typeof FloatSchema>;
+export type RelationshipsFile = z.infer<typeof RelationshipsFileSchema>;
 export type CorrectionOperation = z.infer<typeof CorrectionOperationSchema>;
 export type ReconciliationEntry = z.infer<typeof ReconciliationEntrySchema>;
 export type Correction = z.infer<typeof CorrectionSchema>;
@@ -159,7 +164,7 @@ export type Institution = z.infer<typeof InstitutionSchema>;
 export type InstitutionsFile = z.infer<typeof InstitutionsFileSchema>;
 
 export interface WorldData {
-  float: FloatFile;
+  relationships: RelationshipsFile;
   corrections: CorrectionsFile;
   anomalies: AnomaliesFile;
   characters: CharactersFile;

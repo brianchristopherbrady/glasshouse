@@ -3,7 +3,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
-  FloatSchema,
+  RelationshipsFileSchema,
   CorrectionsFileSchema,
   AnomaliesFileSchema,
   CharactersFileSchema,
@@ -19,8 +19,8 @@ async function loadJson(filePath: string): Promise<unknown> {
 }
 
 export async function loadWorld(worldDir: string = DEFAULT_WORLD_DIR): Promise<WorldData> {
-  const [float, corrections, anomalies, characters, institutions] = await Promise.all([
-    loadJson(path.join(worldDir, "float.json")),
+  const [relationships, corrections, anomalies, characters, institutions] = await Promise.all([
+    loadJson(path.join(worldDir, "relationships.json")),
     loadJson(path.join(worldDir, "corrections.json")),
     loadJson(path.join(worldDir, "anomalies.json")),
     loadJson(path.join(worldDir, "characters.json")),
@@ -28,7 +28,7 @@ export async function loadWorld(worldDir: string = DEFAULT_WORLD_DIR): Promise<W
   ]);
 
   return {
-    float: FloatSchema.parse(float),
+    relationships: RelationshipsFileSchema.parse(relationships),
     corrections: CorrectionsFileSchema.parse(corrections),
     anomalies: AnomaliesFileSchema.parse(anomalies),
     characters: CharactersFileSchema.parse(characters),

@@ -1,0 +1,35 @@
+{
+  "characters": [
+    {
+      "id": "the-overpass",
+      "name": "The Overpass Nobody Remembers Approving",
+      "role": "Elevated pedestrian walkway (stands in for: an undocumented shared utility everything quietly depends on)",
+      "provenanceStatus": "open",
+      "notes": "No permit on file. Structural engineers have confirmed it is load-bearing for Transit Hub Terminal Three's east entrance anyway. Nobody currently employed by the city can explain why it was built, only that removing it would strand foot traffic with no fallback route."
+    },
+    {
+      "id": "east-canal-pumphouse",
+      "name": "East Canal Pumphouse",
+      "role": "Water utility relay station (stands in for: a shared caching layer)",
+      "provenanceStatus": "closed",
+      "identityAnchorRelationshipId": "rel-pumphouse-permit",
+      "notes": "Built and permitted by the Department of Public Works. Origin is fully on file."
+    },
+    {
+      "id": "founders-plaza-fountain",
+      "name": "Founders' Plaza Fountain",
+      "role": "Decorative plaza fountain (stands in for: a config default nobody expected to be load-bearing)",
+      "provenanceStatus": "closed",
+      "identityAnchorRelationshipId": "rel-fountain-permit",
+      "notes": "Permitted by City Council as a purely decorative civic feature. Turns out its evening cycle shares water pressure with the East Canal Pumphouse -- a dependency nobody documented until it caused a complaint."
+    },
+    {
+      "id": "transit-hub",
+      "name": "Transit Hub Terminal Three",
+      "role": "Central transit interchange (stands in for: the core API gateway)",
+      "provenanceStatus": "closed",
+      "identityAnchorRelationshipId": "rel-transit-permit",
+      "notes": "Permitted and built by City Council. Its east entrance's actual load path runs through the Overpass, which has no corresponding permit of its own."
+    }
+  ]
+}

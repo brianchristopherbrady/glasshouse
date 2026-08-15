@@ -6,7 +6,7 @@ import type { WorldData } from "../shared/world-types.js";
 export interface WorldSummary {
   relationships: { count: number; active: number; corrected: number; severed: number; unresolved: number };
   corrections: { count: number; unauthorized: number };
-  anomalies: { count: number; open: number; bloomrotCandidate: number; bloomrotConfirmed: number };
+  anomalies: { count: number; open: number; systemicCandidate: number; systemicConfirmed: number };
   characters: { count: number; ids: string[]; openProvenance: string[] };
   institutions: { count: number; ids: string[] };
 }
@@ -14,11 +14,11 @@ export interface WorldSummary {
 export function summarizeWorld(world: WorldData): WorldSummary {
   return {
     relationships: {
-      count: world.float.relationships.length,
-      active: world.float.relationships.filter((r) => r.status === "active").length,
-      corrected: world.float.relationships.filter((r) => r.status === "corrected").length,
-      severed: world.float.relationships.filter((r) => r.status === "severed").length,
-      unresolved: world.float.relationships.filter((r) => r.status === "unresolved").length,
+      count: world.relationships.relationships.length,
+      active: world.relationships.relationships.filter((r) => r.status === "active").length,
+      corrected: world.relationships.relationships.filter((r) => r.status === "corrected").length,
+      severed: world.relationships.relationships.filter((r) => r.status === "severed").length,
+      unresolved: world.relationships.relationships.filter((r) => r.status === "unresolved").length,
     },
     corrections: {
       count: world.corrections.corrections.length,
@@ -27,8 +27,8 @@ export function summarizeWorld(world: WorldData): WorldSummary {
     anomalies: {
       count: world.anomalies.anomalies.length,
       open: world.anomalies.anomalies.filter((a) => a.status === "open").length,
-      bloomrotCandidate: world.anomalies.anomalies.filter((a) => a.provenance === "bloomrot_candidate").length,
-      bloomrotConfirmed: world.anomalies.anomalies.filter((a) => a.provenance === "bloomrot_confirmed").length,
+      systemicCandidate: world.anomalies.anomalies.filter((a) => a.provenance === "systemic_candidate").length,
+      systemicConfirmed: world.anomalies.anomalies.filter((a) => a.provenance === "systemic_confirmed").length,
     },
     characters: {
       count: world.characters.characters.length,

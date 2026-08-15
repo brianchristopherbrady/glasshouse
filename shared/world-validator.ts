@@ -1,8 +1,6 @@
-// Deterministic rule checks for THE FLOAT (Meridian), per the validator spec
-// in prompt.md. Every rule fails with a specific code, not just a boolean —
-// this is deliberate: in this world, PASSED can still be wrong (see
-// meta_bloomrot.md), so the validator's job is to catch structural errors, not
-// to certify that a correction was wise.
+// Deterministic rule checks for the world model. PASSED can still be wrong
+// (see the incident-classification Skill) -- the validator's job is to catch
+// structural errors, not to certify that a correction was wise.
 import type { WorldData } from "./world-types.js";
 
 export interface ValidationIssue {
@@ -27,7 +25,7 @@ function findInstitution(world: WorldData, id: string) {
 }
 
 function findRelationship(world: WorldData, id: string) {
-  return world.float.relationships.find((r) => r.id === id);
+  return world.relationships.relationships.find((r) => r.id === id);
 }
 
 function entityExists(world: WorldData, id: string): boolean {
@@ -59,7 +57,7 @@ function checkProvenanceClosure(world: WorldData, issues: ValidationIssue[]) {
 /** ERR_ORPHANED_REL — a relationship's subject or object is not present in
  * characters.json or institutions.json. */
 function checkOrphanedRelationships(world: WorldData, issues: ValidationIssue[]) {
-  for (const rel of world.float.relationships) {
+  for (const rel of world.relationships.relationships) {
     if (!entityExists(world, rel.subject)) {
       issues.push({
         rule: "ERR_ORPHANED_REL",
@@ -139,7 +137,7 @@ function checkClosedWithResidue(world: WorldData, issues: ValidationIssue[]) {
   const closedAnomalyIds = new Set(
     world.anomalies.anomalies.filter((a) => a.status === "closed").map((a) => a.id),
   );
-  for (const rel of world.float.relationships) {
+  for (const rel of world.relationships.relationships) {
     if (rel.status !== "active") continue;
     for (const anomalyId of rel.displacedConsequences) {
       if (closedAnomalyIds.has(anomalyId)) {
@@ -162,9 +160,10 @@ function checkTemporalDuplicateAnchors(world: WorldData, issues: ValidationIssue
     if (!character.identityAnchorRelationshipId) continue;
     // Anchors are keyed by the character, but the check that matters is:
     // does more than one *active* relationship claim to anchor this same
-    // character? Search float.json for other active relationships whose
-    // subject/object is this character and whose kind marks it as an anchor.
-    const claims = world.float.relationships.filter(
+    // character? Search relationships.json for other active relationships
+    // whose subject/object is this character and whose kind marks it as an
+    // anchor.
+    const claims = world.relationships.relationships.filter(
       (r) => r.status === "active" && (r.subject === character.id || r.object === character.id) && r.kind === "identity-anchor",
     );
     if (claims.length > 1) {
@@ -181,36 +180,37 @@ function checkTemporalDuplicateAnchors(world: WorldData, issues: ValidationIssue
   }
 }
 
-/** WARN_BLOOMROT_CASCADE — a proposed correction targets a relationship
- * already linked to a bloomrot_confirmed anomaly. Does not block; requires
- * explicit human/Choir/House Vey sign-off (see meta_bloomrot.md). */
-function checkBloomrotCascade(world: WorldData, issues: ValidationIssue[]) {
-  const confirmedBloomrotSources = new Set(
+/** WARN_SYSTEMIC_CASCADE — a proposed correction targets a relationship
+ * already linked to a systemic_confirmed anomaly (a citywide/architecture-wide
+ * issue, not a one-off). Does not block; requires explicit human sign-off
+ * (see the incident-classification Skill). */
+function checkSystemicCascade(world: WorldData, issues: ValidationIssue[]) {
+  const confirmedSystemicSources = new Set(
     world.anomalies.anomalies
-      .filter((a) => a.provenance === "bloomrot_confirmed" && a.sourceRelationshipId)
+      .filter((a) => a.provenance === "systemic_confirmed" && a.sourceRelationshipId)
       .map((a) => a.sourceRelationshipId!),
   );
   for (const correction of world.corrections.corrections) {
-    if (confirmedBloomrotSources.has(correction.targetRelationshipId)) {
+    if (confirmedSystemicSources.has(correction.targetRelationshipId)) {
       issues.push({
-        rule: "WARN_BLOOMROT_CASCADE",
+        rule: "WARN_SYSTEMIC_CASCADE",
         subject: correction.id,
-        message: `Correction '${correction.id}' targets relationship '${correction.targetRelationshipId}', already linked to a bloomrot_confirmed anomaly. Correcting it may feed the network — requires explicit Choir and House Vey sign-off.`,
+        message: `Correction '${correction.id}' targets relationship '${correction.targetRelationshipId}', already linked to a systemic_confirmed anomaly. Correcting it in isolation may just move the underlying problem — requires explicit human sign-off.`,
         severity: "warning",
       });
     }
   }
 }
 
-/** WARN_AFFINITY_UNRESOLVED — an anomaly is classified bloomrot_candidate
+/** WARN_AFFINITY_UNRESOLVED — an anomaly is classified systemic_candidate
  * but no semantic affinity chain has been documented. */
 function checkAffinityUnresolved(world: WorldData, issues: ValidationIssue[]) {
   for (const anomaly of world.anomalies.anomalies) {
-    if (anomaly.provenance === "bloomrot_candidate" && anomaly.semanticAffinityChain.length === 0) {
+    if (anomaly.provenance === "systemic_candidate" && anomaly.semanticAffinityChain.length === 0) {
       issues.push({
         rule: "WARN_AFFINITY_UNRESOLVED",
         subject: anomaly.id,
-        message: `Anomaly '${anomaly.id}' is classified bloomrot_candidate but documents no semantic affinity chain.`,
+        message: `Anomaly '${anomaly.id}' is classified systemic_candidate but documents no semantic affinity chain.`,
         severity: "warning",
       });
     }
@@ -225,14 +225,13 @@ export function validateWorld(world: WorldData): ValidationResult {
   checkAuthorization(world, issues);
   checkClosedWithResidue(world, issues);
   checkTemporalDuplicateAnchors(world, issues);
-  checkBloomrotCascade(world, issues);
+  checkSystemicCascade(world, issues);
   checkAffinityUnresolved(world, issues);
 
   return {
-    // Only ERR_* issues fail validation. WARN_* issues (bloomrot cascade,
-    // affinity unresolved) are surfaced but do not block — per prompt.md's
-    // validator spec, WARN_BLOOMROT_CASCADE explicitly "does not block the
-    // correction. It requires a human decision."
+    // Only ERR_* issues fail validation. WARN_* issues (systemic cascade,
+    // affinity unresolved) are surfaced but do not block — they require a
+    // human decision, not a code fix.
     valid: issues.every((i) => i.severity !== "error"),
     issues,
     checkedAt: new Date().toISOString(),

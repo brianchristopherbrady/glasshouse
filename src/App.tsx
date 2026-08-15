@@ -9,7 +9,6 @@ import {
   updateSession,
   type SessionSummary,
 } from "./api/client.js";
-import { EventGraph } from "./graph/EventGraph.js";
 import { Timeline } from "./timeline/Timeline.js";
 import { Inspector } from "./inspector/Inspector.js";
 import { ActivityPanel } from "./panels/ActivityPanel.js";
@@ -187,9 +186,6 @@ export default function App() {
           </div>
 
           <div className="center-panel">
-            <div className="graph-panel">
-              <EventGraph events={visibleEvents} onSelectEvent={setSelectedEvent} />
-            </div>
             <div className="timeline-panel">
               <Timeline events={visibleEvents} selectedId={selectedEvent?.id ?? null} onSelect={setSelectedEvent} />
             </div>

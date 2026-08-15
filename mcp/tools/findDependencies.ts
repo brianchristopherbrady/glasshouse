@@ -19,7 +19,7 @@ function findExistsAs(world: WorldData, id: string): string[] {
   const kinds: string[] = [];
   if (world.characters.characters.some((c) => c.id === id)) kinds.push("character");
   if (world.institutions.institutions.some((i) => i.id === id)) kinds.push("institution");
-  if (world.float.relationships.some((r) => r.id === id)) kinds.push("relationship");
+  if (world.relationships.relationships.some((r) => r.id === id)) kinds.push("relationship");
   if (world.corrections.corrections.some((c) => c.id === id)) kinds.push("correction");
   if (world.anomalies.anomalies.some((a) => a.id === id)) kinds.push("anomaly");
   return kinds;
@@ -31,11 +31,11 @@ function findReferencedBy(world: WorldData, id: string): Reference[] {
     if (value === id) refs.push({ file, entityId, field });
   };
 
-  for (const r of world.float.relationships) {
-    push("float.json", r.id, "subject", r.subject);
-    push("float.json", r.id, "object", r.object);
-    if (r.dependentRelationships.includes(id)) refs.push({ file: "float.json", entityId: r.id, field: "dependentRelationships" });
-    if (r.displacedConsequences.includes(id)) refs.push({ file: "float.json", entityId: r.id, field: "displacedConsequences" });
+  for (const r of world.relationships.relationships) {
+    push("relationships.json", r.id, "subject", r.subject);
+    push("relationships.json", r.id, "object", r.object);
+    if (r.dependentRelationships.includes(id)) refs.push({ file: "relationships.json", entityId: r.id, field: "dependentRelationships" });
+    if (r.displacedConsequences.includes(id)) refs.push({ file: "relationships.json", entityId: r.id, field: "displacedConsequences" });
   }
   for (const c of world.corrections.corrections) {
     push("corrections.json", c.id, "targetRelationshipId", c.targetRelationshipId);

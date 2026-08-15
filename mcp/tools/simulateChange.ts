@@ -6,7 +6,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { loadWorld } from "../../shared/world-loader.js";
 import { validateWorld } from "../../shared/world-validator.js";
 import {
-  FloatSchema,
+  RelationshipsFileSchema,
   CorrectionsFileSchema,
   AnomaliesFileSchema,
   CharactersFileSchema,
@@ -15,11 +15,11 @@ import {
 import type { WorldData } from "../../shared/world-types.js";
 import { withToolTelemetry, type ToolResult } from "../telemetry.js";
 
-const DOMAINS = ["float", "corrections", "anomalies", "characters", "institutions"] as const;
+const DOMAINS = ["relationships", "corrections", "anomalies", "characters", "institutions"] as const;
 type Domain = (typeof DOMAINS)[number];
 
 const DOMAIN_SCHEMAS: Record<Domain, { safeParse: (v: unknown) => { success: boolean; data?: unknown; error?: { issues: unknown[] } } }> = {
-  float: FloatSchema,
+  relationships: RelationshipsFileSchema,
   corrections: CorrectionsFileSchema,
   anomalies: AnomaliesFileSchema,
   characters: CharactersFileSchema,
@@ -38,7 +38,7 @@ export function registerSimulateChange(server: McpServer): void {
     {
       title: "Simulate Change",
       description:
-        "Dry-run a shallow patch merged into one domain of the world (float, corrections, anomalies, characters, or institutions) and report whether the resulting world would pass validation. Never writes to disk.",
+        "Dry-run a shallow patch merged into one domain of the world (relationships, corrections, anomalies, characters, or institutions) and report whether the resulting world would pass validation. Never writes to disk.",
       inputSchema: InputShape,
       annotations: { readOnlyHint: true, idempotentHint: true },
     },

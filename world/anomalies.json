@@ -1,0 +1,33 @@
+{
+  "anomalies": [
+    {
+      "id": "anomaly-streetlight-flicker",
+      "description": "Recurring streetlight flicker along the Overpass approach, reported by three separate crews, never reproduced during a scheduled inspection.",
+      "carrier": "the-overpass",
+      "provenance": "local_pressure",
+      "semanticAffinityChain": [],
+      "status": "open",
+      "notes": "Most likely a load-timing artifact from foot traffic crossing at shift change. Not escalated -- no evidence it connects to anything else yet."
+    },
+    {
+      "id": "anomaly-water-pressure",
+      "description": "East Canal Pumphouse pressure drops every time Founders' Plaza Fountain runs its evening cycle, and the two systems have no documented connection.",
+      "carrier": "founders-plaza-fountain",
+      "provenance": "systemic_candidate",
+      "sourceRelationshipId": "rel-pumphouse-feeds-fountain",
+      "semanticAffinityChain": [],
+      "status": "open",
+      "notes": "Candidate for a systemic pattern (undocumented shared-resource contention) but no affinity chain has been documented yet -- flagged by the validator as WARN_AFFINITY_UNRESOLVED until someone traces further instances."
+    },
+    {
+      "id": "anomaly-overpass-load",
+      "description": "Structural engineers confirm the Overpass is load-bearing for Transit Hub Terminal Three's east entrance, despite no permit ever authorizing that connection.",
+      "carrier": "the-overpass",
+      "provenance": "systemic_confirmed",
+      "sourceRelationshipId": "rel-overpass-supports-transit",
+      "semanticAffinityChain": ["undocumented-dependency", "east-entrance-load-path"],
+      "status": "open",
+      "notes": "Confirmed systemic: this isn't a one-off, it's a load-bearing dependency that was never formally recognized. Any correction targeting rel-overpass-supports-transit triggers WARN_SYSTEMIC_CASCADE and requires explicit human sign-off before proceeding."
+    }
+  ]
+}

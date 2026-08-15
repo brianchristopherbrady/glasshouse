@@ -1,4 +1,4 @@
-// Read-only MCP resources exposing the Impossible World's data as context.
+// Read-only MCP resources exposing the example world's data as context.
 // Each read emits a real mcp.resource.read event (source "mcp", evidence
 // "observed") — this really happened, it's not a guess.
 import { readFile, readdir } from "node:fs/promises";
@@ -29,7 +29,7 @@ export function registerWorldResources(server: McpServer): void {
   server.registerResource(
     "world-institutions",
     "world://institutions",
-    { title: "World Institutions", description: "The Choir, Asterion, House Vey, and their correction permissions, biases, and authorizations.", mimeType: "application/json" },
+    { title: "World Institutions", description: "The governing and executing institutions, and their correction permissions, biases, and authorizations.", mimeType: "application/json" },
     async (uri) => {
       const sessionId = await resolveSessionId();
       await emitResourceRead({ sessionId, uri: uri.href });
@@ -39,21 +39,21 @@ export function registerWorldResources(server: McpServer): void {
   );
 
   server.registerResource(
-    "world-float",
-    "world://float",
-    { title: "World Float", description: "Every recognized relationship currently holding Meridian's consensus reality together.", mimeType: "application/json" },
+    "world-relationships",
+    "world://relationships",
+    { title: "World Relationships", description: "Every recognized relationship currently holding the world's structure together.", mimeType: "application/json" },
     async (uri) => {
       const sessionId = await resolveSessionId();
       await emitResourceRead({ sessionId, uri: uri.href });
-      const float = await readWorldFile("float.json");
-      return { contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(float, null, 2) }] };
+      const relationships = await readWorldFile("relationships.json");
+      return { contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(relationships, null, 2) }] };
     },
   );
 
   server.registerResource(
     "world-history",
     "world://history",
-    { title: "World History", description: "Recorded historical events for the Float.", mimeType: "application/json" },
+    { title: "World History", description: "Recorded historical snapshots of the world.", mimeType: "application/json" },
     async (uri) => {
       const sessionId = await resolveSessionId();
       await emitResourceRead({ sessionId, uri: uri.href });

@@ -116,7 +116,7 @@ registered in `.vscode/mcp.json`. Exposes:
   hypothetical merged world, without writing to disk.
 
 **Resources**
-- `world://summary`, `world://institutions`, `world://float`, `world://history`.
+- `world://summary`, `world://institutions`, `world://relationships`, `world://history`.
 
 `mcp/telemetry.ts`'s `withToolTelemetry()` wraps every tool (except
 `trace_decision`, which emits its own more specific event) so every call

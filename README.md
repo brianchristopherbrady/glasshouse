@@ -88,7 +88,7 @@ Within Live/Replay/Demo you get three panels:
 2. **The MCP server** (`mcp/server.ts`) exposes tools (`inspect_world`,
    `validate_world`, `find_dependencies`, `trace_decision`,
    `simulate_change`) and resources (`world://summary`, `world://institutions`,
-   `world://float`, `world://history`) to the agent. Every tool call and
+   `world://relationships`, `world://history`) to the agent. Every tool call and
    resource read is itself an observed event. `trace_decision` is
    the one deliberate, structured place an agent can *declare* a decision —
    always tagged `evidence: "declared"`, never confused with something
@@ -106,18 +106,37 @@ events.
 
 ## The world-inspection subsystem
 
-`world/` is a placeholder for a consuming repo's own structured domain data
-as plain JSON (`shared/world-types.ts`'s `WorldData` shape). The MCP tools
-`inspect_world`/`validate_world`/`find_dependencies`/`simulate_change` and
-`scripts/validate-world.ts` (`npm run validate:world`) are a working,
-deterministic, non-LLM validation subsystem kept from this repo's original
-fictional demo content -- it is not yet generalized to a neutral schema, so
-expect it to need real data (or further generalization) before use.
+`world/*.json` is a generic relational world model -- five domains
+(`relationships`, `corrections`, `anomalies`, `characters`, `institutions`)
+defined as Zod schemas in `shared/world-types.ts`. The MCP tools
+`inspect_world`/`validate_world`/`find_dependencies`/`simulate_change`, the
+`trace_decision` declared-decision tool, and `scripts/validate-world.ts`
+(`npm run validate:world`) are a working, deterministic, non-LLM validation
+subsystem: `ERR_*` issues block validity (orphaned relationships, missing
+authorization, uncounted dependents on a correction, open provenance,
+temporal duplicates); `WARN_*` issues surface a decision a human should make
+without blocking (an anomaly confirmed as systemic, or a candidate pattern
+with no documented affinity chain yet). See the `world-validation` Skill for
+the full rule table and repair guidance.
 
-The custom agents, Skills, and prompt files under `.github/` give a real
-agent real specialization and delegation structure to work within. See the
-Repository tab, or browse `.github/agents/`, `.github/skills/`,
-`.github/prompts/` directly.
+Rather than ship this schema empty, `world/` is filled in with a small,
+complete example: a City Hall, standing in for a component-library/product
+repo. Five agents (`mayor`, `city-planner`, `building-inspector`,
+`public-works`, `city-clerk`) act on the world through their own Skills and
+record every action in `world/<agent>_actions/actions.md` -- **there is
+deliberately no single orchestrator agent**. Each agent runs the `downstream`
+and `dispatch` Skills after acting to decide who else needs to know and
+write it into `world/dispatch.json` and the affected agents'
+`downstream_effects.md`, instead of routing through one coordinator. The
+`.github/instructions/municipal-code.instructions.md` file is the bridge
+between the fiction and this repo's actual engineering practices -- agents
+cite its sections when proposing or authorizing a change. A consuming repo
+is meant to swap the City Hall theme for its own domain while keeping the
+schema, the agents' division of labor, and the decentralized dispatch
+pattern intact.
+
+See the Repository tab, or browse `.github/agents/`, `.github/skills/`,
+`.github/instructions/`, and `world/` directly.
 
 ---
 
@@ -130,7 +149,8 @@ server/     Express collector/API: ingest, SSE stream, replay, repo introspectio
 mcp/        MCP server: world tools/resources + decision telemetry
 scripts/    world validator, the VS Code hook script
 src/        React + Vite dashboard
-world/      structured domain data for the world-inspection subsystem (repo-specific)
+world/      the world-inspection subsystem's data: the City Hall example world,
+            plus each agent's action ledger (world/<agent>_actions/) and dispatch.json
 demo/       prerecorded demo traces (JSONL); empty by default
 tests/      vitest suite
 .github/    agents, Skills, prompts, scoped instructions, hook wiring

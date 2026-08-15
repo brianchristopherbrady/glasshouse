@@ -220,18 +220,8 @@ body {
 
 .center-panel {
   display: grid;
-  grid-template-rows: minmax(480px, 3.4fr) minmax(140px, 1fr);
-  gap: 1rem;
+  grid-template-rows: 1fr;
   min-height: 0;
-}
-
-.graph-panel {
-  position: relative;
-  border-radius: var(--radius);
-  overflow-y: auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
 }
 
 /* Scrollable table of graph rows -- one line per node, indented by lane depth. */
@@ -299,7 +289,12 @@ body {
 }
 
 .timeline-panel {
+  position: relative;
+  border-radius: var(--radius);
   overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   padding: 0.4rem 0.3rem;
 }
 

@@ -1,7 +1,7 @@
-// Read-only introspection of The Float's actual world state, straight from
+// Read-only introspection of the on-disk world state, straight from
 // world/*.json on disk. This is what makes the "built world" persist across
 // dashboard page loads: it's not client-side state at all, it's the same
-// files Asterion Dev edits and the validator checks.
+// files the agents edit and the validator checks.
 import { Router } from "express";
 import { loadWorld } from "../shared/world-loader.js";
 import { validateWorld } from "../shared/world-validator.js";

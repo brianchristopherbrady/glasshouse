@@ -1,0 +1,26 @@
+{
+  "corrections": [
+    {
+      "id": "correction-brace-overpass",
+      "targetRelationshipId": "rel-overpass-supports-transit",
+      "operation": "reinforce",
+      "authorizationId": "auth-council-2024-overpass-brace",
+      "performedBy": "building-safety-division",
+      "reconciliation": [],
+      "protectedInvariants": ["Transit Hub Terminal Three's east entrance must remain passable during business hours"],
+      "notes": "City Council authorized reinforcing the undocumented load path rather than severing it outright, pending a full structural review -- severing it during business hours would strand east-entrance foot traffic with no fallback route on file.",
+      "timestamp": "2026-07-14T09:00:00Z"
+    },
+    {
+      "id": "correction-formalize-pumphouse-fountain-link",
+      "targetRelationshipId": "rel-pumphouse-feeds-fountain",
+      "operation": "reconcile",
+      "authorizationId": "auth-dpw-2024-pumphouse-fountain-link",
+      "performedBy": "department-of-public-works",
+      "reconciliation": [],
+      "protectedInvariants": [],
+      "notes": "Formally documented the pressure-sharing link between the Pumphouse and the Fountain's evening cycle after crews traced the anomaly -- the dependency was real and organic, just never filed.",
+      "timestamp": "2026-07-20T14:30:00Z"
+    }
+  ]
+}
