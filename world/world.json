@@ -1,0 +1,15 @@
+{
+  "name": "The Float",
+  "tagline": "Meridian's presently stabilized, collectively inhabited configuration of reality. Not synonymous with truth. What remains mutually usable.",
+  "version": 2,
+  "foundingCharter": "Relationships do not describe things — relationships are what things are.",
+  "files": {
+    "float": "float.json",
+    "corrections": "corrections.json",
+    "anomalies": "anomalies.json",
+    "characters": "characters.json",
+    "institutions": "institutions.json"
+  },
+  "history": "history/",
+  "dispatch": "dispatch.json"
+}

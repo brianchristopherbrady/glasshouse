@@ -1,0 +1,32 @@
+{
+  "corrections": [
+    {
+      "id": "correction-tomas-employment",
+      "targetRelationshipId": "rel-tomas-halloway-employment",
+      "operation": "sever",
+      "authorizationId": "auth-halloway-1",
+      "performedBy": "asterion-dev-unnamed",
+      "reconciliation": [
+        {
+          "relationshipId": "rel-tomas-birthday-ritual",
+          "disposition": "excluded",
+          "justification": "Birthday ritual not in scope. Left where it fell."
+        }
+      ],
+      "protectedInvariants": ["no-risk-to-employees-or-public-identified"],
+      "notes": "A mediocre-practitioner correction: sees Tomas -> Halloway West -> Employment -> Remove. Satisfies the immediate requirement (removing the employment record and its direct dependents). Does not perceive what the ritual meant to the building. Correct by every measurable criterion — this is exactly how correction debt begins.",
+      "timestamp": "2025-06-01T00:00:00.000Z"
+    },
+    {
+      "id": "correction-south-quay-walkout",
+      "targetRelationshipId": "rel-south-quay-walkout",
+      "operation": "sever",
+      "authorizationId": "auth-south-quay-1",
+      "performedBy": "asterion-dev-unnamed",
+      "reconciliation": [],
+      "protectedInvariants": ["prevention-of-secondary-injury", "continuity-of-care"],
+      "notes": "The Choir corrected the visible anomaly (chairs throwing themselves toward exits) by resolving the underlying labor-procedural contradiction. Eleven weeks later, the same 'leave/exit/return/refusal/departure' semantic structure manifested at Western Tolerance Hall, which had no local labor dispute of its own — the first confirmed Bloomrot manifestation in this world's current record.",
+      "timestamp": "2025-08-14T00:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+// Node-only loader: reads world/*.json from disk and validates their shape with Zod.
+// Not imported by frontend code (browser bundle has no filesystem access).
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import {
+  FloatSchema,
+  CorrectionsFileSchema,
+  AnomaliesFileSchema,
+  CharactersFileSchema,
+  InstitutionsFileSchema,
+  type WorldData,
+} from "./world-types.js";
+
+export const DEFAULT_WORLD_DIR = path.resolve(process.cwd(), "world");
+
+async function loadJson(filePath: string): Promise<unknown> {
+  const raw = await readFile(filePath, "utf-8");
+  return JSON.parse(raw);
+}
+
+export async function loadWorld(worldDir: string = DEFAULT_WORLD_DIR): Promise<WorldData> {
+  const [float, corrections, anomalies, characters, institutions] = await Promise.all([
+    loadJson(path.join(worldDir, "float.json")),
+    loadJson(path.join(worldDir, "corrections.json")),
+    loadJson(path.join(worldDir, "anomalies.json")),
+    loadJson(path.join(worldDir, "characters.json")),
+    loadJson(path.join(worldDir, "institutions.json")),
+  ]);
+
+  return {
+    float: FloatSchema.parse(float),
+    corrections: CorrectionsFileSchema.parse(corrections),
+    anomalies: AnomaliesFileSchema.parse(anomalies),
+    characters: CharactersFileSchema.parse(characters),
+    institutions: InstitutionsFileSchema.parse(institutions),
+  };
+}

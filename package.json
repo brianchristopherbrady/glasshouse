@@ -1,0 +1,40 @@
+{
+  "name": "agentarium",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A glass-box laboratory for observing agentic AI work, set inside the fictional Float.",
+  "scripts": {
+    "start": "concurrently -k -n server,client -c blue,green \"npm:server\" \"npm:client\"",
+    "client": "vite",
+    "server": "tsx server/index.ts",
+    "build": "tsc -b && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate:world": "tsx scripts/validate-world.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "mcp": "tsx mcp/server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@xyflow/react": "^12.11.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8"
+  }
+}

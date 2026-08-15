@@ -1,0 +1,8 @@
+{
+  "narration": {
+    "style": "fiction",
+    "description": "Bloomrot / The Float: Book narration is written as in-world fiction -- sealed-case prose grounded in Noor, B, Mote, the Choir, and the rest of the roster, in the voice conventions of this repo's own novel-in-progress. A consuming repo without a fictional layer should omit this file entirely and get the default technical-spec style instead.",
+    "voiceGuide": ".github/instructions/meta_style_and_voice.md",
+    "characters": "world/characters.json"
+  }
+}

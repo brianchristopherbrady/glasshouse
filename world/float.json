@@ -1,0 +1,68 @@
+{
+  "relationships": [
+    {
+      "id": "rel-b-noor-love",
+      "subject": "b",
+      "object": "noor",
+      "kind": "identity-anchor",
+      "status": "active",
+      "provenance": "organic",
+      "dependentRelationships": [],
+      "displacedConsequences": [],
+      "notes": "Former lovers, intellectual equals. B's grief after Noor's disappearance was attenuated, not severed, under Noor's own contingency agreement with Asterion."
+    },
+    {
+      "id": "rel-b-mote-bond",
+      "subject": "b",
+      "object": "mote",
+      "kind": "custodianship",
+      "status": "active",
+      "provenance": "organic",
+      "dependentRelationships": [],
+      "displacedConsequences": []
+    },
+    {
+      "id": "rel-tomas-halloway-employment",
+      "subject": "tomas-vale",
+      "object": "halloway-west",
+      "kind": "employment",
+      "status": "corrected",
+      "provenance": "institutional",
+      "dependentRelationships": ["rel-tomas-birthday-ritual"],
+      "displacedConsequences": ["anomaly-halloway-cake"],
+      "notes": "Forty-three years. Severed by a mediocre-practitioner correction seven months before the Halloway cake appeared."
+    },
+    {
+      "id": "rel-tomas-birthday-ritual",
+      "subject": "tomas-vale",
+      "object": "halloway-west",
+      "kind": "ritual",
+      "status": "unresolved",
+      "provenance": "organic",
+      "dependentRelationships": [],
+      "displacedConsequences": ["anomaly-halloway-cake"],
+      "notes": "Two hundred eighty-seven documented birthday-cake purchases in the final ten years alone. Not reconciled by the employment correction — it was not in scope. Filed by the correcting Dev as: 'Birthday ritual not in scope. Left where it fell.'"
+    },
+    {
+      "id": "rel-simon-elias-family",
+      "subject": "simon-kade",
+      "object": "elias-kade",
+      "kind": "family",
+      "status": "active",
+      "provenance": "organic",
+      "dependentRelationships": [],
+      "displacedConsequences": []
+    },
+    {
+      "id": "rel-south-quay-walkout",
+      "subject": "south-quay-claims",
+      "object": "choir",
+      "kind": "labor-contradiction",
+      "status": "corrected",
+      "provenance": "institutional",
+      "dependentRelationships": [],
+      "displacedConsequences": ["anomaly-western-tolerance-hall"],
+      "notes": "Claims-processing employees, trapped in a bureaucratic contradiction the correction system itself created, organized a walkout. The semantic environment (leave/exit/return/refusal/departure) saturated the building before the chairs did."
+    }
+  ]
+}

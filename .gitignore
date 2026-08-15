@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+
+# AGENTARIUM runtime event data (regenerated locally, not source)
+.agentarium/
+
+# editor / os
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*
+
+# env
+.env
+.env.local

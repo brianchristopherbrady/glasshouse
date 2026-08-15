@@ -1,0 +1,69 @@
+{
+  "institutions": [
+    {
+      "id": "choir",
+      "name": "The Choir",
+      "domain": "Correction authorization, Float governance, institutional doctrine, scope definition.",
+      "correctionPermissions": ["sever", "attach", "reconcile", "redirect", "constrain", "anchor"],
+      "knownBiases": [
+        "Believes stability is identical to truth, health, or justice.",
+        "Does not check whether a correction will leave residue — that is not in scope.",
+        "Its doctrine holds that successful correction severs recognized provenance completely and that what remains is expected to decay.",
+        "Optimized for volume, repeatability, and administrative defensibility over artistry."
+      ],
+      "authorizations": ["auth-halloway-1", "auth-morrow-stack-1", "auth-south-quay-1"],
+      "notes": "Not omnipotent, not necessarily evil, not unified. Read-only in this system: it issues or denies authorization but does not investigate."
+    },
+    {
+      "id": "asterion",
+      "name": "Asterion",
+      "domain": "High-risk corrections involving memory, identity, language, architecture, public history, and large-scale causal coherence.",
+      "correctionPermissions": ["sever", "attach", "reconcile", "redirect", "attenuate", "reinforce", "constrain", "partition", "bind", "substitute", "anchor", "isolate", "release"],
+      "knownBiases": [
+        "Institutional instinct escalates from 'determine what threatens the Float' to 'treat control over the intervention as authority over the truth itself.'",
+        "Continuity division asks what must survive a change but cannot cleanly separate a person into an internal essence and a set of external relationships."
+      ],
+      "authorizations": ["auth-halloway-1", "auth-morrow-stack-1", "auth-south-quay-1"],
+      "notes": "A powerful private institution operating within the broader Choir, not the Choir itself. Asterion Dev is the correction arm — the only agent in this system that may edit world state."
+    },
+    {
+      "id": "house-vey",
+      "name": "House Vey",
+      "domain": "Mnemonic family lattices, correction residue, identity provenance, displaced consequence tracking.",
+      "correctionPermissions": [],
+      "knownBiases": [
+        "Regards continuity as a moral and civilizational good, sincerely and dangerously.",
+        "Interested in Bloomrot because it preserves through decomposition, migration, recombination, and adaptation — hopes to renew its stagnating lattice without accepting genuine loss."
+      ],
+      "authorizations": [],
+      "notes": "Independent, operates outside Choir jurisdiction. Does not control Asterion and was not responsible for Noor's experiment. Cannot edit; can block correction closure (BLOCKED WITH FINDINGS) — but the Choir does not require House Vey's approval and can overrule it."
+    },
+    {
+      "id": "halloway-west",
+      "name": "Halloway West",
+      "domain": "Ordinary workplace — logistics/supply-chain office. Not a correction authority; a site correction happens to.",
+      "correctionPermissions": [],
+      "knownBiases": [],
+      "authorizations": [],
+      "notes": "Where Tomas Vale worked forty-three years before an employment correction removed his record. The break room's birthday-cake ritual was never reconciled — the building's employees, per The Public, are the ones who actually noticed the gap."
+    },
+    {
+      "id": "south-quay-claims",
+      "name": "South Quay Claims Office",
+      "domain": "Ordinary workplace — public-facing claims/compensation processing. Not a correction authority.",
+      "correctionPermissions": [],
+      "knownBiases": [],
+      "authorizations": [],
+      "notes": "Employees trapped enforcing a procedure that correction had made structurally impossible to satisfy. Organized a walkout before the Choir corrected the labor-procedural contradiction, which later migrated to Western Tolerance Hall as Bloomrot."
+    },
+    {
+      "id": "western-tolerance-hall",
+      "name": "Western Tolerance Hall",
+      "domain": "Ordinary workplace/venue. Not a correction authority.",
+      "correctionPermissions": [],
+      "knownBiases": [],
+      "authorizations": [],
+      "notes": "Began evacuating eleven weeks after the South Quay correction, with no local labor dispute of its own — the first confirmed Bloomrot manifestation on record."
+    }
+  ]
+}
