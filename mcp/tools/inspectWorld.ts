@@ -15,7 +15,7 @@ export function registerInspectWorld(server: McpServer): void {
     {
       title: "Inspect World",
       description:
-        "Load the world data (relationships, corrections, issues, characters, institutions) and return a compact summary: counts and status breakdowns for relationships, corrections, issues (including systemic candidates/confirmed), characters (including open-provenance identities), and institutions.",
+        "Load the world data (relationships, changes, issues, structures, institutions) and return a compact summary: counts and status breakdowns for relationships, changes, issues (including systemic candidates/confirmed), structures (including open-provenance identities), and institutions.",
       inputSchema: InputShape,
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
@@ -25,7 +25,7 @@ export function registerInspectWorld(server: McpServer): void {
       const result: ToolResult = { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
       return {
         ok: true,
-        summary: `${summary.relationships.count} relationships, ${summary.corrections.count} corrections, ${summary.issues.count} issues, ${summary.characters.count} characters`,
+        summary: `${summary.relationships.count} relationships, ${summary.changes.count} changes, ${summary.issues.count} issues, ${summary.structures.count} structures`,
         result,
       };
     }),

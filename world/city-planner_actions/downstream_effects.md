@@ -7,7 +7,7 @@ is real and load-bearing, which is why a retroactive permit is worth
 drafting.
 
 ## 1.1.3
-`correction-brace-overpass` executed and validated. Worth waiting for
+`change-brace-overpass` executed and validated. Worth waiting for
 confirmation it holds before pushing the retroactive permit forward.
 
 ## 1.2.2

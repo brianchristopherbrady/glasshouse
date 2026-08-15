@@ -11,7 +11,7 @@ Handed off to Building Inspector to execute.
 
 ## 1.2.2
 Received City Planner's draft retroactive permit proposal for the Overpass
-(`1.2.1`). Holding it pending confirmation that `correction-brace-overpass`
+(`1.2.1`). Holding it pending confirmation that `change-brace-overpass`
 actually holds under real load -- authorizing a permanent permit before
 that's confirmed would be premature (Municipal Code Section 2: small,
 reversible work first). Not yet authorized.

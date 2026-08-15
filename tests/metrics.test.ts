@@ -51,7 +51,7 @@ describe("computeSessionMetrics", () => {
       at("2026-01-01T00:00:03.000Z", {
         type: "file.written",
         source: "filesystem",
-        metadata: { path: "world/corrections.json" },
+        metadata: { path: "world/changes.json" },
       }),
       at("2026-01-01T00:00:04.000Z", {
         type: "tool.completed",
@@ -62,7 +62,7 @@ describe("computeSessionMetrics", () => {
     expect(metrics.agentsUsed).toEqual(["Mote"]);
     expect(metrics.subagentsSpawned).toBe(1);
     expect(metrics.filesRead).toEqual(["world/relationships.json"]);
-    expect(metrics.filesWritten).toEqual(["world/corrections.json"]); 
+    expect(metrics.filesWritten).toEqual(["world/changes.json"]);
     expect(metrics.toolsUsed).toEqual(["editFiles"]);
     expect(metrics.toolCallCount).toBe(1);
   });

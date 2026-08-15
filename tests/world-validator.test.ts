@@ -19,14 +19,14 @@ function baseWorld(): WorldData {
         },
       ],
     },
-    corrections: {
-      corrections: [],
+    changes: {
+      changes: [],
     },
     issues: {
       issues: [],
     },
-    characters: {
-      characters: [
+    structures: {
+      structures: [
         { id: "structure-a", name: "Structure A", provenanceStatus: "closed", identityAnchorRelationshipId: "rel-1" },
         { id: "structure-b", name: "Structure B", provenanceStatus: "closed" },
       ],
@@ -36,7 +36,7 @@ function baseWorld(): WorldData {
         {
           id: "city-council",
           name: "City Council",
-          correctionPermissions: ["sever", "redirect", "reconcile"],
+          changePermissions: ["sever", "redirect", "reconcile"],
           knownBiases: [],
           authorizations: ["auth-1"],
         },
@@ -60,7 +60,7 @@ describe("validateWorld", () => {
     expect(result.valid).toBe(true);
   });
 
-  it("ERR_OPEN_PROVENANCE: flags a closed character whose identity anchor has unknown provenance", () => {
+  it("ERR_OPEN_PROVENANCE: flags a closed structure whose identity anchor has unknown provenance", () => {
     const world = baseWorld();
     world.relationships.relationships[0]!.provenance = "unknown";
     const result = validateWorld(world);
@@ -68,10 +68,10 @@ describe("validateWorld", () => {
     expect(result.issues.map((i) => i.rule)).toContain("ERR_OPEN_PROVENANCE");
   });
 
-  it("does not flag a character explicitly marked provenanceStatus: open", () => {
+  it("does not flag a structure explicitly marked provenanceStatus: open", () => {
     const world = baseWorld();
     world.relationships.relationships[0]!.provenance = "unknown";
-    world.characters.characters[0]!.provenanceStatus = "open";
+    world.structures.structures[0]!.provenanceStatus = "open";
     const result = validateWorld(world);
     expect(result.issues.map((i) => i.rule)).not.toContain("ERR_OPEN_PROVENANCE");
   });
@@ -93,11 +93,11 @@ describe("validateWorld", () => {
     expect(result.issues.map((i) => i.rule)).toContain("ERR_ORPHANED_REL");
   });
 
-  it("ERR_UNCOUNTED_DEPENDENT: flags a correction that removes a relationship without reconciling a dependent", () => {
+  it("ERR_UNCOUNTED_DEPENDENT: flags a change that removes a relationship without reconciling a dependent", () => {
     const world = baseWorld();
     world.relationships.relationships[0]!.dependentRelationships = ["rel-dependent"];
-    world.corrections.corrections.push({
-      id: "correction-1",
+    world.changes.changes.push({
+      id: "change-1",
       targetRelationshipId: "rel-1",
       operation: "sever",
       authorizationId: "auth-1",
@@ -112,8 +112,8 @@ describe("validateWorld", () => {
   it("passes once the dependent relationship is reconciled or explicitly excluded", () => {
     const world = baseWorld();
     world.relationships.relationships[0]!.dependentRelationships = ["rel-dependent"];
-    world.corrections.corrections.push({
-      id: "correction-1",
+    world.changes.changes.push({
+      id: "change-1",
       targetRelationshipId: "rel-1",
       operation: "sever",
       authorizationId: "auth-1",
@@ -124,10 +124,10 @@ describe("validateWorld", () => {
     expect(result.valid).toBe(true);
   });
 
-  it("ERR_NO_AUTH: flags a correction with no authorizationId", () => {
+  it("ERR_NO_AUTH: flags a change with no authorizationId", () => {
     const world = baseWorld();
-    world.corrections.corrections.push({
-      id: "correction-1",
+    world.changes.changes.push({
+      id: "change-1",
       targetRelationshipId: "rel-1",
       operation: "sever",
       reconciliation: [],
@@ -138,10 +138,10 @@ describe("validateWorld", () => {
     expect(result.issues.map((i) => i.rule)).toContain("ERR_NO_AUTH");
   });
 
-  it("ERR_NO_AUTH: flags a correction whose operation the citing institution isn't permitted to authorize", () => {
+  it("ERR_NO_AUTH: flags a change whose operation the citing institution isn't permitted to authorize", () => {
     const world = baseWorld();
-    world.corrections.corrections.push({
-      id: "correction-1",
+    world.changes.changes.push({
+      id: "change-1",
       targetRelationshipId: "rel-1",
       operation: "bind",
       authorizationId: "auth-1",
@@ -158,7 +158,7 @@ describe("validateWorld", () => {
     world.issues.issues.push({
       id: "issue-1",
       description: "A cake with one slice missing.",
-      provenance: "correction_residue",
+      provenance: "change_residue",
       semanticAffinityChain: [],
       status: "closed",
     });
@@ -168,7 +168,7 @@ describe("validateWorld", () => {
     expect(result.issues.map((i) => i.rule)).toContain("ERR_CLOSED_WITH_RESIDUE");
   });
 
-  it("ERR_TEMPORAL_DUPLICATE: flags two simultaneous active identity-anchor relationships for the same character", () => {
+  it("ERR_TEMPORAL_DUPLICATE: flags two simultaneous active identity-anchor relationships for the same structure", () => {
     const world = baseWorld();
     world.relationships.relationships.push({
       id: "rel-2",
@@ -180,13 +180,13 @@ describe("validateWorld", () => {
       dependentRelationships: [],
       displacedConsequences: [],
     });
-    world.characters.characters.push({ id: "structure-c", name: "Structure C", provenanceStatus: "closed" });
+    world.structures.structures.push({ id: "structure-c", name: "Structure C", provenanceStatus: "closed" });
     const result = validateWorld(world);
     expect(result.valid).toBe(false);
     expect(result.issues.map((i) => i.rule)).toContain("ERR_TEMPORAL_DUPLICATE");
   });
 
-  it("WARN_SYSTEMIC_CASCADE: warns (but does not block) a correction targeting a systemic_confirmed source", () => {
+  it("WARN_SYSTEMIC_CASCADE: warns (but does not block) a change targeting a systemic_confirmed source", () => {
     const world = baseWorld();
     world.issues.issues.push({
       id: "issue-1",
@@ -196,8 +196,8 @@ describe("validateWorld", () => {
       semanticAffinityChain: [],
       status: "open",
     });
-    world.corrections.corrections.push({
-      id: "correction-1",
+    world.changes.changes.push({
+      id: "change-1",
       targetRelationshipId: "rel-1",
       operation: "sever",
       authorizationId: "auth-1",

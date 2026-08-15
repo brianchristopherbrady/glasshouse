@@ -17,10 +17,10 @@ interface Reference {
 
 function findExistsAs(world: WorldData, id: string): string[] {
   const kinds: string[] = [];
-  if (world.characters.characters.some((c) => c.id === id)) kinds.push("character");
+  if (world.structures.structures.some((c) => c.id === id)) kinds.push("structure");
   if (world.institutions.institutions.some((i) => i.id === id)) kinds.push("institution");
   if (world.relationships.relationships.some((r) => r.id === id)) kinds.push("relationship");
-  if (world.corrections.corrections.some((c) => c.id === id)) kinds.push("correction");
+  if (world.changes.changes.some((c) => c.id === id)) kinds.push("change");
   if (world.issues.issues.some((i) => i.id === id)) kinds.push("issue");
   return kinds;
 }
@@ -37,19 +37,19 @@ function findReferencedBy(world: WorldData, id: string): Reference[] {
     if (r.dependentRelationships.includes(id)) refs.push({ file: "relationships.json", entityId: r.id, field: "dependentRelationships" });
     if (r.displacedConsequences.includes(id)) refs.push({ file: "relationships.json", entityId: r.id, field: "displacedConsequences" });
   }
-  for (const c of world.corrections.corrections) {
-    push("corrections.json", c.id, "targetRelationshipId", c.targetRelationshipId);
-    push("corrections.json", c.id, "authorizationId", c.authorizationId);
+  for (const c of world.changes.changes) {
+    push("changes.json", c.id, "targetRelationshipId", c.targetRelationshipId);
+    push("changes.json", c.id, "authorizationId", c.authorizationId);
     for (const entry of c.reconciliation) {
-      if (entry.relationshipId === id) refs.push({ file: "corrections.json", entityId: c.id, field: "reconciliation" });
+      if (entry.relationshipId === id) refs.push({ file: "changes.json", entityId: c.id, field: "reconciliation" });
     }
   }
   for (const i of world.issues.issues) {
     push("issues.json", i.id, "affects", i.affects);
     push("issues.json", i.id, "sourceRelationshipId", i.sourceRelationshipId);
   }
-  for (const character of world.characters.characters) {
-    push("characters.json", character.id, "identityAnchorRelationshipId", character.identityAnchorRelationshipId);
+  for (const structure of world.structures.structures) {
+    push("structures.json", structure.id, "identityAnchorRelationshipId", structure.identityAnchorRelationshipId);
   }
   for (const institution of world.institutions.institutions) {
     if (institution.authorizations.includes(id)) {
@@ -66,7 +66,7 @@ export function registerFindDependencies(server: McpServer): void {
     {
       title: "Find Dependencies",
       description:
-        "Given an entity id (character, institution, relationship, correction, or issue), report what kind(s) of entity it exists as and every field elsewhere in the world data that references it.",
+        "Given an entity id (structure, institution, relationship, change, or issue), report what kind(s) of entity it exists as and every field elsewhere in the world data that references it.",
       inputSchema: InputShape,
       annotations: { readOnlyHint: true, idempotentHint: true },
     },

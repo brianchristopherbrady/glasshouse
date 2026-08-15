@@ -1,5 +1,5 @@
 // Zod schemas describing the on-disk shape of world/*.json — a generic
-// relational world model (entities, relationships, corrections, issues,
+// relational world model (structures, relationships, changes, issues,
 // institutions) for tracking a system's structure and the changes made to
 // it over time. This repo ships a "City Hall" example world (a municipal
 // government managing a city, standing in for a team managing a codebase)
@@ -44,10 +44,10 @@ export const RelationshipsFileSchema = z.object({
   relationships: z.array(RelationshipSchema),
 });
 
-// --- world/corrections.json ---------------------------------------------
-// Every correction ever performed.
+// --- world/changes.json ---------------------------------------------
+// Every change ever performed.
 
-export const CorrectionOperationSchema = z.enum([
+export const ChangeOperationSchema = z.enum([
   "sever",
   "attach",
   "reconcile",
@@ -69,10 +69,10 @@ export const ReconciliationEntrySchema = z.object({
   justification: z.string().optional(),
 });
 
-export const CorrectionSchema = z.object({
+export const ChangeSchema = z.object({
   id: z.string(),
   targetRelationshipId: z.string(),
-  operation: CorrectionOperationSchema,
+  operation: ChangeOperationSchema,
   authorizationId: z.string().optional(),
   performedBy: z.string().optional(),
   reconciliation: z.array(ReconciliationEntrySchema).default([]),
@@ -81,8 +81,8 @@ export const CorrectionSchema = z.object({
   timestamp: z.string().optional(),
 });
 
-export const CorrectionsFileSchema = z.object({
-  corrections: z.array(CorrectionSchema),
+export const ChangesFileSchema = z.object({
+  changes: z.array(ChangeSchema),
 });
 
 // --- world/issues.json ---------------------------------------------------
@@ -95,7 +95,7 @@ export const CorrectionsFileSchema = z.object({
 
 export const IssueProvenanceSchema = z.enum([
   "local_pressure",
-  "correction_residue",
+  "change_residue",
   "displaced_consequence",
   "systemic_candidate",
   "systemic_confirmed",
@@ -121,21 +121,21 @@ export const IssuesFileSchema = z.object({
   issues: z.array(IssueSchema),
 });
 
-// --- world/characters.json ------------------------------------------------
+// --- world/structures.json ------------------------------------------------
 
-export const CharacterProvenanceStatusSchema = z.enum(["closed", "open"]);
+export const StructureProvenanceStatusSchema = z.enum(["closed", "open"]);
 
-export const CharacterSchema = z.object({
+export const StructureSchema = z.object({
   id: z.string(),
   name: z.string(),
   role: z.string().optional(),
-  provenanceStatus: CharacterProvenanceStatusSchema,
+  provenanceStatus: StructureProvenanceStatusSchema,
   identityAnchorRelationshipId: z.string().optional(),
   notes: z.string().optional(),
 });
 
-export const CharactersFileSchema = z.object({
-  characters: z.array(CharacterSchema),
+export const StructuresFileSchema = z.object({
+  structures: z.array(StructureSchema),
 });
 
 // --- world/institutions.json ------------------------------------------------
@@ -144,7 +144,7 @@ export const InstitutionSchema = z.object({
   id: z.string(),
   name: z.string(),
   domain: z.string().optional(),
-  correctionPermissions: z.array(CorrectionOperationSchema).default([]),
+  changePermissions: z.array(ChangeOperationSchema).default([]),
   knownBiases: z.array(z.string()).default([]),
   authorizations: z.array(z.string()).default([]),
   notes: z.string().optional(),
@@ -158,23 +158,23 @@ export type RelationshipStatus = z.infer<typeof RelationshipStatusSchema>;
 export type ProvenanceKind = z.infer<typeof ProvenanceKindSchema>;
 export type Relationship = z.infer<typeof RelationshipSchema>;
 export type RelationshipsFile = z.infer<typeof RelationshipsFileSchema>;
-export type CorrectionOperation = z.infer<typeof CorrectionOperationSchema>;
+export type ChangeOperation = z.infer<typeof ChangeOperationSchema>;
 export type ReconciliationEntry = z.infer<typeof ReconciliationEntrySchema>;
-export type Correction = z.infer<typeof CorrectionSchema>;
-export type CorrectionsFile = z.infer<typeof CorrectionsFileSchema>;
+export type Change = z.infer<typeof ChangeSchema>;
+export type ChangesFile = z.infer<typeof ChangesFileSchema>;
 export type IssueProvenance = z.infer<typeof IssueProvenanceSchema>;
 export type Issue = z.infer<typeof IssueSchema>;
 export type IssuesFile = z.infer<typeof IssuesFileSchema>;
-export type CharacterProvenanceStatus = z.infer<typeof CharacterProvenanceStatusSchema>;
-export type Character = z.infer<typeof CharacterSchema>;
-export type CharactersFile = z.infer<typeof CharactersFileSchema>;
+export type StructureProvenanceStatus = z.infer<typeof StructureProvenanceStatusSchema>;
+export type Structure = z.infer<typeof StructureSchema>;
+export type StructuresFile = z.infer<typeof StructuresFileSchema>;
 export type Institution = z.infer<typeof InstitutionSchema>;
 export type InstitutionsFile = z.infer<typeof InstitutionsFileSchema>;
 
 export interface WorldData {
   relationships: RelationshipsFile;
-  corrections: CorrectionsFile;
+  changes: ChangesFile;
   issues: IssuesFile;
-  characters: CharactersFile;
+  structures: StructuresFile;
   institutions: InstitutionsFile;
 }

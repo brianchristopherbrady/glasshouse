@@ -30,20 +30,20 @@ Skill). The validator therefore separates:
 - **`WARN_*` codes** — require a human/institutional decision, not a code fix.
   They do **not** block validation, and no agent may treat them as something
   to silently resolve. `WARN_SYSTEMIC_CASCADE` specifically requires explicit
-  human sign-off before a correction targeting a systemic-linked relationship
+  human sign-off before a change targeting a systemic-linked relationship
   may proceed.
 
 ## The eight rules
 
 | Code | Description |
 |---|---|
-| `ERR_OPEN_PROVENANCE` | A character marked `provenanceStatus: "closed"` has an identity anchor relationship with unknown or missing provenance. |
-| `ERR_ORPHANED_REL` | A relationship's `subject` or `object` does not exist in `characters.json` or `institutions.json`. |
-| `ERR_UNCOUNTED_DEPENDENT` | A correction removed a relationship but didn't reconcile, exclude, or flag one of its listed dependents. |
-| `ERR_NO_AUTH` | A correction has no `authorizationId`, or cites one no institution has on file, or cites an operation that institution isn't permitted to authorize. |
+| `ERR_OPEN_PROVENANCE` | A structure marked `provenanceStatus: "closed"` has an identity anchor relationship with unknown or missing provenance. |
+| `ERR_ORPHANED_REL` | A relationship's `subject` or `object` does not exist in `structures.json` or `institutions.json`. |
+| `ERR_UNCOUNTED_DEPENDENT` | A change removed a relationship but didn't reconcile, exclude, or flag one of its listed dependents. |
+| `ERR_NO_AUTH` | A change has no `authorizationId`, or cites one no institution has on file, or cites an operation that institution isn't permitted to authorize. |
 | `ERR_CLOSED_WITH_RESIDUE` | An issue is marked closed but an active relationship's `displacedConsequences` still points to it. |
-| `ERR_TEMPORAL_DUPLICATE` | Two active relationships both claim `kind: "identity-anchor"` for the same character simultaneously. |
-| `WARN_SYSTEMIC_CASCADE` | A correction targets a relationship already linked to a `systemic_confirmed` issue (a systemic problem, not a one-off). Does not block — requires explicit human sign-off. |
+| `ERR_TEMPORAL_DUPLICATE` | Two active relationships both claim `kind: "identity-anchor"` for the same structure simultaneously. |
+| `WARN_SYSTEMIC_CASCADE` | A change targets a relationship already linked to a `systemic_confirmed` issue (a systemic problem, not a one-off). Does not block — requires explicit human sign-off. |
 | `WARN_AFFINITY_UNRESOLVED` | An issue is classified `systemic_candidate` but documents no `semanticAffinityChain`. |
 
 ## How failures should be repaired

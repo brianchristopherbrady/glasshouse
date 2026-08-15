@@ -5,7 +5,7 @@ Building Inspector classified `issue-overpass-load` as `systemic_confirmed`
 -- structural, not infrastructure, so no action needed from Public Works.
 
 ## 1.1.3
-`correction-brace-overpass` executed under Mayoral authorization -- outside
+`change-brace-overpass` executed under Mayoral authorization -- outside
 Public Works's domain, informational only.
 
 ## 2.1.2

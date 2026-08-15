@@ -4,9 +4,9 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
   RelationshipsFileSchema,
-  CorrectionsFileSchema,
+  ChangesFileSchema,
   IssuesFileSchema,
-  CharactersFileSchema,
+  StructuresFileSchema,
   InstitutionsFileSchema,
   type WorldData,
 } from "./world-types.js";
@@ -19,19 +19,19 @@ async function loadJson(filePath: string): Promise<unknown> {
 }
 
 export async function loadWorld(worldDir: string = DEFAULT_WORLD_DIR): Promise<WorldData> {
-  const [relationships, corrections, issues, characters, institutions] = await Promise.all([
+  const [relationships, changes, issues, structures, institutions] = await Promise.all([
     loadJson(path.join(worldDir, "relationships.json")),
-    loadJson(path.join(worldDir, "corrections.json")),
+    loadJson(path.join(worldDir, "changes.json")),
     loadJson(path.join(worldDir, "issues.json")),
-    loadJson(path.join(worldDir, "characters.json")),
+    loadJson(path.join(worldDir, "structures.json")),
     loadJson(path.join(worldDir, "institutions.json")),
   ]);
 
   return {
     relationships: RelationshipsFileSchema.parse(relationships),
-    corrections: CorrectionsFileSchema.parse(corrections),
+    changes: ChangesFileSchema.parse(changes),
     issues: IssuesFileSchema.parse(issues),
-    characters: CharactersFileSchema.parse(characters),
+    structures: StructuresFileSchema.parse(structures),
     institutions: InstitutionsFileSchema.parse(institutions),
   };
 }

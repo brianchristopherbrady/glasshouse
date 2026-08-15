@@ -12,7 +12,7 @@ the game and the guidance are the same document. A consuming repo should
 edit the section bodies below to match its own real standards -- keep the
 section numbers and titles, since agents cite them by number.
 
-An agent proposing or performing a correction should reference the specific
+An agent proposing or performing a change should reference the specific
 section its action satisfies or violates. "This complies with Section 3" is
 a real citation with a real, checkable meaning; "this seems fine" is not.
 
@@ -28,7 +28,7 @@ fact.*
 
 ## Section 2 -- Small, reversible work
 
-Corrections should be the smallest operation that resolves the issue
+Changes should be the smallest operation that resolves the issue
 (`sever`, `attenuate`, `isolate` before `partition` or `substitute`), and
 protected invariants must be named explicitly before the work begins.
 *Real equivalent: prefer small, reviewable, revertible changes over large
@@ -37,7 +37,7 @@ breaks.*
 
 ## Section 3 -- No orphaned dependents
 
-A correction that removes or redirects a relationship must account for
+A change that removes or redirects a relationship must account for
 every relationship that depended on it -- reconciled, transferred, or
 explicitly excluded with a stated reason. Silence is not an accounted-for
 dependent. *Real equivalent: before removing or changing a shared
@@ -57,7 +57,7 @@ not real authorization.*
 
 A `systemic_confirmed` issue is not a normal bug -- it's evidence of a
 load-bearing dependency or pattern nobody accounted for. The validator will
-not silently pass a correction that touches it (`WARN_SYSTEMIC_CASCADE`);
+not silently pass a change that touches it (`WARN_SYSTEMIC_CASCADE`);
 it requires an explicit, recorded human decision, not an automatic fix.
 *Real equivalent: when an incident reveals an undocumented architectural
 dependency, the fix is a deliberate decision (often: mitigate now, redesign

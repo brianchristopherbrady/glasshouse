@@ -4,7 +4,7 @@
       "id": "city-council",
       "name": "City Council",
       "domain": "governance",
-      "correctionPermissions": [
+      "changePermissions": [
         "sever",
         "attach",
         "reconcile",
@@ -24,13 +24,13 @@
         "Prefers a formal ordinance over admitting a structure was never properly permitted."
       ],
       "authorizations": ["auth-council-2024-overpass-brace"],
-      "notes": "Issues final authorization for corrections and grants permits of record. The only body that can authorize every correction operation, but the slowest to notice a problem that doesn't have a constituent complaint attached to it yet."
+      "notes": "Issues final authorization for changes and grants permits of record. The only body that can authorize every change operation, but the slowest to notice a problem that doesn't have a constituent complaint attached to it yet."
     },
     {
       "id": "department-of-public-works",
       "name": "Department of Public Works",
       "domain": "infrastructure",
-      "correctionPermissions": ["attach", "reconcile", "attenuate", "reinforce", "isolate", "release"],
+      "changePermissions": ["attach", "reconcile", "attenuate", "reinforce", "isolate", "release"],
       "knownBiases": [
         "Assumes existing infrastructure works until an outage proves otherwise.",
         "Documents a dependency only after someone traces it, never before."
@@ -42,12 +42,12 @@
       "id": "building-safety-division",
       "name": "Building & Safety Division",
       "domain": "inspection",
-      "correctionPermissions": ["sever", "constrain", "isolate", "partition"],
+      "changePermissions": ["sever", "constrain", "isolate", "partition"],
       "knownBiases": [
         "Flags a violation the moment it's visible during a scheduled inspection, and can miss the same violation for years if it's hidden behind a passed one."
       ],
       "authorizations": [],
-      "notes": "Performs inspections and executes corrections once authorized. Does not issue its own authorizations -- it acts on City Council's or Department of Public Works's, never its own."
+      "notes": "Performs inspections and executes changes once authorized. Does not issue its own authorizations -- it acts on City Council's or Department of Public Works's, never its own."
     }
   ]
 }

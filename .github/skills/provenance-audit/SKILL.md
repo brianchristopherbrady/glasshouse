@@ -1,6 +1,6 @@
 ---
 name: provenance-audit
-description: How to trace a structure or relationship's provenance through world/history/*.json and world/corrections.json in the City Hall example world. Use when a request questions who approved something, whether a structure's origin genuinely closes, or whether a pattern spans multiple institutions.
+description: How to trace a structure or relationship's provenance through world/history/*.json and world/changes.json in the City Hall example world. Use when a request questions who approved something, whether a structure's origin genuinely closes, or whether a pattern spans multiple institutions.
 ---
 
 # Provenance Audit
@@ -12,7 +12,7 @@ the permit.
 
 ## How to audit a structure's provenance
 
-1. Read the structure's entry in `world/characters.json`. If
+1. Read the structure's entry in `world/structures.json`. If
    `provenanceStatus: "closed"`, its `identityAnchorRelationshipId` must
    resolve to a relationship in `world/relationships.json` whose
    `provenance` is not `"unknown"` -- verify this yourself rather than
@@ -27,7 +27,7 @@ the permit.
 3. Check `world/history/*.json` snapshots for what the world looked like
    before -- if a relationship exists now that isn't reflected in an
    earlier snapshot, something changed it, and that something should have
-   a corresponding entry in `world/corrections.json`.
+   a corresponding entry in `world/changes.json`.
 
 ## Cross-institution patterns
 

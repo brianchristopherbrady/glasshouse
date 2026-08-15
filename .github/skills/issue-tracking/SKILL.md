@@ -36,7 +36,7 @@ These are very often different agents. Building Inspector logs and
 classifies `issue-water-pressure` as `systemic_candidate`, but assigns it to
 Public Works (`assignedTo: "department-of-public-works"`) because
 resolving it is a `reconcile` operation within Public Works's own
-`correctionPermissions`. Building Inspector logs `issue-overpass-load` as
+`changePermissions`. Building Inspector logs `issue-overpass-load` as
 `systemic_confirmed` but assigns it to City Council (`assignedTo:
 "city-council"`), because only the Mayor's office can authorize a fix that
 touches a `systemic_confirmed` dependency. **An issue with no `assignedTo`
@@ -48,13 +48,13 @@ yet, the same way an unassigned ticket sits in a backlog.
 - **`local_pressure`** — an ordinary, contained problem with a plausible
   local cause. Most issues are this. Does not need a `sourceRelationshipId`
   or `semanticAffinityChain`.
-- **`correction_residue`** — a side effect of a correction that was already
-  performed; check `world/corrections.json` for the correction that likely
+- **`change_residue`** — a side effect of a change that was already
+  performed; check `world/changes.json` for the change that likely
   caused it. This is exactly the "you fixed one thing and it broke another"
   case -- log it as a new issue rather than silently patching around it,
   and assign it to whichever institution owns the affected area, even if
-  that's not the institution that performed the original correction.
-- **`displaced_consequence`** — a consequence that a correction's
+  that's not the institution that performed the original change.
+- **`displaced_consequence`** — a consequence that a change's
   reconciliation explicitly moved elsewhere rather than resolved. Should
   trace back to a `reconciliation` entry with `disposition: "displaced"`.
 - **`systemic_candidate`** — evidence suggests this issue is not isolated,
@@ -64,7 +64,7 @@ yet, the same way an unassigned ticket sits in a backlog.
   (`WARN_AFFINITY_UNRESOLVED`).
 - **`systemic_confirmed`** — the pattern is confirmed: this is a load-bearing
   dependency or systemic issue nobody accounted for, not a one-off. Any
-  correction targeting its `sourceRelationshipId` triggers
+  change targeting its `sourceRelationshipId` triggers
   `WARN_SYSTEMIC_CASCADE` and needs the Mayor's explicit sign-off.
 - **`unresolvable`** — investigated and genuinely cannot be traced further
   with current evidence. Different from unclassified — this is an honest
@@ -75,7 +75,7 @@ yet, the same way an unassigned ticket sits in a backlog.
 
 **Provenance** is where an issue's affected relationship *came from* --
 traced via `sourceRelationshipId` back through `relationships.json` and
-`corrections.json`. **Affinity** is whether this issue *resembles* other
+`changes.json`. **Affinity** is whether this issue *resembles* other
 issues in kind or pattern, tracked via `semanticAffinityChain` (a list of
 free-text pattern tags, not entity ids).
 
@@ -91,12 +91,12 @@ looks."
 
 When resolving one issue creates or reveals another -- the dev-environment
 case of "fixed the build, now the tests are red" -- log the new issue
-separately rather than expanding the scope of the correction that caused
-it. Set its `provenance` to `correction_residue` (caused by a specific past
-correction) or `displaced_consequence` (explicitly moved rather than
+separately rather than expanding the scope of the change that caused
+it. Set its `provenance` to `change_residue` (caused by a specific past
+change) or `displaced_consequence` (explicitly moved rather than
 resolved), and `assignedTo` whichever institution actually owns the newly
 affected area -- which may not be the institution that performed the
-original correction. This is what keeps a chain of fixes from quietly
+original change. This is what keeps a chain of fixes from quietly
 becoming one unaccountable mega-change.
 
 ## What "PASSED can still be wrong" means here

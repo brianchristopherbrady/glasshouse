@@ -5,9 +5,9 @@ import type { WorldData } from "../shared/world-types.js";
 
 export interface WorldSummary {
   relationships: { count: number; active: number; corrected: number; severed: number; unresolved: number };
-  corrections: { count: number; unauthorized: number };
+  changes: { count: number; unauthorized: number };
   issues: { count: number; open: number; systemicCandidate: number; systemicConfirmed: number };
-  characters: { count: number; ids: string[]; openProvenance: string[] };
+  structures: { count: number; ids: string[]; openProvenance: string[] };
   institutions: { count: number; ids: string[] };
 }
 
@@ -20,9 +20,9 @@ export function summarizeWorld(world: WorldData): WorldSummary {
       severed: world.relationships.relationships.filter((r) => r.status === "severed").length,
       unresolved: world.relationships.relationships.filter((r) => r.status === "unresolved").length,
     },
-    corrections: {
-      count: world.corrections.corrections.length,
-      unauthorized: world.corrections.corrections.filter((c) => !c.authorizationId).length,
+    changes: {
+      count: world.changes.changes.length,
+      unauthorized: world.changes.changes.filter((c) => !c.authorizationId).length,
     },
     issues: {
       count: world.issues.issues.length,
@@ -30,10 +30,10 @@ export function summarizeWorld(world: WorldData): WorldSummary {
       systemicCandidate: world.issues.issues.filter((i) => i.provenance === "systemic_candidate").length,
       systemicConfirmed: world.issues.issues.filter((i) => i.provenance === "systemic_confirmed").length,
     },
-    characters: {
-      count: world.characters.characters.length,
-      ids: world.characters.characters.map((c) => c.id),
-      openProvenance: world.characters.characters.filter((c) => c.provenanceStatus === "open").map((c) => c.id),
+    structures: {
+      count: world.structures.structures.length,
+      ids: world.structures.structures.map((c) => c.id),
+      openProvenance: world.structures.structures.filter((c) => c.provenanceStatus === "open").map((c) => c.id),
     },
     institutions: {
       count: world.institutions.institutions.length,

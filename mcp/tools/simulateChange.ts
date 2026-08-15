@@ -7,22 +7,22 @@ import { loadWorld } from "../../shared/world-loader.js";
 import { validateWorld } from "../../shared/world-validator.js";
 import {
   RelationshipsFileSchema,
-  CorrectionsFileSchema,
+  ChangesFileSchema,
   IssuesFileSchema,
-  CharactersFileSchema,
+  StructuresFileSchema,
   InstitutionsFileSchema,
 } from "../../shared/world-types.js";
 import type { WorldData } from "../../shared/world-types.js";
 import { withToolTelemetry, type ToolResult } from "../telemetry.js";
 
-const DOMAINS = ["relationships", "corrections", "issues", "characters", "institutions"] as const;
+const DOMAINS = ["relationships", "changes", "issues", "structures", "institutions"] as const;
 type Domain = (typeof DOMAINS)[number];
 
 const DOMAIN_SCHEMAS: Record<Domain, { safeParse: (v: unknown) => { success: boolean; data?: unknown; error?: { issues: unknown[] } } }> = {
   relationships: RelationshipsFileSchema,
-  corrections: CorrectionsFileSchema,
+  changes: ChangesFileSchema,
   issues: IssuesFileSchema,
-  characters: CharactersFileSchema,
+  structures: StructuresFileSchema,
   institutions: InstitutionsFileSchema,
 };
 
@@ -38,7 +38,7 @@ export function registerSimulateChange(server: McpServer): void {
     {
       title: "Simulate Change",
       description:
-        "Dry-run a shallow patch merged into one domain of the world (relationships, corrections, issues, characters, or institutions) and report whether the resulting world would pass validation. Never writes to disk.",
+        "Dry-run a shallow patch merged into one domain of the world (relationships, changes, issues, structures, or institutions) and report whether the resulting world would pass validation. Never writes to disk.",
       inputSchema: InputShape,
       annotations: { readOnlyHint: true, idempotentHint: true },
     },

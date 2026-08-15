@@ -1,8 +1,8 @@
 // The world, visualized as a relationship web — not the event-flow graph.
-// Every character, institution, and relationship shown here is read live
+// Every structure, institution, and relationship shown here is read live
 // from world/*.json on disk, so this view persists across page loads and
 // reflects the true current state of the world the agents are editing, not
-// client-side/session state. Nodes are characters/institutions; edges are
+// client-side/session state. Nodes are structures/institutions; edges are
 // relationships, colored by status (active/corrected/severed/redirected/
 // constrained/unresolved).
 import { useEffect, useState } from "react";
@@ -17,7 +17,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { fetchWorld, type WorldResponse } from "../api/client.js";
-import type { Character, Institution, RelationshipStatus } from "../../shared/world-types.js";
+import type { Structure, Institution, RelationshipStatus } from "../../shared/world-types.js";
 
 const STATUS_META: Record<RelationshipStatus, { stroke: string; dash?: string }> = {
   active: { stroke: "#248a3d" },
@@ -34,7 +34,7 @@ const GAP = 60;
 
 interface EntityNodeData {
   name: string;
-  kind: "character" | "institution";
+  kind: "structure" | "institution";
   subtitle?: string;
   openProvenance?: boolean;
   [key: string]: unknown;
@@ -68,7 +68,7 @@ const NODE_TYPES = { entity: EntityNode };
 export function WorldMapPanel() {
   const [data, setData] = useState<WorldResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<Character | Institution | null>(null);
+  const [selected, setSelected] = useState<Structure | Institution | null>(null);
 
   useEffect(() => {
     fetchWorld()
@@ -85,7 +85,7 @@ export function WorldMapPanel() {
 
   const { world, validation } = data;
   const entityIds = [
-    ...world.characters.characters.map((c) => c.id),
+    ...world.structures.structures.map((c) => c.id),
     ...world.institutions.institutions.map((i) => i.id),
   ];
 
@@ -99,13 +99,13 @@ export function WorldMapPanel() {
   });
 
   const flowNodes: Node[] = [
-    ...world.characters.characters.map((c) => ({
+    ...world.structures.structures.map((c) => ({
       id: c.id,
       type: "entity",
       position: positions.get(c.id)!,
       data: {
         name: c.name,
-        kind: "character" as const,
+        kind: "structure" as const,
         subtitle: c.role,
         openProvenance: c.provenanceStatus === "open",
       },
@@ -135,8 +135,8 @@ export function WorldMapPanel() {
     };
   });
 
-  const findEntity = (id: string): Character | Institution | undefined =>
-    world.characters.characters.find((c) => c.id === id) ?? world.institutions.institutions.find((i) => i.id === id);
+  const findEntity = (id: string): Structure | Institution | undefined =>
+    world.structures.structures.find((c) => c.id === id) ?? world.institutions.institutions.find((i) => i.id === id);
 
   return (
     <div className="world-map-layout">
@@ -175,10 +175,10 @@ export function WorldMapPanel() {
         )}
 
         <p className="panel-title" style={{ marginTop: "1rem" }}>
-          Characters ({world.characters.characters.length})
+          Structures ({world.structures.structures.length})
         </p>
         <ul className="activity-list">
-          {world.characters.characters.map((c) => (
+          {world.structures.structures.map((c) => (
             <li key={c.id} style={{ cursor: "pointer" }} onClick={() => setSelected(c)}>
               <span>{c.name}</span>
               <span>{c.provenanceStatus}</span>

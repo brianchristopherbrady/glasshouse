@@ -3,7 +3,7 @@
   "recordedAt": "2026-07-01T00:00:00Z",
   "note": "Initial recorded state of the city's world model, before the Overpass load-bearing dependency was confirmed or the Pumphouse/Fountain link was formally documented. Kept as a reference point for provenance-audit -- compare against the current world/*.json to see what changed and why.",
   "institutionCount": 3,
-  "characterCount": 4,
+  "structureCount": 4,
   "relationshipCount": 3,
   "openIssues": 1
 }

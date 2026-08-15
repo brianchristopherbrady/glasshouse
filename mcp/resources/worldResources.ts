@@ -29,7 +29,7 @@ export function registerWorldResources(server: McpServer): void {
   server.registerResource(
     "world-institutions",
     "world://institutions",
-    { title: "World Institutions", description: "The governing and executing institutions, and their correction permissions, biases, and authorizations.", mimeType: "application/json" },
+    { title: "World Institutions", description: "The governing and executing institutions, and their change permissions, biases, and authorizations.", mimeType: "application/json" },
     async (uri) => {
       const sessionId = await resolveSessionId();
       await emitResourceRead({ sessionId, uri: uri.href });

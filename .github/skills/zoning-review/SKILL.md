@@ -1,14 +1,14 @@
 ---
 name: zoning-review
-description: How to perform a correction in the City Hall example world -- operations, reconciliation, authorization, and protected invariants. Use when implementing, planning, or authorizing any change to world/relationships.json.
+description: How to perform a change in the City Hall example world -- operations, reconciliation, authorization, and protected invariants. Use when implementing, planning, or authorizing any change to world/relationships.json.
 ---
 
 # Zoning Review
 
-A "correction" is any deliberate change to the relational structure of the
-world: `world/corrections.json` entries that operate on
+A "change" is any deliberate change to the relational structure of the
+world: `world/changes.json` entries that operate on
 `world/relationships.json`. This Skill covers how to perform one correctly,
-and the known failure patterns that make a correction quietly create a new
+and the known failure patterns that make a change quietly create a new
 problem.
 
 ## The operations
@@ -31,42 +31,42 @@ problem.
 
 Choose the smallest operation that resolves the issue (Municipal Code
 Section 2). Reaching for `substitute` or `partition` when `attenuate` or
-`constrain` would do is over-correction.
+`constrain` would do is over-correcting.
 
 ## Reconciliation is not optional
 
-Before performing a correction that removes or redirects a relationship,
+Before performing a change that removes or redirects a relationship,
 check that relationship's `dependentRelationships` in
 `world/relationships.json`. Every id listed there must appear in the
-correction's `reconciliation` array with a real `disposition`
+change's `reconciliation` array with a real `disposition`
 (`redirected`, `transferred`, `excluded`, `displaced`) -- silence on a
 dependent is `ERR_UNCOUNTED_DEPENDENT`, a validator error, not a warning.
 
 ## Authorization
 
-Every correction needs an `authorizationId` that:
+Every change needs an `authorizationId` that:
 1. Actually appears in some institution's `authorizations` array in
    `world/institutions.json`, and
-2. Belongs to an institution whose `correctionPermissions` includes the
-   correction's `operation`.
+2. Belongs to an institution whose `changePermissions` includes the
+   change's `operation`.
 
 Citing an authorization the issuing institution isn't actually permitted to
 grant is `ERR_NO_AUTH`, same as citing no authorization at all.
 
 ## Protected invariants
 
-State explicitly, before the correction, what must not break as a result
+State explicitly, before the change, what must not break as a result
 (`protectedInvariants`). This is not decoration -- it is the thing you check
-against afterward to know whether the correction actually worked, not just
+against afterward to know whether the change actually worked, not just
 whether the validator passed.
 
-## Known failure pattern: correction debt
+## Known failure pattern: change debt
 
-A correction that resolves its target relationship but leaves a
+A change that resolves its target relationship but leaves a
 `systemic_confirmed`-linked issue untouched has not actually closed the
 underlying problem -- it has just moved where it's visible next.
-Before marking a correction complete, check whether its target relationship
+Before marking a change complete, check whether its target relationship
 is referenced by any issue's `sourceRelationshipId`; if that issue is
-`systemic_confirmed`, the correction requires the Mayor's explicit sign-off
+`systemic_confirmed`, the change requires the Mayor's explicit sign-off
 (`WARN_SYSTEMIC_CASCADE`) and should say, in `notes`, what happens to the
 underlying pattern -- not just the one relationship that got fixed.

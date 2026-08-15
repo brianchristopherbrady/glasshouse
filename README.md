@@ -107,13 +107,13 @@ events.
 ## The world-inspection subsystem
 
 `world/*.json` is a generic relational world model -- five domains
-(`relationships`, `corrections`, `issues`, `characters`, `institutions`)
+(`relationships`, `changes`, `issues`, `structures`, `institutions`)
 defined as Zod schemas in `shared/world-types.ts`. The MCP tools
 `inspect_world`/`validate_world`/`find_dependencies`/`simulate_change`, the
 `trace_decision` declared-decision tool, and `scripts/validate-world.ts`
 (`npm run validate:world`) are a working, deterministic, non-LLM validation
 subsystem: `ERR_*` issues block validity (orphaned relationships, missing
-authorization, uncounted dependents on a correction, open provenance,
+authorization, uncounted dependents on a change, open provenance,
 temporal duplicates); `WARN_*` issues surface a decision a human should make
 without blocking (an issue confirmed as systemic, or a candidate pattern
 with no documented affinity chain yet). See the `world-validation` Skill for

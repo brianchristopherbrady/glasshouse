@@ -1,6 +1,6 @@
 // Deterministic rule checks for the world model. PASSED can still be wrong
 // (see the issue-tracking Skill) -- the validator's job is to catch
-// structural errors, not to certify that a correction was wise.
+// structural errors, not to certify that a change was wise.
 import type { WorldData } from "./world-types.js";
 
 export interface ValidationIssue {
@@ -16,8 +16,8 @@ export interface ValidationResult {
   checkedAt: string;
 }
 
-function findCharacter(world: WorldData, id: string) {
-  return world.characters.characters.find((c) => c.id === id);
+function findStructure(world: WorldData, id: string) {
+  return world.structures.structures.find((c) => c.id === id);
 }
 
 function findInstitution(world: WorldData, id: string) {
@@ -29,25 +29,25 @@ function findRelationship(world: WorldData, id: string) {
 }
 
 function entityExists(world: WorldData, id: string): boolean {
-  return findCharacter(world, id) !== undefined || findInstitution(world, id) !== undefined;
+  return findStructure(world, id) !== undefined || findInstitution(world, id) !== undefined;
 }
 
-/** ERR_OPEN_PROVENANCE — a character's recognized identity contains
+/** ERR_OPEN_PROVENANCE — a structure's recognized identity contains
  * relationships whose provenance cannot be traced to a recognized source,
- * yet the character is still marked provenanceStatus: "closed". A character
+ * yet the structure is still marked provenanceStatus: "closed". A structure
  * whose identity genuinely does not close (Tomas Vale, B fears for himself)
  * must be marked "open" rather than silently passing as resolved. */
 function checkProvenanceClosure(world: WorldData, issues: ValidationIssue[]) {
-  for (const character of world.characters.characters) {
-    if (character.provenanceStatus !== "closed") continue;
-    const anchorId = character.identityAnchorRelationshipId;
+  for (const structure of world.structures.structures) {
+    if (structure.provenanceStatus !== "closed") continue;
+    const anchorId = structure.identityAnchorRelationshipId;
     if (!anchorId) continue;
     const anchor = findRelationship(world, anchorId);
     if (!anchor || anchor.provenance === "unknown") {
       issues.push({
         rule: "ERR_OPEN_PROVENANCE",
-        subject: character.id,
-        message: `'${character.name}' is marked provenanceStatus: closed, but identity anchor '${anchorId}' ${!anchor ? "does not exist" : "has unknown provenance"}.`,
+        subject: structure.id,
+        message: `'${structure.name}' is marked provenanceStatus: closed, but identity anchor '${anchorId}' ${!anchor ? "does not exist" : "has unknown provenance"}.`,
         severity: "error",
       });
     }
@@ -55,14 +55,14 @@ function checkProvenanceClosure(world: WorldData, issues: ValidationIssue[]) {
 }
 
 /** ERR_ORPHANED_REL — a relationship's subject or object is not present in
- * characters.json or institutions.json. */
+ * structures.json or institutions.json. */
 function checkOrphanedRelationships(world: WorldData, issues: ValidationIssue[]) {
   for (const rel of world.relationships.relationships) {
     if (!entityExists(world, rel.subject)) {
       issues.push({
         rule: "ERR_ORPHANED_REL",
         subject: rel.id,
-        message: `Relationship '${rel.id}' names subject '${rel.subject}', who does not exist in characters.json or institutions.json.`,
+        message: `Relationship '${rel.id}' names subject '${rel.subject}', who does not exist in structures.json or institutions.json.`,
         severity: "error",
       });
     }
@@ -70,26 +70,26 @@ function checkOrphanedRelationships(world: WorldData, issues: ValidationIssue[])
       issues.push({
         rule: "ERR_ORPHANED_REL",
         subject: rel.id,
-        message: `Relationship '${rel.id}' names object '${rel.object}', who does not exist in characters.json or institutions.json.`,
+        message: `Relationship '${rel.id}' names object '${rel.object}', who does not exist in structures.json or institutions.json.`,
         severity: "error",
       });
     }
   }
 }
 
-/** ERR_UNCOUNTED_DEPENDENT — a correction removed a relationship but did not
+/** ERR_UNCOUNTED_DEPENDENT — a change removed a relationship but did not
  * account for a listed dependent relationship (reconcile/exclude/flag). */
 function checkUncountedDependents(world: WorldData, issues: ValidationIssue[]) {
-  for (const correction of world.corrections.corrections) {
-    const target = findRelationship(world, correction.targetRelationshipId);
+  for (const change of world.changes.changes) {
+    const target = findRelationship(world, change.targetRelationshipId);
     if (!target) continue;
     for (const depId of target.dependentRelationships) {
-      const accountedFor = correction.reconciliation.some((r) => r.relationshipId === depId);
+      const accountedFor = change.reconciliation.some((r) => r.relationshipId === depId);
       if (!accountedFor) {
         issues.push({
           rule: "ERR_UNCOUNTED_DEPENDENT",
-          subject: correction.id,
-          message: `Correction '${correction.id}' removed '${target.id}' but did not reconcile, exclude, or flag dependent relationship '${depId}'.`,
+          subject: change.id,
+          message: `Change '${change.id}' removed '${target.id}' but did not reconcile, exclude, or flag dependent relationship '${depId}'.`,
           severity: "error",
         });
       }
@@ -97,34 +97,34 @@ function checkUncountedDependents(world: WorldData, issues: ValidationIssue[]) {
   }
 }
 
-/** ERR_NO_AUTH — a correction has no corresponding authorization on file
+/** ERR_NO_AUTH — a change has no corresponding authorization on file
  * with an institution that actually holds permission for that operation. */
 function checkAuthorization(world: WorldData, issues: ValidationIssue[]) {
-  for (const correction of world.corrections.corrections) {
-    if (!correction.authorizationId) {
+  for (const change of world.changes.changes) {
+    if (!change.authorizationId) {
       issues.push({
         rule: "ERR_NO_AUTH",
-        subject: correction.id,
-        message: `Correction '${correction.id}' has no authorizationId on file.`,
+        subject: change.id,
+        message: `Change '${change.id}' has no authorizationId on file.`,
         severity: "error",
       });
       continue;
     }
     const authorizingInstitution = world.institutions.institutions.find((i) =>
-      i.authorizations.includes(correction.authorizationId!),
+      i.authorizations.includes(change.authorizationId!),
     );
     if (!authorizingInstitution) {
       issues.push({
         rule: "ERR_NO_AUTH",
-        subject: correction.id,
-        message: `Correction '${correction.id}' cites authorization '${correction.authorizationId}', which no institution has on file.`,
+        subject: change.id,
+        message: `Change '${change.id}' cites authorization '${change.authorizationId}', which no institution has on file.`,
         severity: "error",
       });
-    } else if (!authorizingInstitution.correctionPermissions.includes(correction.operation)) {
+    } else if (!authorizingInstitution.changePermissions.includes(change.operation)) {
       issues.push({
         rule: "ERR_NO_AUTH",
-        subject: correction.id,
-        message: `Correction '${correction.id}' performs '${correction.operation}', which '${authorizingInstitution.name}' is not permitted to authorize.`,
+        subject: change.id,
+        message: `Change '${change.id}' performs '${change.operation}', which '${authorizingInstitution.name}' is not permitted to authorize.`,
         severity: "error",
       });
     }
@@ -153,34 +153,34 @@ function checkClosedWithResidue(world: WorldData, issues: ValidationIssue[]) {
 }
 
 /** ERR_TEMPORAL_DUPLICATE — two relationships claim to be the same
- * character's primary identity anchor simultaneously. */
+ * structure's primary identity anchor simultaneously. */
 function checkTemporalDuplicateAnchors(world: WorldData, issues: ValidationIssue[]) {
   const anchorHolders = new Map<string, string[]>();
-  for (const character of world.characters.characters) {
-    if (!character.identityAnchorRelationshipId) continue;
-    // Anchors are keyed by the character, but the check that matters is:
+  for (const structure of world.structures.structures) {
+    if (!structure.identityAnchorRelationshipId) continue;
+    // Anchors are keyed by the structure, but the check that matters is:
     // does more than one *active* relationship claim to anchor this same
-    // character? Search relationships.json for other active relationships
-    // whose subject/object is this character and whose kind marks it as an
+    // structure? Search relationships.json for other active relationships
+    // whose subject/object is this structure and whose kind marks it as an
     // anchor.
     const claims = world.relationships.relationships.filter(
-      (r) => r.status === "active" && (r.subject === character.id || r.object === character.id) && r.kind === "identity-anchor",
+      (r) => r.status === "active" && (r.subject === structure.id || r.object === structure.id) && r.kind === "identity-anchor",
     );
     if (claims.length > 1) {
-      anchorHolders.set(character.id, claims.map((c) => c.id));
+      anchorHolders.set(structure.id, claims.map((c) => c.id));
     }
   }
-  for (const [characterId, relIds] of anchorHolders) {
+  for (const [structureId, relIds] of anchorHolders) {
     issues.push({
       rule: "ERR_TEMPORAL_DUPLICATE",
-      subject: characterId,
-      message: `Character '${characterId}' has ${relIds.length} simultaneous active identity-anchor relationships: ${relIds.join(", ")}.`,
+      subject: structureId,
+      message: `Structure '${structureId}' has ${relIds.length} simultaneous active identity-anchor relationships: ${relIds.join(", ")}.`,
       severity: "error",
     });
   }
 }
 
-/** WARN_SYSTEMIC_CASCADE — a proposed correction targets a relationship
+/** WARN_SYSTEMIC_CASCADE — a proposed change targets a relationship
  * already linked to a systemic_confirmed issue (a citywide/architecture-wide
  * problem, not a one-off). Does not block; requires explicit human sign-off
  * (see the issue-tracking Skill). */
@@ -190,12 +190,12 @@ function checkSystemicCascade(world: WorldData, issues: ValidationIssue[]) {
       .filter((i) => i.provenance === "systemic_confirmed" && i.sourceRelationshipId)
       .map((i) => i.sourceRelationshipId!),
   );
-  for (const correction of world.corrections.corrections) {
-    if (confirmedSystemicSources.has(correction.targetRelationshipId)) {
+  for (const change of world.changes.changes) {
+    if (confirmedSystemicSources.has(change.targetRelationshipId)) {
       issues.push({
         rule: "WARN_SYSTEMIC_CASCADE",
-        subject: correction.id,
-        message: `Correction '${correction.id}' targets relationship '${correction.targetRelationshipId}', already linked to a systemic_confirmed issue. Correcting it in isolation may just move the underlying problem — requires explicit human sign-off.`,
+        subject: change.id,
+        message: `Change '${change.id}' targets relationship '${change.targetRelationshipId}', already linked to a systemic_confirmed issue. Correcting it in isolation may just move the underlying problem — requires explicit human sign-off.`,
         severity: "warning",
       });
     }

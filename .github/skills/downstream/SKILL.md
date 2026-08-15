@@ -22,7 +22,7 @@ slice into the *other* agent's `world/<agent>_actions/downstream_effects.md`.
      authority, or an open item of theirs. A quiet `downstream_effects.md`
      is correct, not incomplete.
    - Keep it to what's actually knowable secondhand: a completed
-     correction, a new authorization, a reclassified issue, a pending
+     change, a new authorization, a reclassified issue, a pending
      escalation -- not internal reasoning the acting agent didn't record.
 3. Append the filtered entry under the same locator, in the receiving
    agent's own `downstream_effects.md`, written plainly ("Building Inspector
@@ -39,5 +39,5 @@ slice into the *other* agent's `world/<agent>_actions/downstream_effects.md`.
   agent's own judgment, exercised via its own `handoffs`. `downstream` only
   makes sure the information they'd need to make that judgment is actually
   on record.
-- It does not edit `relationships.json`, `issues.json`, `corrections.json`,
+- It does not edit `relationships.json`, `issues.json`, `changes.json`,
   or `institutions.json` -- only `downstream_effects.md` files.
