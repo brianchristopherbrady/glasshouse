@@ -55,7 +55,7 @@ not real authorization.*
 
 ## Section 5 -- Confirmed systemic issues require a human decision
 
-A `systemic_confirmed` anomaly is not a normal bug -- it's evidence of a
+A `systemic_confirmed` issue is not a normal bug -- it's evidence of a
 load-bearing dependency or pattern nobody accounted for. The validator will
 not silently pass a correction that touches it (`WARN_SYSTEMIC_CASCADE`);
 it requires an explicit, recorded human decision, not an automatic fix.

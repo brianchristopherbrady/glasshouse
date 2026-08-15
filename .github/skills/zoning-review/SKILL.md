@@ -63,10 +63,10 @@ whether the validator passed.
 ## Known failure pattern: correction debt
 
 A correction that resolves its target relationship but leaves a
-`systemic_confirmed`-linked anomaly untouched has not actually closed the
-underlying issue -- it has just moved where the problem is visible next.
+`systemic_confirmed`-linked issue untouched has not actually closed the
+underlying problem -- it has just moved where it's visible next.
 Before marking a correction complete, check whether its target relationship
-is referenced by any anomaly's `sourceRelationshipId`; if that anomaly is
+is referenced by any issue's `sourceRelationshipId`; if that issue is
 `systemic_confirmed`, the correction requires the Mayor's explicit sign-off
 (`WARN_SYSTEMIC_CASCADE`) and should say, in `notes`, what happens to the
 underlying pattern -- not just the one relationship that got fixed.

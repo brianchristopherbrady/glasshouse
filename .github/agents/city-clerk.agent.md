@@ -34,7 +34,7 @@ another agent what to do next, that's a job for that agent's own escalation
 - Answers "what's on record about X" questions using `provenance-audit` --
   tracing a structure or relationship's history through
   `world/corrections.json` and `world/history/*.json` snapshots.
-- Never edits `relationships.json`, `anomalies.json`, or `corrections.json`
+- Never edits `relationships.json`, `issues.json`, or `corrections.json`
   directly -- the Clerk records what happened, it doesn't make things
   happen.
 

@@ -6,9 +6,9 @@ handoffs:
   - label: Submit a drafted plan to the Mayor for authorization
     agent: mayor
     prompt: Review my draft entry in world/city-planner_actions/actions.md and the pending additions to world/characters.json and world/relationships.json, then authorize or reject them.
-  - label: Ask Building Inspector whether a proposed dependency is already a known anomaly
+  - label: Ask Building Inspector whether a proposed dependency is already a known issue
     agent: building-inspector
-    prompt: Review my draft entry in world/city-planner_actions/actions.md and the proposed relationship in world/relationships.json against world/anomalies.json, then confirm whether it's already a known issue.
+    prompt: Review my draft entry in world/city-planner_actions/actions.md and the proposed relationship in world/relationships.json against world/issues.json, then confirm whether it's already a known issue.
 ---
 
 # City Planner

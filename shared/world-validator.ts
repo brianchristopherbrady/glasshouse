@@ -1,5 +1,5 @@
 // Deterministic rule checks for the world model. PASSED can still be wrong
-// (see the incident-classification Skill) -- the validator's job is to catch
+// (see the issue-tracking Skill) -- the validator's job is to catch
 // structural errors, not to certify that a correction was wise.
 import type { WorldData } from "./world-types.js";
 
@@ -131,20 +131,20 @@ function checkAuthorization(world: WorldData, issues: ValidationIssue[]) {
   }
 }
 
-/** ERR_CLOSED_WITH_RESIDUE — an anomaly is marked closed but an active
+/** ERR_CLOSED_WITH_RESIDUE — an issue is marked closed but an active
  * relationship's displacedConsequences still points to it. */
 function checkClosedWithResidue(world: WorldData, issues: ValidationIssue[]) {
-  const closedAnomalyIds = new Set(
-    world.anomalies.anomalies.filter((a) => a.status === "closed").map((a) => a.id),
+  const closedIssueIds = new Set(
+    world.issues.issues.filter((i) => i.status === "closed").map((i) => i.id),
   );
   for (const rel of world.relationships.relationships) {
     if (rel.status !== "active") continue;
-    for (const anomalyId of rel.displacedConsequences) {
-      if (closedAnomalyIds.has(anomalyId)) {
+    for (const issueId of rel.displacedConsequences) {
+      if (closedIssueIds.has(issueId)) {
         issues.push({
           rule: "ERR_CLOSED_WITH_RESIDUE",
-          subject: anomalyId,
-          message: `Anomaly '${anomalyId}' is closed, but active relationship '${rel.id}' still lists it as a displaced consequence.`,
+          subject: issueId,
+          message: `Issue '${issueId}' is closed, but active relationship '${rel.id}' still lists it as a displaced consequence.`,
           severity: "error",
         });
       }
@@ -181,36 +181,36 @@ function checkTemporalDuplicateAnchors(world: WorldData, issues: ValidationIssue
 }
 
 /** WARN_SYSTEMIC_CASCADE — a proposed correction targets a relationship
- * already linked to a systemic_confirmed anomaly (a citywide/architecture-wide
- * issue, not a one-off). Does not block; requires explicit human sign-off
- * (see the incident-classification Skill). */
+ * already linked to a systemic_confirmed issue (a citywide/architecture-wide
+ * problem, not a one-off). Does not block; requires explicit human sign-off
+ * (see the issue-tracking Skill). */
 function checkSystemicCascade(world: WorldData, issues: ValidationIssue[]) {
   const confirmedSystemicSources = new Set(
-    world.anomalies.anomalies
-      .filter((a) => a.provenance === "systemic_confirmed" && a.sourceRelationshipId)
-      .map((a) => a.sourceRelationshipId!),
+    world.issues.issues
+      .filter((i) => i.provenance === "systemic_confirmed" && i.sourceRelationshipId)
+      .map((i) => i.sourceRelationshipId!),
   );
   for (const correction of world.corrections.corrections) {
     if (confirmedSystemicSources.has(correction.targetRelationshipId)) {
       issues.push({
         rule: "WARN_SYSTEMIC_CASCADE",
         subject: correction.id,
-        message: `Correction '${correction.id}' targets relationship '${correction.targetRelationshipId}', already linked to a systemic_confirmed anomaly. Correcting it in isolation may just move the underlying problem — requires explicit human sign-off.`,
+        message: `Correction '${correction.id}' targets relationship '${correction.targetRelationshipId}', already linked to a systemic_confirmed issue. Correcting it in isolation may just move the underlying problem — requires explicit human sign-off.`,
         severity: "warning",
       });
     }
   }
 }
 
-/** WARN_AFFINITY_UNRESOLVED — an anomaly is classified systemic_candidate
+/** WARN_AFFINITY_UNRESOLVED — an issue is classified systemic_candidate
  * but no semantic affinity chain has been documented. */
 function checkAffinityUnresolved(world: WorldData, issues: ValidationIssue[]) {
-  for (const anomaly of world.anomalies.anomalies) {
-    if (anomaly.provenance === "systemic_candidate" && anomaly.semanticAffinityChain.length === 0) {
+  for (const issue of world.issues.issues) {
+    if (issue.provenance === "systemic_candidate" && issue.semanticAffinityChain.length === 0) {
       issues.push({
         rule: "WARN_AFFINITY_UNRESOLVED",
-        subject: anomaly.id,
-        message: `Anomaly '${anomaly.id}' is classified systemic_candidate but documents no semantic affinity chain.`,
+        subject: issue.id,
+        message: `Issue '${issue.id}' is classified systemic_candidate but documents no semantic affinity chain.`,
         severity: "warning",
       });
     }

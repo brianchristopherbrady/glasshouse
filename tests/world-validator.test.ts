@@ -22,8 +22,8 @@ function baseWorld(): WorldData {
     corrections: {
       corrections: [],
     },
-    anomalies: {
-      anomalies: [],
+    issues: {
+      issues: [],
     },
     characters: {
       characters: [
@@ -153,16 +153,16 @@ describe("validateWorld", () => {
     expect(result.issues.map((i) => i.rule)).toContain("ERR_NO_AUTH");
   });
 
-  it("ERR_CLOSED_WITH_RESIDUE: flags a closed anomaly still referenced by an active relationship", () => {
+  it("ERR_CLOSED_WITH_RESIDUE: flags a closed issue still referenced by an active relationship", () => {
     const world = baseWorld();
-    world.anomalies.anomalies.push({
-      id: "anomaly-1",
+    world.issues.issues.push({
+      id: "issue-1",
       description: "A cake with one slice missing.",
       provenance: "correction_residue",
       semanticAffinityChain: [],
       status: "closed",
     });
-    world.relationships.relationships[0]!.displacedConsequences = ["anomaly-1"];
+    world.relationships.relationships[0]!.displacedConsequences = ["issue-1"];
     const result = validateWorld(world);
     expect(result.valid).toBe(false);
     expect(result.issues.map((i) => i.rule)).toContain("ERR_CLOSED_WITH_RESIDUE");
@@ -188,8 +188,8 @@ describe("validateWorld", () => {
 
   it("WARN_SYSTEMIC_CASCADE: warns (but does not block) a correction targeting a systemic_confirmed source", () => {
     const world = baseWorld();
-    world.anomalies.anomalies.push({
-      id: "anomaly-1",
+    world.issues.issues.push({
+      id: "issue-1",
       description: "A recurring outage traced to a single shared dependency.",
       provenance: "systemic_confirmed",
       sourceRelationshipId: "rel-1",
@@ -210,10 +210,10 @@ describe("validateWorld", () => {
     expect(result.valid).toBe(true);
   });
 
-  it("WARN_AFFINITY_UNRESOLVED: warns when a systemic_candidate anomaly documents no affinity chain", () => {
+  it("WARN_AFFINITY_UNRESOLVED: warns when a systemic_candidate issue documents no affinity chain", () => {
     const world = baseWorld();
-    world.anomalies.anomalies.push({
-      id: "anomaly-1",
+    world.issues.issues.push({
+      id: "issue-1",
       description: "An intermittent failure with no obvious single cause yet.",
       provenance: "systemic_candidate",
       semanticAffinityChain: [],
@@ -224,10 +224,10 @@ describe("validateWorld", () => {
     expect(result.valid).toBe(true);
   });
 
-  it("does not warn when a systemic_candidate anomaly documents an affinity chain", () => {
+  it("does not warn when a systemic_candidate issue documents an affinity chain", () => {
     const world = baseWorld();
-    world.anomalies.anomalies.push({
-      id: "anomaly-1",
+    world.issues.issues.push({
+      id: "issue-1",
       description: "An intermittent failure with no obvious single cause yet.",
       provenance: "systemic_candidate",
       semanticAffinityChain: ["deploy-freeze-incident", "infra/shared-cache/eviction"],

@@ -1,5 +1,5 @@
 // Zod schemas describing the on-disk shape of world/*.json — a generic
-// relational world model (entities, relationships, corrections, anomalies,
+// relational world model (entities, relationships, corrections, issues,
 // institutions) for tracking a system's structure and the changes made to
 // it over time. This repo ships a "City Hall" example world (a municipal
 // government managing a city, standing in for a team managing a codebase)
@@ -85,9 +85,15 @@ export const CorrectionsFileSchema = z.object({
   corrections: z.array(CorrectionSchema),
 });
 
-// --- world/anomalies.json ------------------------------------------------
+// --- world/issues.json ---------------------------------------------------
+// Issues are the world's open task queue: unresolved problems, remaining
+// work, and consequences of past actions that still need attention -- not
+// unlike the downstream fixes a change in a codebase can leave behind.
+// Logged and persisted by whichever institution has authority over that
+// domain (`loggedBy`), and may be assigned to a different institution
+// entirely to resolve (`assignedTo`) -- see the `issue-tracking` Skill.
 
-export const AnomalyProvenanceSchema = z.enum([
+export const IssueProvenanceSchema = z.enum([
   "local_pressure",
   "correction_residue",
   "displaced_consequence",
@@ -97,20 +103,22 @@ export const AnomalyProvenanceSchema = z.enum([
   "unresolved",
 ]);
 
-export const AnomalySchema = z.object({
+export const IssueSchema = z.object({
   id: z.string(),
   description: z.string(),
-  carrier: z.string().optional(),
-  provenance: AnomalyProvenanceSchema,
+  affects: z.string().optional(),
+  provenance: IssueProvenanceSchema,
   sourceRelationshipId: z.string().optional(),
   semanticAffinityChain: z.array(z.string()).default([]),
   status: z.enum(["open", "closed"]),
+  loggedBy: z.string().optional(),
+  assignedTo: z.string().optional(),
   closedBy: z.string().optional(),
   notes: z.string().optional(),
 });
 
-export const AnomaliesFileSchema = z.object({
-  anomalies: z.array(AnomalySchema),
+export const IssuesFileSchema = z.object({
+  issues: z.array(IssueSchema),
 });
 
 // --- world/characters.json ------------------------------------------------
@@ -154,9 +162,9 @@ export type CorrectionOperation = z.infer<typeof CorrectionOperationSchema>;
 export type ReconciliationEntry = z.infer<typeof ReconciliationEntrySchema>;
 export type Correction = z.infer<typeof CorrectionSchema>;
 export type CorrectionsFile = z.infer<typeof CorrectionsFileSchema>;
-export type AnomalyProvenance = z.infer<typeof AnomalyProvenanceSchema>;
-export type Anomaly = z.infer<typeof AnomalySchema>;
-export type AnomaliesFile = z.infer<typeof AnomaliesFileSchema>;
+export type IssueProvenance = z.infer<typeof IssueProvenanceSchema>;
+export type Issue = z.infer<typeof IssueSchema>;
+export type IssuesFile = z.infer<typeof IssuesFileSchema>;
 export type CharacterProvenanceStatus = z.infer<typeof CharacterProvenanceStatusSchema>;
 export type Character = z.infer<typeof CharacterSchema>;
 export type CharactersFile = z.infer<typeof CharactersFileSchema>;
@@ -166,7 +174,7 @@ export type InstitutionsFile = z.infer<typeof InstitutionsFileSchema>;
 export interface WorldData {
   relationships: RelationshipsFile;
   corrections: CorrectionsFile;
-  anomalies: AnomaliesFile;
+  issues: IssuesFile;
   characters: CharactersFile;
   institutions: InstitutionsFile;
 }

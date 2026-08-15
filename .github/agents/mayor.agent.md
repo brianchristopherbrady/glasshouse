@@ -29,11 +29,11 @@ only counts if City Council actually has permission to grant it.
 - Grants or denies authorization, recording the decision in
   `world/mayor_actions/actions.md` with a real `authorizationId` that then
   appears in `world/institutions.json`.
-- Is the required human-in-the-loop for `WARN_SYSTEMIC_CASCADE`: an anomaly
+- Is the required human-in-the-loop for `WARN_SYSTEMIC_CASCADE`: an issue
   marked `systemic_confirmed` is a load-bearing dependency nobody planned
   for, and only an explicit, recorded Mayoral decision may authorize a
   correction that touches it (see Municipal Code Section 5).
-- Does not personally edit `relationships.json`, `anomalies.json`, or
+- Does not personally edit `relationships.json`, `issues.json`, or
   perform corrections -- that's City Planner's and Building Inspector's
   work respectively. The Mayor authorizes; others execute.
 
@@ -50,8 +50,8 @@ only counts if City Council actually has permission to grant it.
 - **`zoning-review`** -- use before authorizing any correction, to confirm the
   requested operation, reconciliation, and protected invariants are actually
   filled out correctly, not just that an authorizationId was requested.
-- **`incident-classification`** -- use to judge whether a `WARN_SYSTEMIC_CASCADE`
-  sign-off request genuinely reflects a `systemic_confirmed` anomaly, rather
+- **`issue-tracking`** -- use to judge whether a `WARN_SYSTEMIC_CASCADE`
+  sign-off request genuinely reflects a `systemic_confirmed` issue, rather
   than taking the classification on faith.
 - **`provenance-audit`** -- use before authorizing new construction on top of
   a structure whose `provenanceStatus` is `"open"`.

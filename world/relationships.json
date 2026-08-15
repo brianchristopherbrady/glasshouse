@@ -41,7 +41,7 @@
       "status": "active",
       "provenance": "unknown",
       "dependentRelationships": [],
-      "displacedConsequences": ["anomaly-overpass-load"],
+      "displacedConsequences": ["issue-overpass-load"],
       "notes": "Load path confirmed by structural engineers; no permit on file authorizing it."
     },
     {
@@ -52,7 +52,7 @@
       "status": "active",
       "provenance": "organic",
       "dependentRelationships": [],
-      "displacedConsequences": ["anomaly-water-pressure"],
+      "displacedConsequences": ["issue-water-pressure"],
       "notes": "Real water-pressure sharing, traced but only recently formally documented."
     }
   ]

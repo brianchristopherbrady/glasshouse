@@ -1,7 +1,7 @@
 # Mayor -- Actions
 
 ## 1.1.2
-Reviewed Building Inspector's escalation on `anomaly-overpass-load`
+Reviewed Building Inspector's escalation on `issue-overpass-load`
 (`systemic_confirmed`, `1.1.1`). Granted `auth-council-2024-overpass-brace`,
 authorizing `reinforce` against `rel-overpass-supports-transit` rather than
 `sever` -- severing during business hours would strand Transit Hub Terminal

@@ -107,7 +107,7 @@ events.
 ## The world-inspection subsystem
 
 `world/*.json` is a generic relational world model -- five domains
-(`relationships`, `corrections`, `anomalies`, `characters`, `institutions`)
+(`relationships`, `corrections`, `issues`, `characters`, `institutions`)
 defined as Zod schemas in `shared/world-types.ts`. The MCP tools
 `inspect_world`/`validate_world`/`find_dependencies`/`simulate_change`, the
 `trace_decision` declared-decision tool, and `scripts/validate-world.ts`
@@ -115,7 +115,7 @@ defined as Zod schemas in `shared/world-types.ts`. The MCP tools
 subsystem: `ERR_*` issues block validity (orphaned relationships, missing
 authorization, uncounted dependents on a correction, open provenance,
 temporal duplicates); `WARN_*` issues surface a decision a human should make
-without blocking (an anomaly confirmed as systemic, or a candidate pattern
+without blocking (an issue confirmed as systemic, or a candidate pattern
 with no documented affinity chain yet). See the `world-validation` Skill for
 the full rule table and repair guidance.
 

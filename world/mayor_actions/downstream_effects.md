@@ -1,10 +1,11 @@
 # Mayor -- Downstream Effects
 
 ## 1.1.1
-Building Inspector classified `anomaly-overpass-load` as `systemic_confirmed`
+Building Inspector classified `issue-overpass-load` as `systemic_confirmed`
 and is requesting authorization for `correction-brace-overpass` -- a
 Mayoral decision is required before Building Inspector may proceed
-(`WARN_SYSTEMIC_CASCADE`).
+(`WARN_SYSTEMIC_CASCADE`). Assigned to City Council per `issue-overpass-load`'s
+`assignedTo` field.
 
 ## 1.1.3
 Building Inspector executed `correction-brace-overpass` under the granted

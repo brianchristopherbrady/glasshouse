@@ -21,7 +21,7 @@ function findExistsAs(world: WorldData, id: string): string[] {
   if (world.institutions.institutions.some((i) => i.id === id)) kinds.push("institution");
   if (world.relationships.relationships.some((r) => r.id === id)) kinds.push("relationship");
   if (world.corrections.corrections.some((c) => c.id === id)) kinds.push("correction");
-  if (world.anomalies.anomalies.some((a) => a.id === id)) kinds.push("anomaly");
+  if (world.issues.issues.some((i) => i.id === id)) kinds.push("issue");
   return kinds;
 }
 
@@ -44,9 +44,9 @@ function findReferencedBy(world: WorldData, id: string): Reference[] {
       if (entry.relationshipId === id) refs.push({ file: "corrections.json", entityId: c.id, field: "reconciliation" });
     }
   }
-  for (const a of world.anomalies.anomalies) {
-    push("anomalies.json", a.id, "carrier", a.carrier);
-    push("anomalies.json", a.id, "sourceRelationshipId", a.sourceRelationshipId);
+  for (const i of world.issues.issues) {
+    push("issues.json", i.id, "affects", i.affects);
+    push("issues.json", i.id, "sourceRelationshipId", i.sourceRelationshipId);
   }
   for (const character of world.characters.characters) {
     push("characters.json", character.id, "identityAnchorRelationshipId", character.identityAnchorRelationshipId);
@@ -66,7 +66,7 @@ export function registerFindDependencies(server: McpServer): void {
     {
       title: "Find Dependencies",
       description:
-        "Given an entity id (character, institution, relationship, correction, or anomaly), report what kind(s) of entity it exists as and every field elsewhere in the world data that references it.",
+        "Given an entity id (character, institution, relationship, correction, or issue), report what kind(s) of entity it exists as and every field elsewhere in the world data that references it.",
       inputSchema: InputShape,
       annotations: { readOnlyHint: true, idempotentHint: true },
     },

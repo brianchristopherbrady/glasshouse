@@ -1,7 +1,7 @@
 # City Planner -- Downstream Effects
 
 ## 1.1.1
-Building Inspector confirmed `anomaly-overpass-load` is `systemic_confirmed`
+Building Inspector confirmed `issue-overpass-load` is `systemic_confirmed`
 -- the Overpass's dependency on Transit Hub Terminal Three's east entrance
 is real and load-bearing, which is why a retroactive permit is worth
 drafting.

@@ -6,7 +6,7 @@ import type { WorldData } from "../shared/world-types.js";
 export interface WorldSummary {
   relationships: { count: number; active: number; corrected: number; severed: number; unresolved: number };
   corrections: { count: number; unauthorized: number };
-  anomalies: { count: number; open: number; systemicCandidate: number; systemicConfirmed: number };
+  issues: { count: number; open: number; systemicCandidate: number; systemicConfirmed: number };
   characters: { count: number; ids: string[]; openProvenance: string[] };
   institutions: { count: number; ids: string[] };
 }
@@ -24,11 +24,11 @@ export function summarizeWorld(world: WorldData): WorldSummary {
       count: world.corrections.corrections.length,
       unauthorized: world.corrections.corrections.filter((c) => !c.authorizationId).length,
     },
-    anomalies: {
-      count: world.anomalies.anomalies.length,
-      open: world.anomalies.anomalies.filter((a) => a.status === "open").length,
-      systemicCandidate: world.anomalies.anomalies.filter((a) => a.provenance === "systemic_candidate").length,
-      systemicConfirmed: world.anomalies.anomalies.filter((a) => a.provenance === "systemic_confirmed").length,
+    issues: {
+      count: world.issues.issues.length,
+      open: world.issues.issues.filter((i) => i.status === "open").length,
+      systemicCandidate: world.issues.issues.filter((i) => i.provenance === "systemic_candidate").length,
+      systemicConfirmed: world.issues.issues.filter((i) => i.provenance === "systemic_confirmed").length,
     },
     characters: {
       count: world.characters.characters.length,

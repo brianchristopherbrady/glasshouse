@@ -7,5 +7,5 @@ authorizing `reinforce` rather than `sever`. Clear to proceed with execution.
 ## 2.1.3
 Public Works authorized and executed `correction-formalize-pumphouse-fountain-link`
 (`reconcile`) under its own `auth-dpw-2024-pumphouse-fountain-link` -- the
-pressure-drop dependency is now formally on record. No further action needed
-here unless the pattern recurs elsewhere.
+issue is now formally on record as resolved. No further action needed here
+unless the pattern recurs elsewhere.

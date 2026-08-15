@@ -29,7 +29,7 @@ function inputField(event: AgentariumEvent, key: string): string | undefined {
 
 // Tool calls carry the actual file/path they touched in metadata.input, under
 // different field names per tool. Pulling this out lets narration say "read
-// world/anomalies.json" instead of just "used read_file".
+// world/issues.json" instead of just "used read_file".
 const FILE_INPUT_FIELDS = ["filePath", "path", "query", "includePattern"] as const;
 
 function inputFilePath(event: AgentariumEvent): string | undefined {

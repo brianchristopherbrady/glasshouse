@@ -20,8 +20,8 @@ the permit.
    `ERR_OPEN_PROVENANCE` exists to catch, but only if someone runs the
    validator.
 2. Use `find_dependencies` (MCP tool) on the structure's id to see every
-   place it's referenced -- a structure referenced as a `carrier` in
-   `world/anomalies.json` or as the `subject`/`object` of an undocumented
+   place it's referenced -- a structure referenced as `affects` in
+   `world/issues.json` or as the `subject`/`object` of an undocumented
    (`provenance: "organic"` or `"unknown"`) relationship is a sign its
    origin story isn't as closed as it looks.
 3. Check `world/history/*.json` snapshots for what the world looked like
@@ -36,7 +36,7 @@ dependency or authorization gap shows up under more than one institution's
 domain (e.g. both Public Works and Building Safety have structures with
 `provenance: "unknown"` connections). This is worth escalating as a
 `systemic_candidate` even before any single instance is `systemic_confirmed`
--- see `incident-classification`.
+-- see `issue-tracking`.
 
 ## What closes and what doesn't
 
