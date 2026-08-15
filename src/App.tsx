@@ -17,15 +17,12 @@ import { RepositoryPanel } from "./panels/RepositoryPanel.js";
 import { ComparePanel } from "./panels/ComparePanel.js";
 import { WorldMapPanel } from "./panels/WorldMapPanel.js";
 import { StoryView } from "./story/StoryView.js";
-import { BookView } from "./book/BookView.js";
 import { StoryboardView } from "./storyboard/StoryboardView.js";
 import { BookNarrationView } from "./narrative/BookNarrationView.js";
 
 // "story"/"storyboard"/"book" are all real-telemetry-derived views with no
-// picker of their own -- "ledger" is this repo's own world/<agent>_actions
-// fiction ledger (formerly the "book" tab; renamed so the generic "book"
-// name is free for the narration layer, see shared/narrative-types.ts).
-type Mode = "live" | "replay" | "demo" | "story" | "storyboard" | "book" | "ledger" | "world" | "repository" | "compare";
+// picker of their own.
+type Mode = "live" | "replay" | "demo" | "story" | "storyboard" | "book" | "world" | "repository" | "compare";
 
 export default function App() {
   const [mode, setMode] = useState<Mode>("live");
@@ -105,11 +102,11 @@ export default function App() {
       <header className="app-header">
         <div>
           <div className="app-title">AGENTARIUM</div>
-          <div className="app-subtitle">The Float — glass-box observability</div>
+          <div className="app-subtitle">Glass-box observability for agentic AI</div>
         </div>
         <div className="mode-tabs">
           {(
-            ["live", "replay", "demo", "story", "storyboard", "book", "ledger", "world", "repository", "compare"] as Mode[]
+            ["live", "replay", "demo", "story", "storyboard", "book", "world", "repository", "compare"] as Mode[]
           ).map((m) => (
             <button key={m} className={`mode-tab${mode === m ? " active" : ""}`} onClick={() => setMode(m)}>
               {m}
@@ -130,8 +127,6 @@ export default function App() {
         <StoryboardView events={visibleEvents} sessionId={effectiveSessionId} />
       ) : mode === "book" ? (
         <BookNarrationView sessionId={effectiveSessionId} />
-      ) : mode === "ledger" ? (
-        <BookView />
       ) : (
         <div className="app-body">
           <div className="panel">
@@ -232,7 +227,7 @@ export default function App() {
           {mode === "world"
             ? "The world persists on disk, independent of this dashboard."
             : visibleEvents.length === 0
-              ? "The Float is quiet."
+              ? "No events yet."
               : `${visibleEvents.length} events observed.`}
         </span>
       </footer>

@@ -4,7 +4,6 @@ import type { AgentariumEvent } from "../../shared/events.js";
 import type { SessionMetrics } from "../../shared/metrics.js";
 import type { WorldData } from "../../shared/world-types.js";
 import type { ValidationResult } from "../../shared/world-validator.js";
-import type { BookData } from "../../shared/book-types.js";
 import type { NarrationConfig, NarrativeBook, Storyboard } from "../../shared/narrative-types.js";
 
 async function getJson<T>(url: string): Promise<T> {
@@ -113,16 +112,8 @@ export async function fetchWorld(): Promise<WorldResponse> {
   return getJson<WorldResponse>("/api/world");
 }
 
-/** The actual, currently-on-disk world/<agent>_actions/*.md narrative,
- * parsed into cross-referenced chapter.thread.entry beats. */
-export async function fetchBook(): Promise<BookData> {
-  const data = await getJson<{ book: BookData }>("/api/book");
-  return data.book;
-}
-
 // --- Generic narrative layer (Storyboard / Book) --------------------------
-// See shared/narrative-types.ts. Independent of fetchBook above, which is
-// specifically this repo's world/<agent>_actions fiction ledger.
+// See shared/narrative-types.ts.
 
 export async function fetchNarrationConfig(): Promise<NarrationConfig> {
   const data = await getJson<{ config: NarrationConfig }>("/api/narrative/config");

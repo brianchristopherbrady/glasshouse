@@ -20,8 +20,7 @@ event-storyboard Skill writes .agentarium/storyboards/<sessionId>.json
 
 After `event-storyboard` has produced Storyboard entries for every beat you
 want the Book to cover. Do not narrate a beat with no Storyboard entry --
-report which `beatId`s are missing and stop, same principle as this repo's
-own `writer` Skill.
+report which `beatId`s are missing and stop.
 
 ## What it does
 
@@ -31,11 +30,9 @@ own `writer` Skill.
    the style is the default: plain, precise, technical-spec narration --
    write like a written spec of what the flow did, no invented voice, no
    assumed characters.
-   - If `voiceGuide` and/or `characters` are set (as this repo's own
-     `agentarium.config.json` sets them to
-     `.github/instructions/meta_style_and_voice.md` and
-     `world/characters.json`), read those before writing a single word of
-     prose -- they are the actual style contract, not decoration.
+   - If `voiceGuide` and/or `characters` are set, read those files before
+     writing a single word of prose -- they are the actual style contract,
+     not decoration.
 2. **Collect the Storyboard's beats**, in the order their underlying
    `StoryBeat`s occurred (chronological event order, not beat-kind order).
 3. **Resolve multi-beat sections.** A single `BookSection` can cover more

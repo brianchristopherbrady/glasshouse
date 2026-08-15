@@ -782,7 +782,7 @@ body {
   color: var(--text-secondary);
 }
 
-.book-storyboard-flag.bloomrot-aware {
+.book-storyboard-flag.unresolved-flag {
   background: var(--red-tint);
   color: var(--red);
 }

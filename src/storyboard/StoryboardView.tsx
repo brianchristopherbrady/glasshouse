@@ -59,7 +59,7 @@ export function StoryboardView({ events, sessionId }: { events: AgentariumEvent[
             <div className="book-storyboard-flags">
               <span className="book-storyboard-flag">{beat.kind}</span>
               {beat.character && <span className="book-storyboard-flag">{beat.character}</span>}
-              {beat.unresolved && <span className="book-storyboard-flag bloomrot-aware">unresolved</span>}
+              {beat.unresolved && <span className="book-storyboard-flag unresolved-flag">unresolved</span>}
             </div>
             <p className="book-storyboard-desc" style={{ fontWeight: 600 }}>{beat.title}</p>
             {entry ? (

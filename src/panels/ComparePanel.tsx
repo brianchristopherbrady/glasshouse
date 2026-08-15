@@ -57,7 +57,7 @@ export function ComparePanel() {
     <div style={{ padding: "1rem 1.5rem", overflowY: "auto" }}>
       <p className="panel-title">Run comparison</p>
       {sessions.length < 2 && (
-        <p className="microcopy">At least two recorded sessions are needed to compare. The Float is quiet.</p>
+        <p className="microcopy">At least two recorded sessions are needed to compare. Nothing recorded yet.</p>
       )}
       <div style={{ display: "flex", gap: "2rem", marginBottom: "1rem", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>
         <label>

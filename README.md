@@ -3,12 +3,9 @@
 **A glass-box laboratory for watching AI coding agents work.**
 
 AGENTARIUM is a real, working observability tool. It watches an AI agent
-(and any subagents it delegates to) as they carry out tasks against a
-fictional specimen repository — **The Float**, a small JSON "world"
-modeling the city of Meridian's relational substrate: corrections,
-anomalies, provenance, and the institutions (the Choir, Asterion, House Vey)
-that regulate them — and renders everything it can *actually observe* as a
-live graph, timeline, and inspectable event log.
+(and any subagents it delegates to) as they carry out tasks in this
+repository, and renders everything it can *actually observe* as a live
+graph, timeline, and inspectable event log.
 
 It is not a mockup. There is no scripted animation standing in for a real
 agent run. Every event on screen was either:
@@ -42,7 +39,6 @@ Other useful commands:
 npm test              # vitest — event schema, redaction, metrics, world validator
 npm run build          # tsc -b && vite build
 npm run validate:world  # deterministic validator over world/*.json
-npm run seed:demo       # (re)generates demo/*.jsonl demo traces
 npm run mcp             # run the MCP server standalone over stdio
 ```
 
@@ -58,7 +54,8 @@ The dashboard has five modes, switched from the header:
   and scrub through its event history.
 - **Demo** — play one of the prerecorded traces in `demo/`. Always shown with
   a "Replaying a previously documented incident." banner — demo data is never
-  presented as if it were live.
+  presented as if it were live. No traces ship by default; add your own
+  JSONL files (see `scripts/agentarium-hook.mjs`'s event shapes) to use it.
 - **Repository** — a live-read catalog of the actual authored agents, Skills,
   and prompts in `.github/`, so you can see what specialization exists
   independent of whether it's been used yet.
@@ -107,25 +104,19 @@ events.
 
 ---
 
-## The world being observed
+## The world-inspection subsystem
 
-`world/` holds The Float's state as plain JSON: `float.json` (relationships —
-the braided connections between characters and institutions), `corrections.json`
-(operations performed against those relationships, with reconciliation of
-everything they displaced), `anomalies.json` (unexplained carriers, tracked by
-provenance rather than assumed to be paradoxes), `characters.json`, and
-`institutions.json` (the Choir, Asterion, House Vey, and their permissions).
-`scripts/validate-world.ts` / `npm run validate:world` is a deterministic,
-non-LLM validator that checks cross-file referential integrity and
-domain-specific rules — it can and does fail on purpose when the world is
-inconsistent, which is what produces the validation-failure → repair-loop
-events you can watch play out. Its `WARN_*` codes deliberately don't block:
-a clean validator run means the world is structurally sound, not that
-everything in it was a wise decision.
+`world/` is a placeholder for a consuming repo's own structured domain data
+as plain JSON (`shared/world-types.ts`'s `WorldData` shape). The MCP tools
+`inspect_world`/`validate_world`/`find_dependencies`/`simulate_change` and
+`scripts/validate-world.ts` (`npm run validate:world`) are a working,
+deterministic, non-LLM validation subsystem kept from this repo's original
+fictional demo content -- it is not yet generalized to a neutral schema, so
+expect it to need real data (or further generalization) before use.
 
-The six custom agents, six Skills, and six prompt files under `.github/`
-give a real agent real specialization and delegation structure to work
-within. See the Repository tab, or browse `.github/agents/`, `.github/skills/`,
+The custom agents, Skills, and prompt files under `.github/` give a real
+agent real specialization and delegation structure to work within. See the
+Repository tab, or browse `.github/agents/`, `.github/skills/`,
 `.github/prompts/` directly.
 
 ---
@@ -137,10 +128,10 @@ shared/     event schema (Zod), JSONL event store, redaction, metrics — used b
             both server and MCP server (and read-only by the frontend)
 server/     Express collector/API: ingest, SSE stream, replay, repo introspection
 mcp/        MCP server: world tools/resources + decision telemetry
-scripts/    world validator, the VS Code hook script, demo trace seeding
+scripts/    world validator, the VS Code hook script
 src/        React + Vite dashboard
-world/      the fictional Float's state (Meridian)
-demo/       prerecorded demo traces (JSONL)
+world/      structured domain data for the world-inspection subsystem (repo-specific)
+demo/       prerecorded demo traces (JSONL); empty by default
 tests/      vitest suite
 .github/    agents, Skills, prompts, scoped instructions, hook wiring
 ```

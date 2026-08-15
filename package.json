@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "A glass-box laboratory for observing agentic AI work, set inside the fictional Float.",
+  "description": "A glass-box laboratory for observing agentic AI work.",
   "scripts": {
     "start": "concurrently -k -n server,client -c blue,green \"npm:server\" \"npm:client\"",
     "client": "vite",
@@ -12,7 +12,6 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "validate:world": "tsx scripts/validate-world.ts",
-    "seed:demo": "tsx scripts/seed-demo.ts",
     "mcp": "tsx mcp/server.ts"
   },
   "dependencies": {

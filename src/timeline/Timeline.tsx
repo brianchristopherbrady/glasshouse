@@ -24,7 +24,7 @@ export function Timeline({
   onSelect: (event: AgentariumEvent) => void;
 }) {
   if (events.length === 0) {
-    return <div className="inspector-empty">The Float is quiet.</div>;
+    return <div className="inspector-empty">No events yet.</div>;
   }
 
   return (

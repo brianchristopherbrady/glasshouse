@@ -8,7 +8,6 @@ import { collectorRouter, ingestEvent } from "./collector.js";
 import { replayRouter } from "./replay.js";
 import { repoRouter } from "./repo.js";
 import { worldRouter } from "./world.js";
-import { bookRouter } from "./book.js";
 import { narrativeRouter } from "./narrative.js";
 import { getCurrentSessionId } from "./session.js";
 import { subscribe } from "./eventBus.js";
@@ -23,7 +22,6 @@ app.use(collectorRouter);
 app.use(replayRouter);
 app.use(repoRouter);
 app.use(worldRouter);
-app.use(bookRouter);
 app.use(narrativeRouter);
 
 app.get("/api/current-session", async (_req, res) => {

@@ -1,26 +1,22 @@
 ---
 name: event-storyboard
-description: Turns a session's real StoryBeats (shared/story.ts, built from real AgentariumEvents) into an agent-authored Storyboard at .agentarium/storyboards/<sessionId>.json. Generic and repo-agnostic -- use this instead of the world/storyboard.json-specific storyboard Skill unless you are specifically working this repo's Bloomrot fiction ledger. Run after a session (or a meaningful stretch of one) has produced real story beats, before event-book.
+description: Turns a session's real StoryBeats (shared/story.ts, built from real AgentariumEvents) into an agent-authored Storyboard at .agentarium/storyboards/<sessionId>.json. Generic and repo-agnostic. Run after a session (or a meaningful stretch of one) has produced real story beats, before event-book.
 ---
 
 # Event Storyboard
 
-Event Storyboard is the generic counterpart to this repo's own `storyboard`
-Skill: it does for **any** consuming repo's real telemetry what `storyboard`
-does for `world/<agent>_actions/*.md` -- turns a raw sequence of beats into
-one real, specific, per-beat description an operator (or `event-book`) can
-actually use. It is a Skill, not a character: it writes in third person
-about what happened, grounded in evidence, and it does not invent incident.
+Event Storyboard turns a consuming repo's real telemetry into one real,
+specific, per-beat description an operator (or `event-book`) can actually
+use. It is a Skill, not a character: it writes in third person about what
+happened, grounded in evidence, and it does not invent incident.
 
 ## When to invoke this Skill
 
 After a session has accumulated real `StoryBeat`s worth narrating -- check
 `shared/story.ts`'s `buildStoryGraph(events)` over the session's events
 (`GET /api/sessions/:id/events` or the live event stream) to see what beats
-currently exist. Do this instead of, not in addition to, this repo's
-fiction-specific `storyboard` Skill when the target is a real session's
-Storyboard/Book (`.agentarium/storyboards/`, `.agentarium/books/`), not
-`world/storyboard.json`.
+currently exist. The target is a real session's Storyboard/Book
+(`.agentarium/storyboards/`, `.agentarium/books/`).
 
 ```
 real AgentariumEvents (hooks, MCP, trace_decision, record_story_beat)
