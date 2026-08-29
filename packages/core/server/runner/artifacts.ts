@@ -6,7 +6,7 @@
 // simulated change count.
 import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { DEFAULT_STORE_DIR } from "../../shared/event-store.js";
+import { DEFAULT_STORE_DIR } from "../../shared/store-dir.js";
 
 export function artifactRootFor(runId: string, storeDir: string = DEFAULT_STORE_DIR): string {
   return path.join(storeDir, "artifacts", runId);

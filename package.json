@@ -1,7 +1,7 @@
 {
   "name": "flowbook-monorepo",
   "version": "0.1.0",
-  "description": "Flowbook: a Storybook-like development, documentation, execution, and debugging environment for agentic AI workflows -- Blueprint vs. Run Trace, for any repo. npm-workspaces monorepo: packages/core (engine), packages/cli (flowbook/flowbook-hook/flowbook-mcp), packages/ui (browser workbench).",
+  "description": "Flowbook: a Storybook-like development, documentation, execution, and debugging environment for agentic AI workflows -- Blueprint vs. Run Trace, for any repo. npm-workspaces monorepo: packages/core (engine), packages/cli (flowbook CLI), packages/ui (browser workbench).",
   "type": "module",
   "license": "MIT",
   "private": true,
@@ -17,14 +17,11 @@
     "build": "tsc -b && vite build --config packages/ui/vite.config.ts",
     "prepublishOnly": "npm run build",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "mcp": "tsx packages/core/mcp/server.ts"
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
     "@monaco-editor/react": "^4.6.0",
     "@tanstack/react-query": "^5.62.0",
-    "@xyflow/react": "^12.11.3",
     "cors": "^2.8.5",
     "elkjs": "^0.9.3",
     "express": "^4.21.2",

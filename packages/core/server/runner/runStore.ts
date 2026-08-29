@@ -1,9 +1,8 @@
 // Append-only Run persistence: one JSON file per Run under .flowbook/runs/,
-// mirroring shared/event-store.ts's per-session-JSONL convention so Runs
-// stay durable across server restarts the same way sessions already do.
+// stay durable across server restarts.
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { DEFAULT_STORE_DIR } from "../../shared/event-store.js";
+import { DEFAULT_STORE_DIR } from "../../shared/store-dir.js";
 import { RunSchema, type Run } from "../../shared/flowbook-types.js";
 
 function runsDir(storeDir: string): string {

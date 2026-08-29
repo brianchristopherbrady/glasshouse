@@ -1,20 +1,19 @@
 #!/usr/bin/env node
-// flowbook CLI: `flowbook start` runs the collector +
+// flowbook CLI: `flowbook start` runs the real workflow orchestrator +
 // dashboard against a target repo (default: cwd); `flowbook init`
-// scaffolds the VS Code hook + MCP wiring into a target repo so it can be
-// observed at all.
+// scaffolds an empty `flowbook.config.mjs` so that repo can declare its
+// own workflow modules for discovery (see server/runner/discovery.ts).
 //
-// Kept dependency-free (Node core modules only), same rule as
-// scripts/flowbook-hook.mjs, so the CLI itself never needs a build
-// step to run -- only the server it spawns (via tsx) needs the package's
-// own node_modules.
+// Kept dependency-free (Node core modules only) so the CLI itself never
+// needs a build step to run -- only the server it spawns (via tsx) needs
+// the package's own node_modules.
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { mkdir, readFile, writeFile, readdir, cp } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 // This file lives at packages/cli/bin/ -- the monorepo root (where
-// node_modules/, .github/, and packages/core/ all live) is three levels up.
+// node_modules/ and packages/core/ live) is three levels up.
 const MONOREPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const CORE_ROOT = path.join(MONOREPO_ROOT, "packages", "core");
 
@@ -54,55 +53,8 @@ async function cmdStart(args) {
   });
 }
 
-const HOOK_EVENTS = [
-  "SessionStart",
-  "UserPromptSubmit",
-  "PreToolUse",
-  "PostToolUse",
-  "SubagentStart",
-  "SubagentStop",
-  "PreCompact",
-  "Stop",
-];
-
-async function readJsonIfExists(filePath, fallback) {
-  try {
-    return JSON.parse(await readFile(filePath, "utf-8"));
-  } catch {
-    return fallback;
-  }
-}
-
 async function cmdInit(args) {
   const repoRoot = path.resolve(args.repo ?? process.cwd());
-  const hooksDir = path.join(repoRoot, ".github", "hooks");
-  const vscodeDir = path.join(repoRoot, ".vscode");
-  await mkdir(hooksDir, { recursive: true });
-  await mkdir(vscodeDir, { recursive: true });
-
-  // Hook wiring: every lifecycle event runs the same dependency-free script,
-  // resolved via npx so it works whether flowbook is a local
-  // devDependency or a global install.
-  const hookConfigPath = path.join(hooksDir, "flowbook.json");
-  const hookCommand = { type: "command", command: "npx flowbook-hook", timeout: 5 };
-  const hooksFile = await readJsonIfExists(hookConfigPath, { hooks: {} });
-  hooksFile.hooks ??= {};
-  for (const evt of HOOK_EVENTS) {
-    hooksFile.hooks[evt] ??= [];
-    const already = hooksFile.hooks[evt].some((h) => h && h.command === hookCommand.command);
-    if (!already) hooksFile.hooks[evt].push(hookCommand);
-  }
-  await writeFile(hookConfigPath, JSON.stringify(hooksFile, null, 2) + "\n", "utf-8");
-
-  // MCP wiring: registers the decision-telemetry tools (trace_decision,
-  // record_story_beat) so agents working in this repo can declare decisions.
-  const mcpConfigPath = path.join(vscodeDir, "mcp.json");
-  const mcpFile = await readJsonIfExists(mcpConfigPath, { servers: {} });
-  mcpFile.servers ??= {};
-  if (!mcpFile.servers["flowbook"]) {
-    mcpFile.servers["flowbook"] = { command: "npx", args: ["flowbook-mcp"] };
-  }
-  await writeFile(mcpConfigPath, JSON.stringify(mcpFile, null, 2) + "\n", "utf-8");
 
   // Config scaffold: lets this repo declare its own workflow modules
   // (server/runner/discovery.ts glob-discovers and imports them for their
@@ -128,91 +80,26 @@ export default {
     configWritten = true;
   }
 
-  // Skill wiring: copies this package's own generic Skills (the ones that
-  // populate the Workspace Map / Storyboard / Book from real telemetry)
-  // into the target repo's .github/skills/, since Skills are discovered
-  // per-repo, not from this package's own install directory. Never
-  // overwrites a Skill the target repo already has (e.g. a customized copy).
-  const sourceSkillsDir = path.join(MONOREPO_ROOT, ".github", "skills");
-  const targetSkillsDir = path.join(repoRoot, ".github", "skills");
-  const skillsWritten = [];
-  let skillDirs = [];
-  try {
-    skillDirs = (await readdir(sourceSkillsDir, { withFileTypes: true })).filter((d) => d.isDirectory());
-  } catch {
-    skillDirs = [];
-  }
-  for (const dir of skillDirs) {
-    const dest = path.join(targetSkillsDir, dir.name);
-    let alreadyExists = true;
-    try {
-      await readFile(path.join(dest, "SKILL.md"), "utf-8");
-    } catch {
-      alreadyExists = false;
-    }
-    if (alreadyExists) continue;
-    await mkdir(dest, { recursive: true });
-    await cp(path.join(sourceSkillsDir, dir.name), dest, { recursive: true });
-    skillsWritten.push(dir.name);
-  }
-
-  // Agent wiring: copies this package's own cartographer agent (the one
-  // whose job is deciding whether this repo's Workspace Map needs an
-  // explicit flowbook.members.json, and writing/revising one) into the
-  // target repo's .github/agents/. Same never-overwrite rule as Skills.
-  // Excludes demo-*.agent.md -- those are testing-only agents for
-  // exercising this package's OWN dashboard against its OWN
-  // demo-workspaces/mini-monorepo (see their frontmatter: "Testing-only,
-  // not a real project agent") and would be meaningless/broken in any
-  // other repo, which has no demo-workspaces directory at all.
-  const sourceAgentsDir = path.join(MONOREPO_ROOT, ".github", "agents");
-  const targetAgentsDir = path.join(repoRoot, ".github", "agents");
-  const agentsWritten = [];
-  let agentFiles = [];
-  try {
-    agentFiles = (await readdir(sourceAgentsDir)).filter(
-      (f) => f.endsWith(".agent.md") && !f.startsWith("demo-"),
-    );
-  } catch {
-    agentFiles = [];
-  }
-  await mkdir(targetAgentsDir, { recursive: true });
-  for (const file of agentFiles) {
-    const dest = path.join(targetAgentsDir, file);
-    let alreadyExists = true;
-    try {
-      await readFile(dest, "utf-8");
-    } catch {
-      alreadyExists = false;
-    }
-    if (alreadyExists) continue;
-    await cp(path.join(sourceAgentsDir, file), dest);
-    agentsWritten.push(file);
-  }
-
   console.log(`flowbook initialized in ${repoRoot}`);
-  console.log(`  wrote ${path.relative(repoRoot, hookConfigPath)}`);
-  console.log(`  wrote ${path.relative(repoRoot, mcpConfigPath)}`);
-  if (configWritten) console.log(`  wrote ${path.relative(repoRoot, configPath)}`);
-  for (const name of skillsWritten) console.log(`  wrote .github/skills/${name}/`);
-  for (const name of agentsWritten) console.log(`  wrote .github/agents/${name}`);
+  if (configWritten) {
+    console.log(`  wrote ${path.relative(repoRoot, configPath)}`);
+  } else {
+    console.log(`  ${path.relative(repoRoot, configPath)} already exists, left unchanged`);
+  }
   console.log("");
   console.log("Next: run `npx flowbook start` from this repo to open the dashboard.");
-  if (agentsWritten.includes("cartographer.agent.md")) {
-    console.log("Consider running the cartographer agent first, to check whether this repo needs its own flowbook.members.json.");
-  }
 }
 
 function printHelp() {
-  console.log(`flowbook -- a glass-box laboratory for watching AI coding agents work.
+  console.log(`flowbook -- a Storybook for agentic AI: explore, run, and debug agentic workflows.
 
 Usage:
   flowbook start [--repo <path>] [--port <n>] [--client-port <n>]
-      Start the collector + dashboard, watching <path> (default: cwd).
+      Start the orchestrator + dashboard, watching <path> (default: cwd).
 
   flowbook init [--repo <path>]
-      Scaffold VS Code hook + MCP wiring into <path> (default: cwd) so
-      flowbook can observe agent sessions there.
+      Scaffold an empty flowbook.config.mjs in <path> (default: cwd) so
+      flowbook can discover this repo's own workflow modules.
 `);
 }
 

@@ -11,7 +11,7 @@ import { runnerRouter } from "../server/runnerRoutes.js";
 import { executeRun } from "../server/runner/engine.js";
 import { listScenarios } from "../server/runner/registry.js";
 import { artifactRootFor } from "../server/runner/artifacts.js";
-import { DEFAULT_STORE_DIR } from "../shared/event-store.js";
+import { DEFAULT_STORE_DIR } from "../shared/store-dir.js";
 import path from "node:path";
 
 describe("GET /api/runner/runs/:runId/artifact-diff/*", () => {

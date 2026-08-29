@@ -7,7 +7,7 @@
 // and real input/output, persisted and broadcast as they happen.
 import { randomUUID } from "node:crypto";
 import type { Run, RunStatus, Scenario, Span, SpanKind, SpanStatus } from "../../shared/flowbook-types.js";
-import { DEFAULT_STORE_DIR } from "../../shared/event-store.js";
+import { DEFAULT_STORE_DIR } from "../../shared/store-dir.js";
 import { getWorkflow } from "./registry.js";
 import { publishRunUpdate } from "./runBus.js";
 import { persistRun } from "./runStore.js";

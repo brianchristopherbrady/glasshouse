@@ -1,7 +1,7 @@
 {
   "name": "@flowbook/core",
   "version": "0.1.0",
-  "description": "Flowbook's engine: repository/session event model, the real workflow orchestrator (server/runner), and the collector/API server. Knows nothing about React.",
+  "description": "Flowbook's engine: the real workflow orchestrator (server/runner), repository discovery/config, and the HTTP/SSE API server. Knows nothing about React.",
   "type": "module",
   "license": "MIT",
   "private": true
