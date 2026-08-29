@@ -17,11 +17,12 @@
     "allowJs": false
   },
   "include": [
-    "src",
-    "server",
-    "mcp",
-    "shared",
-    "scripts",
-    "tests"
+    "packages/core/shared",
+    "packages/core/server",
+    "packages/core/mcp",
+    "packages/core/tests",
+    "packages/cli/scripts",
+    "packages/cli/tests",
+    "packages/ui/src"
   ]
 }

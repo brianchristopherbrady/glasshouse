@@ -1,27 +1,38 @@
 {
-  "name": "agentarium",
+  "name": "flowbook-monorepo",
   "version": "0.1.0",
-  "private": true,
+  "description": "Flowbook: a Storybook-like development, documentation, execution, and debugging environment for agentic AI workflows -- Blueprint vs. Run Trace, for any repo. npm-workspaces monorepo: packages/core (engine), packages/cli (flowbook/flowbook-hook/flowbook-mcp), packages/ui (browser workbench).",
   "type": "module",
-  "description": "A glass-box laboratory for observing agentic AI work.",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/core",
+    "packages/cli",
+    "packages/ui"
+  ],
   "scripts": {
     "start": "concurrently -k -n server,client -c blue,green \"npm:server\" \"npm:client\"",
-    "client": "vite",
-    "server": "tsx server/index.ts",
-    "build": "tsc -b && vite build",
+    "client": "vite --config packages/ui/vite.config.ts",
+    "server": "tsx packages/core/server/index.ts",
+    "build": "tsc -b && vite build --config packages/ui/vite.config.ts",
+    "prepublishOnly": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "validate:world": "tsx scripts/validate-world.ts",
-    "mcp": "tsx mcp/server.ts"
+    "mcp": "tsx packages/core/mcp/server.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "@monaco-editor/react": "^4.6.0",
+    "@tanstack/react-query": "^5.62.0",
     "@xyflow/react": "^12.11.3",
     "cors": "^2.8.5",
+    "elkjs": "^0.9.3",
     "express": "^4.21.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "zod": "^3.24.1"
+    "tsx": "^4.19.2",
+    "zod": "^3.24.1",
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -31,7 +42,6 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
-    "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vite": "^6.0.7",
     "vitest": "^2.1.8"

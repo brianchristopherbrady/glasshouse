@@ -2,7 +2,7 @@ Yes. I’d make the IDE build the whole thing as a **real instrumented agent pla
 
 The important design choice below is that the UI never lies about “reading the AI’s mind.” It visualizes **observable events**, plus concise decision summaries the agent explicitly emits. That distinction will make the project much more credible.
 
-# Build AGENTARIUM
+# Build GLASSHOUSE
 
 ## A Glass-Box Laboratory for Watching Agentic AI Work
 
@@ -54,7 +54,7 @@ This repository should be useful as an educational artifact, portfolio project, 
 
 Call the project:
 
-# AGENTARIUM
+# GLASSHOUSE
 
 Subtitle:
 
@@ -84,7 +84,7 @@ magic
 code
 ```
 
-AGENTARIUM should show:
+GLASSHOUSE should show:
 
 ```text
 prompt
@@ -179,7 +179,7 @@ They are NOT private chain-of-thought.
 
 ### Inferred activity
 
-Something AGENTARIUM derives from evidence.
+Something GLASSHOUSE derives from evidence.
 
 For example:
 
@@ -209,7 +209,7 @@ Never manufacture certainty.
 
 # THE FICTIONAL WORLD
 
-The playground inside AGENTARIUM is:
+The playground inside GLASSHOUSE is:
 
 # The Bureau of Impossible Geography
 
@@ -596,7 +596,7 @@ For example:
 
 # SKILL OBSERVABILITY
 
-AGENTARIUM must show:
+GLASSHOUSE must show:
 
 ### Skills available
 
@@ -640,7 +640,7 @@ chronologist started at 00:14.450
 temporal-laws.json read at 00:15.002
 ```
 
-This evidentiary approach should be used throughout AGENTARIUM.
+This evidentiary approach should be used throughout GLASSHOUSE.
 
 ---
 
@@ -856,7 +856,7 @@ The hook script should:
 
 1. Read hook JSON from stdin.
 2. Determine hook type.
-3. Normalize it into an AGENTARIUM event.
+3. Normalize it into an GLASSHOUSE event.
 4. Redact sensitive values.
 5. Append it to the current session JSONL trace.
 6. Best-effort POST it to the running collector server.
@@ -865,20 +865,20 @@ The hook script should:
 
 Tracing must fail gracefully.
 
-The agent should continue working if AGENTARIUM is closed.
+The agent should continue working if GLASSHOUSE is closed.
 
 ---
 
 # EVENT ARCHITECTURE
 
-Make AGENTARIUM event-sourced.
+Make GLASSHOUSE event-sourced.
 
 Everything should become an event.
 
 Define something similar to:
 
 ```ts
-interface AgentariumEvent {
+interface FlowbookEvent {
   id: string;
   sessionId: string;
 
@@ -1081,7 +1081,7 @@ npm start
 
 `npm start` should launch:
 
-1. the AGENTARIUM collector/server
+1. the GLASSHOUSE collector/server
 2. the Vite frontend
 
 Use `concurrently` or an equally simple mechanism if necessary.
@@ -1091,7 +1091,7 @@ The terminal should print useful URLs.
 Example:
 
 ```text
-AGENTARIUM
+GLASSHOUSE
 Dashboard: http://localhost:5173
 Collector: http://localhost:4317
 ```
@@ -1130,7 +1130,7 @@ Desktop concept:
 
 ```text
 ┌───────────────────────────────────────────────────────────────────────────┐
-│ AGENTARIUM                  LIVE ●                  SESSION 03 • 00:18.42 │
+│ GLASSHOUSE                  LIVE ●                  SESSION 03 • 00:18.42 │
 ├─────────────────┬─────────────────────────────────────────┬───────────────┤
 │                 │                                         │               │
 │ IMPOSSIBLE      │              LIVE AGENT GRAPH           │   INSPECTOR   │
@@ -1279,7 +1279,7 @@ as an expandable section.
 
 This is important for credibility.
 
-Someone should be able to see exactly why AGENTARIUM believes something happened.
+Someone should be able to see exactly why GLASSHOUSE believes something happened.
 
 ---
 
@@ -1636,7 +1636,7 @@ VALIDATE
 PASS
 ```
 
-That loop is one of the most important things AGENTARIUM should demonstrate.
+That loop is one of the most important things GLASSHOUSE should demonstrate.
 
 ---
 
@@ -1707,7 +1707,7 @@ Agent intentionally emitted a decision summary.
 
 ### INFERRED
 
-AGENTARIUM derived a likely relationship from observable data.
+GLASSHOUSE derived a likely relationship from observable data.
 
 ### DEMO
 
@@ -1721,7 +1721,7 @@ Do not blur these categories.
 
 When a real VS Code agent session is using the repository:
 
-AGENTARIUM should update automatically.
+GLASSHOUSE should update automatically.
 
 No refresh.
 
@@ -2145,7 +2145,7 @@ At minimum:
 
 ### Event normalization
 
-Hook input becomes the expected AGENTARIUM event.
+Hook input becomes the expected GLASSHOUSE event.
 
 ### Redaction
 
@@ -2181,9 +2181,9 @@ Write a README that immediately explains the idea.
 
 Suggested opening:
 
-# AGENTARIUM
+# GLASSHOUSE
 
-AGENTARIUM is a glass-box laboratory for observing coding agents.
+GLASSHOUSE is a glass-box laboratory for observing coding agents.
 
 It instruments agent lifecycle hooks, tools, subagents, repository Skills, MCP interactions, file activity, validation, and explicit decision summaries, then renders those events as a live interactive graph.
 
@@ -2226,7 +2226,7 @@ Explain how to invoke one of the provided prompts in VS Code.
 
 ## Limitations
 
-Be explicit that AGENTARIUM does not expose private chain-of-thought.
+Be explicit that GLASSHOUSE does not expose private chain-of-thought.
 
 That honesty is important.
 

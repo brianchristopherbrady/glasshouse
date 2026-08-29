@@ -1,0 +1,1409 @@
+/* flowbook theme — clean, light, Apple-inspired. White surfaces,
+   soft shadows, restrained accent colors used consistently to encode
+   meaning (provenance, actor kind), not for decoration. */
+
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-hover: #f5f5f7;
+  --border: #e5e5ea;
+  --border-soft: #eeeef1;
+  --text: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #a1a1a6;
+
+  --blue: #0071e3;
+  --blue-tint: #eaf3fe;
+  --green: #248a3d;
+  --green-tint: #e6f6ea;
+  --purple: #8944ab;
+  --purple-tint: #f4ebfa;
+  --orange: #c76a00;
+  --orange-tint: #fdf1e2;
+  --teal: #0a7ea8;
+  --teal-tint: #e6f4f9;
+  --red: #d70015;
+  --red-tint: #fce9ea;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.06);
+  --radius: 14px;
+  --radius-sm: 8px;
+
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  z-index: 5;
+}
+
+.app-title {
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+
+.app-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 0.1rem;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 0.3rem;
+  background: var(--bg);
+  padding: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.mode-tab {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  padding: 0.4rem 0.9rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mode-tab:hover {
+  color: var(--text);
+}
+
+.mode-tab.active {
+  background: var(--text);
+  color: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.status-light {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+  background: var(--text-tertiary);
+}
+
+.status-light.live {
+  background: var(--green);
+  box-shadow: 0 0 0 3px var(--green-tint);
+}
+
+.status-light.down {
+  background: var(--red);
+  box-shadow: 0 0 0 3px var(--red-tint);
+}
+
+.app-body {
+  display: grid;
+  grid-template-columns: minmax(190px, 240px) minmax(360px, 1fr) minmax(260px, 340px);
+  gap: 1rem;
+  min-height: 0;
+  padding: 1rem 1.25rem;
+}
+
+@media (max-width: 980px) {
+  .app-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(420px, 1fr) auto;
+    overflow-y: auto;
+  }
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.panel-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  margin: 0 0 0.6rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.session-item {
+  font-size: 0.8rem;
+  padding: 0.45rem 0.55rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+  transition: background 0.12s ease;
+}
+
+.session-item:hover {
+  background: var(--surface-hover);
+}
+
+.session-item.active {
+  background: var(--blue-tint);
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.session-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.session-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-star {
+  color: var(--text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.session-star:hover {
+  color: var(--orange);
+}
+
+.session-star-saved {
+  color: var(--orange);
+}
+
+.center-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+  min-height: 0;
+}
+
+.run-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.78rem;
+}
+
+.run-filter select {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.5rem;
+}
+
+/* Scrollable table of graph rows -- one line per node, indented by lane depth. */
+.event-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.event-table-row {
+  display: grid;
+  grid-template-columns: 66px minmax(120px, 220px) 1fr auto auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.7rem;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.event-table-row:hover {
+  background: var(--surface-hover);
+}
+
+.event-table-row.selected {
+  background: var(--blue-tint);
+}
+
+.event-table-tag {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  text-align: center;
+}
+
+.event-table-label {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-table-subtitle {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-table-count {
+  background: var(--text);
+  color: var(--surface);
+  font-size: 0.62rem;
+  font-weight: 700;
+  border-radius: 999px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+.timeline-panel {
+  position: relative;
+  border-radius: var(--radius);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 0.4rem 0.3rem;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 74px 120px 1fr 74px;
+  gap: 0.7rem;
+  align-items: baseline;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.timeline-row:hover {
+  background: var(--surface-hover);
+}
+
+.timeline-row.selected {
+  background: var(--blue-tint);
+}
+
+.timeline-time {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.timeline-type {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+}
+
+.timeline-narration {
+  color: var(--text);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.badge-observed {
+  color: var(--green);
+  background: var(--green-tint);
+}
+
+.badge-declared {
+  color: var(--purple);
+  background: var(--purple-tint);
+}
+
+.badge-inferred {
+  color: var(--orange);
+  background: var(--orange-tint);
+}
+
+.badge-demo {
+  color: var(--text-secondary);
+  background: var(--border-soft);
+}
+
+.badge-fail {
+  color: var(--red);
+  background: var(--red-tint);
+}
+
+.inspector-empty {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin-top: 1rem;
+}
+
+.inspector-field {
+  margin-bottom: 0.85rem;
+}
+
+.inspector-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.inspector-value {
+  font-size: 0.88rem;
+}
+
+.inspector-story {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.raw-json {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 0.7rem;
+  border-radius: var(--radius-sm);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.prompt-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.prompt-tab {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.prompt-tab.active {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+
+.prompt-tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.prompt-editor {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.microcopy {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 0.4rem;
+}
+
+.handoff-context-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.handoff-context-item {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.handoff-context-item.included {
+  color: var(--text);
+}
+
+.handoff-context-item.excluded {
+  color: var(--text-tertiary);
+}
+
+.handoff-context-mark {
+  font-weight: 700;
+}
+
+.handoff-context-item.included .handoff-context-mark {
+  color: var(--green);
+}
+
+.artifact-diff-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.artifact-diff-panel {
+  background: var(--panel-bg, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, var(--radius-sm));
+  width: min(760px, 92vw);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.artifact-diff-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.artifact-diff-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+.artifact-diff-summary {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.artifact-diff-close {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.artifact-diff-body {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.diff-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diff-line.added {
+  background: rgba(46, 160, 67, 0.15);
+  color: var(--green);
+}
+
+.diff-line.removed {
+  background: rgba(248, 81, 73, 0.15);
+  color: var(--red, #f85149);
+}
+
+.diff-line.unchanged {
+  color: var(--text-tertiary);
+}
+
+.scenario-input-editor {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  resize: vertical;
+}
+
+.sequence-actor-label {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.sequence-lifeline {
+  stroke: var(--border);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+.sequence-call-label {
+  font-size: 10px;
+  fill: var(--text-secondary);
+}
+
+.sequence-arrow {
+  stroke-width: 1.75;
+}
+
+.sequence-arrow.status-success {
+  stroke: var(--green);
+}
+
+.sequence-arrow.status-failure {
+  stroke: var(--red);
+}
+
+.sequence-arrow.status-running {
+  stroke: var(--blue);
+}
+
+.sequence-self-call.status-success {
+  fill: var(--green);
+}
+
+.sequence-self-call.status-failure {
+  fill: var(--red);
+}
+
+.sequence-self-call.status-running {
+  fill: var(--blue);
+}
+
+.waterfall-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem;
+}
+
+.waterfall-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 70px;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.waterfall-label {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.waterfall-track {
+  position: relative;
+  height: 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+
+.waterfall-bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  min-width: 2px;
+}
+
+.waterfall-bar.status-success {
+  background: var(--green);
+}
+
+.waterfall-bar.status-failure {
+  background: var(--red);
+}
+
+.waterfall-bar.status-running {
+  background: var(--blue);
+}
+
+.waterfall-duration {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+.app-footer {
+  padding: 0.55rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.microcopy {
+  color: var(--text-tertiary);
+}
+
+.demo-banner {
+  background: var(--purple);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.4rem;
+  letter-spacing: 0.02em;
+}
+
+.repo-section {
+  margin-bottom: 1.25rem;
+}
+
+.repo-item {
+  font-size: 0.82rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.repo-item-name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.repo-item-desc {
+  color: var(--text-secondary);
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 0.15rem;
+}
+
+.repo-source-tag {
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.replay-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.8rem;
+}
+
+.replay-controls input[type="range"] {
+  flex: 1;
+  accent-color: var(--blue);
+}
+
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.activity-list li {
+  font-size: 0.82rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Workspace Map: the repo's real member tree (explicit config,
+   package-manager workspaces, or a folder-heuristic fallback), overlaid
+   with one session's real activity. Rendered as a vertically-scrolling
+   indented tree (not a spatial node-graph) so it never grows wider than
+   its own panel regardless of how many members exist. */
+.ws-map-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1rem;
+  height: 100%;
+  padding: 1rem 1.25rem;
+  min-height: 0;
+}
+
+.ws-map-tree {
+  overflow-y: auto;
+  padding: 0.75rem 0.5rem;
+}
+
+.ws-map-side {
+  overflow-y: auto;
+}
+
+.ws-tree {
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-tree-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  min-height: 1.9rem;
+}
+
+.ws-tree-row-member {
+  cursor: pointer;
+}
+
+.ws-tree-row-member:hover {
+  background: var(--surface-hover);
+}
+
+.ws-tree-row-selected {
+  background: var(--blue-tint);
+}
+
+.ws-tree-row-touched:not(.ws-tree-row-selected) {
+  background: rgba(0, 113, 227, 0.05);
+}
+
+.ws-tree-caret {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ws-tree-caret:hover {
+  color: var(--text);
+}
+
+.ws-tree-caret-spacer {
+  flex: 0 0 auto;
+  width: 1.1rem;
+}
+
+.ws-tree-member-label {
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ws-tree-member-kind {
+  flex: 0 0 auto;
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.ws-tree-chip {
+  flex: 0 0 auto;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.ws-tree-chip-children {
+  color: var(--text-tertiary);
+  background: var(--border-soft);
+}
+
+.ws-tree-chip-deps {
+  color: var(--text-secondary);
+  background: var(--surface-hover);
+}
+
+.ws-tree-chip-touched {
+  color: var(--blue);
+  background: var(--blue-tint);
+}
+
+.ws-tree-row-file {
+  color: var(--purple);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.ws-tree-row-more {
+  color: var(--text-tertiary);
+  font-family: var(--font-body);
+  font-style: italic;
+}
+
+.ws-tree-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-tree-file-kind {
+  flex: 0 0 auto;
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-body);
+}
+
+.ws-source-note {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  margin: 0 0 0.6rem 0;
+}
+
+.ws-selected-detail {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.ws-file-list {
+  white-space: pre-line;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.ws-link-note {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0 0 0;
+  padding: 0.4rem 0.5rem;
+  background: var(--orange-tint);
+  border-radius: var(--radius-sm);
+}
+
+/* Story mode: the narrative tree + full-explanation side panel. */
+.story-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(280px, 360px);
+  gap: 1rem;
+  height: 100%;
+  padding: 1rem 1.25rem;
+  min-height: 0;
+}
+
+.story-canvas {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.story-side {
+  overflow-y: auto;
+}
+
+@media (max-width: 980px) {
+  .story-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(420px, 1fr) auto;
+    overflow-y: auto;
+  }
+}
+
+/* Storyboard mode: one entry per real StoryBeat, cross-referenced against
+   the agent-authored storyboard for the session. */
+.storyboard-entry {
+  font-size: 0.8rem;
+  padding: 0.45rem 0.55rem;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.storyboard-desc {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.storyboard-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.storyboard-flag {
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+
+.storyboard-flag.unresolved-flag {
+  background: var(--red-tint);
+  color: var(--red);
+}
+
+.storyboard-flag.storyboard-source-auto {
+  background: var(--teal-tint);
+  color: var(--teal);
+}
+
+.storyboard-flag.storyboard-source-agent {
+  background: var(--purple-tint);
+  color: var(--purple);
+}
+
+.storyboard-citations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.story-node {
+  width: 240px;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.35rem 0.65rem;
+  border: 2px solid;
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.story-node:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.story-node-selected {
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.25), var(--shadow-md);
+}
+
+.story-node-unresolved {
+  border-style: dashed;
+}
+
+.story-node-top {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.story-node-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+
+.story-node-unresolved-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  display: inline-block;
+}
+
+.story-node-character {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.story-node-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.story-node-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--text);
+  color: var(--surface);
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 999px;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+.story-panel {
+  font-size: 0.85rem;
+}
+
+.story-breadcrumb {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.75rem;
+}
+
+.story-breadcrumb-sep {
+  color: var(--text-tertiary);
+}
+
+.story-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.story-unresolved-banner {
+  background: var(--red-tint);
+  color: var(--red);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.85rem;
+}
+
+.story-effect-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border-soft);
+}
+
+.story-effect-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.story-effect-list li:hover {
+  color: var(--blue);
+}
+
+/* Workflow screen: Blueprint/Run/Compare mode tabs, Controls panel, and the
+   real ELK-laid-out Blueprint/Run graph (src/workflow/). */
+.workflow-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr minmax(260px, 340px);
+  gap: 1rem;
+  height: 100%;
+  padding: 1rem 1.25rem;
+  min-height: 0;
+}
+
+.workflow-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.explorer-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.explorer-search {
+  width: 100%;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+
+.explorer-tree {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.explorer-group {
+  margin-bottom: 0.65rem;
+}
+
+.explorer-group-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  margin: 0 0 0.25rem;
+}
+
+.explorer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  text-align: left;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.4rem;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.explorer-item:hover {
+  background: var(--bg);
+}
+
+.explorer-item-nested {
+  padding-left: 1.6rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.explorer-item-icon {
+  font-size: 0.85rem;
+  width: 1.1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.workflow-controls {
+  overflow-y: auto;
+}
+
+.workflow-mode-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.workflow-mode-tab {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.workflow-mode-tab.active {
+  background: var(--blue-tint);
+  color: var(--blue);
+  border-color: var(--blue);
+}
+
+.workflow-run-button {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--blue);
+  color: #fff;
+  cursor: pointer;
+  width: 100%;
+}
+
+.workflow-run-button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.workflow-run-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.workflow-canvas {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: auto;
+  padding: 1.5rem;
+}
+
+.blueprint-node {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color 0.12s ease;
+}
+
+.blueprint-node.selected {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-tint);
+}
+
+.blueprint-node-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+}
+
+.blueprint-node-kind {
+  flex: 1;
+}
+
+.blueprint-node-status {
+  font-size: 0.6rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.blueprint-node-status.status-running {
+  background: var(--blue-tint);
+  color: var(--blue);
+}
+
+.blueprint-node-status.status-success {
+  background: var(--green-tint);
+  color: var(--green);
+}
+
+.blueprint-node-status.status-failure {
+  background: var(--red-tint);
+  color: var(--red);
+}
+
+.blueprint-node-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.workflow-timeline {
+  overflow-y: auto;
+}
+
+.workflow-timeline-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.workflow-timeline-row:hover {
+  background: var(--surface-hover);
+}
+
+.workflow-timeline-row.selected {
+  background: var(--blue-tint);
+}
+
+.workflow-timeline-time {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+}

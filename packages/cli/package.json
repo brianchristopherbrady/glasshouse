@@ -1,0 +1,13 @@
+{
+  "name": "@flowbook/cli",
+  "version": "0.1.0",
+  "description": "The flowbook CLI (start/init) and VS Code hook entry point. Kept dependency-free (Node core modules only) so it never needs a build step to run.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "bin": {
+    "flowbook": "bin/flowbook.mjs",
+    "flowbook-hook": "scripts/flowbook-hook.mjs",
+    "flowbook-mcp": "bin/flowbook-mcp.mjs"
+  }
+}

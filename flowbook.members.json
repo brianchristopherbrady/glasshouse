@@ -1,0 +1,32 @@
+{
+  "members": [
+    { "id": "bin", "label": "bin", "path": "bin", "kind": "folder", "dependsOn": [] },
+    { "id": "docs", "label": "docs", "path": "docs", "kind": "folder", "dependsOn": [] },
+    { "id": "mcp", "label": "mcp", "path": "mcp", "kind": "folder", "dependsOn": [] },
+    { "id": "scripts", "label": "scripts", "path": "scripts", "kind": "folder", "dependsOn": [] },
+    { "id": "server", "label": "server", "path": "server", "kind": "folder", "dependsOn": [] },
+    { "id": "shared", "label": "shared", "path": "shared", "kind": "folder", "dependsOn": [] },
+    { "id": "src", "label": "src", "path": "src", "kind": "folder", "dependsOn": [] },
+    { "id": "tests", "label": "tests", "path": "tests", "kind": "folder", "dependsOn": [] },
+
+    { "id": "demo-workspaces", "label": "Demo Workspaces", "path": "demo-workspaces", "kind": "folder", "dependsOn": [] },
+
+    { "id": "mini-monorepo", "label": "mini-monorepo (demo)", "path": "demo-workspaces/mini-monorepo", "kind": "demo-repo", "parentId": "demo-workspaces", "dependsOn": [] },
+    { "id": "@mini/core", "label": "@mini/core", "path": "demo-workspaces/mini-monorepo/packages/core", "kind": "package", "parentId": "mini-monorepo", "dependsOn": [] },
+    { "id": "@mini/app", "label": "@mini/app", "path": "demo-workspaces/mini-monorepo/packages/app", "kind": "package", "parentId": "mini-monorepo", "dependsOn": ["@mini/core"] },
+
+    { "id": "mini-app", "label": "mini-app (demo)", "path": "demo-workspaces/mini-app", "kind": "demo-repo", "parentId": "demo-workspaces", "dependsOn": [] },
+    { "id": "mini-app-api", "label": "api", "path": "demo-workspaces/mini-app/api", "kind": "folder", "parentId": "mini-app", "dependsOn": [] },
+    { "id": "mini-app-ui", "label": "ui", "path": "demo-workspaces/mini-app/ui", "kind": "folder", "parentId": "mini-app", "dependsOn": ["mini-app-api"] },
+    { "id": "mini-app-workers", "label": "workers", "path": "demo-workspaces/mini-app/workers", "kind": "folder", "parentId": "mini-app", "dependsOn": ["mini-app-api"] },
+
+    { "id": "mini-book", "label": "mini-book (demo)", "path": "demo-workspaces/mini-book", "kind": "demo-repo", "parentId": "demo-workspaces", "dependsOn": [] },
+    { "id": "mini-book-part-1", "label": "Part One: Departure", "path": "demo-workspaces/mini-book/manuscript/part-1", "kind": "part", "parentId": "mini-book", "dependsOn": [] },
+    { "id": "mini-book-ch-1", "label": "Chapter 1: The Signal", "path": "demo-workspaces/mini-book/manuscript/part-1/chapter-1.md", "kind": "chapter", "parentId": "mini-book-part-1", "dependsOn": [] },
+    { "id": "mini-book-ch-2", "label": "Chapter 2: The Flowbook", "path": "demo-workspaces/mini-book/manuscript/part-1/chapter-2.md", "kind": "chapter", "parentId": "mini-book-part-1", "dependsOn": [] },
+    { "id": "mini-book-part-2", "label": "Part Two: Return", "path": "demo-workspaces/mini-book/manuscript/part-2", "kind": "part", "parentId": "mini-book", "dependsOn": [] },
+    { "id": "mini-book-ch-3", "label": "Chapter 3: The Log", "path": "demo-workspaces/mini-book/manuscript/part-2/chapter-3.md", "kind": "chapter", "parentId": "mini-book-part-2", "dependsOn": ["mini-book-ch-1"] },
+    { "id": "mini-book-ch-4", "label": "Chapter 4: The Widget Manifest", "path": "demo-workspaces/mini-book/manuscript/part-2/chapter-4.md", "kind": "chapter", "parentId": "mini-book-part-2", "dependsOn": ["mini-book-ch-3"] },
+    { "id": "mini-book-ch-5", "label": "Chapter 5: The Haunting", "path": "demo-workspaces/mini-book/manuscript/part-2/chapter-5.md", "kind": "chapter", "parentId": "mini-book-part-2", "dependsOn": ["mini-book-ch-4"] }
+  ]
+}

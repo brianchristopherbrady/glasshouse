@@ -6,8 +6,9 @@ dist/
 build/
 *.tsbuildinfo
 
-# AGENTARIUM runtime event data (regenerated locally, not source)
-.agentarium/
+# flowbook runtime event data (regenerated locally, not source)
+.flowbook/
+demo-workspaces/*/.flowbook/
 
 # editor / os
 .DS_Store

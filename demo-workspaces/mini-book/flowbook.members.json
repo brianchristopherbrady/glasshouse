@@ -1,0 +1,11 @@
+{
+  "members": [
+    { "id": "part-1", "label": "Part One: Departure", "path": "manuscript/part-1", "kind": "part", "dependsOn": [] },
+    { "id": "ch-1", "label": "Chapter 1: The Signal", "path": "manuscript/part-1/chapter-1.md", "kind": "chapter", "parentId": "part-1", "dependsOn": [] },
+    { "id": "ch-2", "label": "Chapter 2: The Flowbook", "path": "manuscript/part-1/chapter-2.md", "kind": "chapter", "parentId": "part-1", "dependsOn": [] },
+    { "id": "part-2", "label": "Part Two: Return", "path": "manuscript/part-2", "kind": "part", "dependsOn": [] },
+    { "id": "ch-3", "label": "Chapter 3: The Log", "path": "manuscript/part-2/chapter-3.md", "kind": "chapter", "parentId": "part-2", "dependsOn": ["ch-1"] },
+    { "id": "ch-4", "label": "Chapter 4: The Widget Manifest", "path": "manuscript/part-2/chapter-4.md", "kind": "chapter", "parentId": "part-2", "dependsOn": ["ch-3"] },
+    { "id": "ch-5", "label": "Chapter 5: The Haunting", "path": "manuscript/part-2/chapter-5.md", "kind": "chapter", "parentId": "part-2", "dependsOn": ["ch-4"] }
+  ]
+}

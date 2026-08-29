@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "flowbook": {
+      "command": "npx",
+      "args": [
+        "flowbook-mcp"
+      ]
+    }
+  }
+}
