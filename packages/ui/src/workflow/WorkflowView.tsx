@@ -15,6 +15,7 @@ import { useRunStore } from "../runner/runStore.js";
 import { useRunStream } from "../runner/useRunStream.js";
 import { ArtifactDiffPanel } from "./ArtifactDiffPanel.js";
 import { BlueprintGraph } from "./BlueprintGraph.js";
+import { ComparePanel } from "./ComparePanel.js";
 import { Explorer } from "./Explorer.js";
 import { HandoffInspector } from "./HandoffInspector.js";
 import { PromptInspector } from "./PromptInspector.js";
@@ -214,7 +215,9 @@ export function WorkflowView() {
       </div>
 
       <div className="workflow-canvas">
-        {mode === "run" && activeRun && runViewMode === "sequence" ? (
+        {mode === "compare" ? (
+          <ComparePanel workflowId={selectedWorkflowId} />
+        ) : mode === "run" && activeRun && runViewMode === "sequence" ? (
           <SequenceView run={activeRun} />
         ) : mode === "run" && activeRun && runViewMode === "waterfall" ? (
           <WaterfallView run={activeRun} />

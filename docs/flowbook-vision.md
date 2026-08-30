@@ -43,7 +43,7 @@ app's only screen) is Explorer + Blueprint/Run/Compare over this system.
 | Handoff context envelope | `document-refactor`'s `handoff` span carries a real `contextTransferred` list in its output. `packages/ui/src/workflow/HandoffInspector.tsx` renders it as a first-class included/excluded checklist (not raw JSON) when a `handoff` span is selected. |
 | Artifact diff | `packages/core/shared/text-diff.ts` -- real LCS-based line diff. `GET /api/runner/runs/:runId/artifact-diff/*` diffs the workflow's pristine fixture against the run's real post-execution artifact; `packages/ui/src/workflow/ArtifactDiffPanel.tsx`'s "View Diff" button renders the real hunks with +/- markers. |
 | Repair loop / failure branching | `document-refactor`'s `missing-accessibility-section` scenario: the first Builder attempt genuinely omits a required section, the evaluation genuinely fails, the workflow genuinely re-invokes the Builder, and the second evaluation genuinely passes. |
-| Run comparison | Not implemented -- the Workflow screen's "compare" mode tab exists in the UI but has no content yet. |
+| Run comparison | `packages/core/shared/compare-runs.ts`'s `compareRuns()` -- real span-by-span diff between two persisted Runs, matched by `resourceId` (falling back to `kind:label`) plus real execution-order occurrence index, so a repair loop's Nth attempt compares against the other run's Nth attempt rather than an arbitrary pairing. `GET /api/runner/compare?a=<runId>&b=<runId>` serves it; `packages/ui/src/workflow/ComparePanel.tsx` renders two run pickers (scoped to the selected workflow), real duration/status/span-count summaries, and a span table with real added/removed/status-changed/unchanged markers. |
 | Fork/replay from a span | Not implemented. |
 | Controls panel (model/temperature/mocks) | Real editable input: the Controls panel has a JSON textarea seeded from the selected scenario's own `input`, with Reset and "Run with changes" -- no model/temperature/mock-provider fields yet (this workflow has none to control). |
 | Framework adapters (LangGraph, OpenAI Agents SDK, OTel) | Not implemented -- `server/runner/`'s workflow model is this package's own; adapting an external framework's real output into `Span`s would be a real, separate integration per framework. |
@@ -54,26 +54,22 @@ app's only screen) is Explorer + Blueprint/Run/Compare over this system.
 
 ## Known gaps / next slices (not started)
 
-1. **Compare mode for Runs.** The Workflow screen has a "compare" tab with
-   no content -- wire it to `GET /api/runner/runs` + a real two-Run diff
-   (which spans differ, which resources newly executed/skipped, duration
-   deltas).
-2. **A second demo workflow** with a genuine multi-agent branch (not just
+1. **A second demo workflow** with a genuine multi-agent branch (not just
    Builder/Auditor) would stress-test the Blueprint graph's layout at
    higher node counts and prove the model generalizes past one example.
-3. **"Save as new scenario"** -- Scenario Controls currently support
+2. **"Save as new scenario"** -- Scenario Controls currently support
    editing input and running with changes, but not persisting an edited
    input back as a new named `Scenario` in the registry.
-4. **Config discovery is workflows-only.** `flowbook.config.*` only has a
+3. **Config discovery is workflows-only.** `flowbook.config.*` only has a
    `workflows` glob today -- plan.md's fuller sketch (separate
    `agents`/`skills`/`prompts` glob lists, `adapters[]`) isn't implemented;
    those are still declared inline by a workflow module itself
    (`registerWorkflow({resources: [...]})`), not discovered independently.
-5. **Explorer: Runs group + source provenance links.** The Explorer shows
+4. **Explorer: Runs group + source provenance links.** The Explorer shows
    Workflows/Agents/Prompts/Instructions/Skills/Artifacts/Evaluations but
    not a browsable Runs list (data is fetched but unused), and no item
    links to its defining source file/line yet.
-6. Framework adapters remain a real, separate, larger effort each --
+5. Framework adapters remain a real, separate, larger effort each --
    deliberately not started until there's a concrete need for a specific
    one (LangGraph vs. OpenAI Agents SDK vs. raw OTel would each be a
    different integration, not a shared abstraction worth building blind).

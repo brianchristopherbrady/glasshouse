@@ -3,6 +3,7 @@
 // -- this is a genuinely different source (workflows this app executes
 // itself, not an observed VS Code session).
 import type { Blueprint, Run, Scenario } from "../../../core/shared/flowbook-types.js";
+import type { RunComparison } from "../../../core/shared/compare-runs.js";
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -84,4 +85,11 @@ export interface ExplorerData {
 
 export async function fetchExplorer(): Promise<ExplorerData> {
   return getJson<ExplorerData>("/api/runner/explorer");
+}
+
+export async function fetchRunComparison(runIdA: string, runIdB: string): Promise<RunComparison> {
+  const data = await getJson<{ comparison: RunComparison }>(
+    `/api/runner/compare?a=${encodeURIComponent(runIdA)}&b=${encodeURIComponent(runIdB)}`,
+  );
+  return data.comparison;
 }

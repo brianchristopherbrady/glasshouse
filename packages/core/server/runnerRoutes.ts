@@ -11,6 +11,7 @@ import { getWorkflow, getBlueprint, listScenarios, listWorkflows } from "./runne
 import { artifactRootFor } from "./runner/artifacts.js";
 import { listRuns, readRun } from "./runner/runStore.js";
 import { diffLines } from "../shared/text-diff.js";
+import { compareRuns } from "../shared/compare-runs.js";
 import type { ResourceKind } from "../shared/flowbook-types.js";
 
 export const runnerRouter = Router();
@@ -111,6 +112,26 @@ runnerRouter.get("/api/runner/runs/:runId", async (req, res) => {
     return;
   }
   res.json({ run });
+});
+
+// Real two-Run comparison (span-by-span, matched by resourceId + real
+// execution order) -- see shared/compare-runs.ts for the matching logic.
+runnerRouter.get("/api/runner/compare", async (req, res) => {
+  const { a: idA, b: idB } = req.query;
+  if (typeof idA !== "string" || typeof idB !== "string") {
+    res.status(400).json({ error: "query params 'a' and 'b' (run ids) are required" });
+    return;
+  }
+  const [runA, runB] = await Promise.all([readRun(idA), readRun(idB)]);
+  if (!runA) {
+    res.status(404).json({ error: `Unknown run: ${idA}` });
+    return;
+  }
+  if (!runB) {
+    res.status(404).json({ error: `Unknown run: ${idB}` });
+    return;
+  }
+  res.json({ comparison: compareRuns(runA, runB) });
 });
 
 runnerRouter.get("/api/runner/runs/:runId/artifacts/*", async (req, res) => {
