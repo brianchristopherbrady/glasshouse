@@ -1,0 +1,7 @@
+name: Issue Triage
+on:
+  issues:
+    types: [opened]
+jobs:
+  triage:
+    runs-on: ubuntu-latest

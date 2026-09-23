@@ -1,6 +1,10 @@
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { prisma } from '../db.js';
+import { syncRepositoryFromDisk } from '../sync.js';
 import { serializeAgentDefinition, serializeSkillDefinition, serializeWorkflowDefinition } from '../serialize.js';
+
+const SyncBodySchema = z.object({ checkoutDir: z.string().min(1) });
 
 export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/repositories', async () => {
@@ -145,4 +149,44 @@ export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
       }))
       .sort((a, b) => b.runCount - a.runCount);
   });
+
+  app.get<{ Params: { repoId: string } }>(
+    '/api/repositories/:repoId/relationships',
+    async (req) => {
+      return prisma.definitionRelationship.findMany({
+        where: { repositoryId: req.params.repoId },
+      });
+    },
+  );
+
+  // Discovers static repo artifacts (workflows/agents/skills/instructions/
+  // prompts/hooks/mcp servers) from a checkout on disk and persists them.
+  // Live GitHub-API-backed sync (cloning/fetching a remote repo) is a
+  // later phase; this endpoint operates on an already-present local path.
+  app.post<{ Params: { repoId: string } }>(
+    '/api/repositories/:repoId/sync',
+    async (req, reply) => {
+      const repository = await prisma.repository.findUnique({ where: { id: req.params.repoId } });
+      if (!repository) {
+        return reply.code(404).send({ error: 'repository_not_found' });
+      }
+      const parsed = SyncBodySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'invalid_body', issues: parsed.error.issues });
+      }
+      try {
+        const summary = await syncRepositoryFromDisk(
+          prisma,
+          req.params.repoId,
+          parsed.data.checkoutDir,
+        );
+        return { ok: true, ...summary };
+      } catch (err) {
+        return reply.code(500).send({
+          error: 'sync_failed',
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+  );
 }

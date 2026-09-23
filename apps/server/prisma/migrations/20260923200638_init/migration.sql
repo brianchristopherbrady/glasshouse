@@ -109,6 +109,7 @@ CREATE TABLE "McpServerDefinition" (
 -- CreateTable
 CREATE TABLE "DefinitionRelationship" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "repositoryId" TEXT NOT NULL,
     "sourceDefinitionId" TEXT NOT NULL,
     "sourceKind" TEXT NOT NULL,
     "targetDefinitionId" TEXT NOT NULL,
@@ -116,7 +117,8 @@ CREATE TABLE "DefinitionRelationship" (
     "relationshipType" TEXT NOT NULL,
     "evidenceSource" TEXT NOT NULL,
     "evidenceConfidence" TEXT NOT NULL,
-    "evidenceNote" TEXT
+    "evidenceNote" TEXT,
+    CONSTRAINT "DefinitionRelationship_repositoryId_fkey" FOREIGN KEY ("repositoryId") REFERENCES "Repository" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -376,7 +378,10 @@ CREATE UNIQUE INDEX "PromptDefinition_repositoryId_path_key" ON "PromptDefinitio
 CREATE UNIQUE INDEX "HookDefinition_repositoryId_path_key" ON "HookDefinition"("repositoryId", "path");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "McpServerDefinition_repositoryId_path_key" ON "McpServerDefinition"("repositoryId", "path");
+CREATE UNIQUE INDEX "McpServerDefinition_repositoryId_path_name_key" ON "McpServerDefinition"("repositoryId", "path", "name");
+
+-- CreateIndex
+CREATE INDEX "DefinitionRelationship_repositoryId_idx" ON "DefinitionRelationship"("repositoryId");
 
 -- CreateIndex
 CREATE INDEX "DefinitionRelationship_sourceDefinitionId_idx" ON "DefinitionRelationship"("sourceDefinitionId");

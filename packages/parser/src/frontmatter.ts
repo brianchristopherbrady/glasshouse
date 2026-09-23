@@ -1,9 +1,10 @@
 /**
  * Minimal YAML-frontmatter splitter for `---\n...\n---\nbody` files.
  * Deliberately does not pull in a full YAML parser dependency yet — only
- * supports flat `key: value` and `key:\n  - item` list pairs, which is
- * sufficient for workflow/agent/skill frontmatter in practice. Values are
- * left as strings/string-arrays; callers coerce further as needed.
+ * supports `key: value` scalars, `key:\n  - item` lists, and one or more
+ * levels of `key:\n  nested: value` maps via indentation, which covers
+ * workflow/agent/skill frontmatter in practice. Values are left as
+ * strings/arrays/nested records; callers coerce further as needed.
  */
 export interface ParsedFrontmatter {
   frontmatter: Record<string, unknown>;
@@ -16,43 +17,100 @@ export function parseFrontmatter(raw: string): ParsedFrontmatter {
     return { frontmatter: {}, body: raw };
   }
   const [, yamlBlock, body] = match;
-  return { frontmatter: parseFlatYaml(yamlBlock ?? ''), body: body ?? '' };
+  const lines = (yamlBlock ?? '').split(/\r?\n/).filter((l) => l.trim() !== '');
+  const { value } = parseBlock(lines, 0, 0);
+  return { frontmatter: (value as Record<string, unknown>) ?? {}, body: body ?? '' };
 }
 
-function parseFlatYaml(block: string): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  const lines = block.split(/\r?\n/);
-  let currentKey: string | null = null;
-  let currentList: string[] | null = null;
+interface BlockResult {
+  value: unknown;
+  nextIndex: number;
+}
 
-  const flushList = () => {
-    if (currentKey && currentList) {
-      result[currentKey] = currentList;
-    }
-    currentKey = null;
-    currentList = null;
-  };
+/** Parses a run of lines at exactly `indent` into a map or a list. */
+function parseBlock(lines: string[], startIndex: number, indent: number): BlockResult {
+  if (startIndex >= lines.length) return { value: {}, nextIndex: startIndex };
+  const firstLine = lines[startIndex] ?? '';
+  const isList = /^\s*-\s/.test(firstLine.slice(indent)) && indentOf(firstLine) === indent;
 
-  for (const line of lines) {
-    const listItemMatch = /^\s*-\s+(.*)$/.exec(line);
-    if (listItemMatch && currentKey) {
-      currentList = currentList ?? [];
-      currentList.push(stripQuotes(listItemMatch[1] ?? ''));
-      continue;
+  if (isList) {
+    const list: unknown[] = [];
+    let i = startIndex;
+    const contentIndent = indent + 2; // width of "- "
+    while (i < lines.length) {
+      const line = lines[i] ?? '';
+      if (indentOf(line) !== indent) break;
+      const itemMatch = /^\s*-\s?(.*)$/.exec(line.slice(indent));
+      if (!itemMatch) break;
+      const rest = itemMatch[1] ?? '';
+
+      if (rest === '') {
+        // "- " with nested content on following more-indented lines.
+        const nested = parseBlock(lines, i + 1, contentIndent);
+        list.push(nested.value);
+        i = nested.nextIndex;
+        continue;
+      }
+
+      const inlineKvMatch = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(rest);
+      if (inlineKvMatch) {
+        // "- key: value" starts an inline map; splice that first key/value
+        // back onto a synthetic line so the map parser handles it (plus
+        // any further-indented sibling keys) uniformly.
+        const syntheticLines = [
+          `${' '.repeat(contentIndent)}${rest}`,
+          ...lines.slice(i + 1),
+        ];
+        const nested = parseBlock(syntheticLines, 0, contentIndent);
+        list.push(nested.value);
+        i += nested.nextIndex;
+        continue;
+      }
+
+      list.push(coerceScalar(stripQuotes(rest)));
+      i += 1;
     }
-    flushList();
-    const kvMatch = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(line);
-    if (!kvMatch) continue;
-    const [, key, rawValue] = kvMatch;
-    if (!key) continue;
-    if (rawValue === undefined || rawValue === '') {
-      currentKey = key;
-      continue;
-    }
-    result[key] = coerceScalar(stripQuotes(rawValue));
+    return { value: list, nextIndex: i };
   }
-  flushList();
-  return result;
+
+  const map: Record<string, unknown> = {};
+  let i = startIndex;
+  while (i < lines.length) {
+    const line = lines[i] ?? '';
+    const lineIndent = indentOf(line);
+    if (lineIndent !== indent) break;
+    const kvMatch = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(line.slice(indent));
+    if (!kvMatch) {
+      i += 1;
+      continue;
+    }
+    const [, key, rawValue] = kvMatch;
+    if (!key) {
+      i += 1;
+      continue;
+    }
+    if (rawValue === undefined || rawValue === '') {
+      const nextLine = lines[i + 1];
+      const nextIndent = nextLine ? indentOf(nextLine) : -1;
+      if (nextIndent > indent) {
+        const nested = parseBlock(lines, i + 1, nextIndent);
+        map[key] = nested.value;
+        i = nested.nextIndex;
+        continue;
+      }
+      map[key] = undefined;
+      i += 1;
+      continue;
+    }
+    map[key] = coerceScalar(stripQuotes(rawValue));
+    i += 1;
+  }
+  return { value: map, nextIndex: i };
+}
+
+function indentOf(line: string): number {
+  const match = /^(\s*)/.exec(line);
+  return match?.[1]?.length ?? 0;
 }
 
 function stripQuotes(value: string): string {

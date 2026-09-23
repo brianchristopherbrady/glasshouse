@@ -27,6 +27,7 @@ model Repository {
   promptDefinitions     PromptDefinition[]
   hookDefinitions       HookDefinition[]
   mcpServerDefinitions  McpServerDefinition[]
+  relationships         DefinitionRelationship[]
   workflowRuns          WorkflowRun[]
 }
 
@@ -141,11 +142,12 @@ model McpServerDefinition {
 
   repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
 
-  @@unique([repositoryId, path])
+  @@unique([repositoryId, path, name])
 }
 
 model DefinitionRelationship {
   id                   String @id @default(cuid())
+  repositoryId         String
   sourceDefinitionId   String
   sourceKind           String
   targetDefinitionId   String
@@ -155,6 +157,9 @@ model DefinitionRelationship {
   evidenceConfidence   String
   evidenceNote         String?
 
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryId])
   @@index([sourceDefinitionId])
   @@index([targetDefinitionId])
 }

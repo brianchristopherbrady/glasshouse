@@ -6,6 +6,6 @@
     "composite": true,
     "types": ["node"]
   },
-  "include": ["src", "prisma"],
-  "references": [{ "path": "../../packages/domain" }]
+  "include": ["src", "prisma", "tests"],
+  "references": [{ "path": "../../packages/domain" }, { "path": "../../packages/parser" }]
 }

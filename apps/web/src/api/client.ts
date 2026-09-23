@@ -1,5 +1,6 @@
 import type {
   AgentDefinition,
+  DefinitionRelationship,
   DriftFinding,
   FileHotspot,
   FileOperation,
@@ -13,6 +14,7 @@ import type {
   RunTraceResponse,
   SkillDefinition,
   SkillUsage,
+  SyncResult,
   ToolInvocation,
   WorkflowDefinition,
   WorkflowRun,
@@ -36,6 +38,19 @@ async function getJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '');
+    throw new ApiError(res.status, `${res.status} ${res.statusText}: ${errBody}`);
+  }
+  return (await res.json()) as T;
+}
+
 export const api = {
   listRepositories: () => getJson<Repository[]>('/api/repositories'),
   getRepository: (repoId: string) => getJson<Repository>(`/api/repositories/${repoId}`),
@@ -49,6 +64,10 @@ export const api = {
   listSkills: (repoId: string) => getJson<SkillDefinition[]>(`/api/repositories/${repoId}/skills`),
   listFileHotspots: (repoId: string) =>
     getJson<FileHotspot[]>(`/api/repositories/${repoId}/files`),
+  listRelationships: (repoId: string) =>
+    getJson<DefinitionRelationship[]>(`/api/repositories/${repoId}/relationships`),
+  syncRepository: (repoId: string, checkoutDir: string) =>
+    postJson<SyncResult>(`/api/repositories/${repoId}/sync`, { checkoutDir }),
   listRuns: (repoId: string, filters?: { workflowId?: string; status?: string }) => {
     const params = new URLSearchParams();
     if (filters?.workflowId) params.set('workflowId', filters.workflowId);

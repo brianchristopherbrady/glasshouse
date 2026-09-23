@@ -1,9 +1,11 @@
 import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client.js';
+import { SyncPanel } from '../components/SyncPanel.js';
 
 export function FlowsPage(): JSX.Element {
   const { repoId } = useParams();
+  const queryClient = useQueryClient();
   const { data: workflows, isLoading } = useQuery({
     queryKey: ['workflows', repoId],
     queryFn: () => api.listWorkflows(repoId!),
@@ -14,7 +16,18 @@ export function FlowsPage(): JSX.Element {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold text-text">Flows</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold text-text">Flows</h1>
+        <SyncPanel
+          repoId={repoId!}
+          onSynced={() => {
+            void queryClient.invalidateQueries({ queryKey: ['workflows', repoId] });
+            void queryClient.invalidateQueries({ queryKey: ['relationships', repoId] });
+            void queryClient.invalidateQueries({ queryKey: ['agents', repoId] });
+            void queryClient.invalidateQueries({ queryKey: ['skills', repoId] });
+          }}
+        />
+      </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {workflows?.map((wf) => (
           <div key={wf.id} className="rounded-lg border border-border bg-surface-raised p-4">

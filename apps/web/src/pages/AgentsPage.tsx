@@ -9,8 +9,26 @@ export function AgentsPage(): JSX.Element {
     queryFn: () => api.listAgents(repoId!),
     enabled: !!repoId,
   });
+  const { data: relationships } = useQuery({
+    queryKey: ['relationships', repoId],
+    queryFn: () => api.listRelationships(repoId!),
+    enabled: !!repoId,
+  });
 
   if (isLoading) return <div className="text-text-muted">Loading agents…</div>;
+
+  // A skill named in an agent's frontmatter is only "resolved" if a
+  // CONFIGURES relationship was actually extracted for it — i.e. a real
+  // SkillDefinition with that name was independently discovered on disk.
+  // Never assume every declared name resolves.
+  const resolvedSkillCountByAgentId = new Map<string, number>();
+  for (const r of relationships ?? []) {
+    if (r.relationshipType !== 'CONFIGURES') continue;
+    resolvedSkillCountByAgentId.set(
+      r.sourceDefinitionId,
+      (resolvedSkillCountByAgentId.get(r.sourceDefinitionId) ?? 0) + 1,
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -50,6 +68,11 @@ export function AgentsPage(): JSX.Element {
                       {s}
                     </span>
                   ))}
+                </div>
+                <div className="mt-1 text-[11px] text-text-muted">
+                  {(resolvedSkillCountByAgentId.get(a.id) ?? 0) > 0
+                    ? `${resolvedSkillCountByAgentId.get(a.id)} resolved to a discovered SKILL.md`
+                    : 'Not resolved to a discovered SKILL.md — declared name only'}
                 </div>
               </div>
             )}

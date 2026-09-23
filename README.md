@@ -24,7 +24,11 @@ packages/
   domain/   Normalized Zod domain model (Repository, WorkflowDefinition,
             AgentDefinition, SkillDefinition, Span, AgentEvent, WorkflowRun,
             evidence/confidence types, redaction service, drift types)
-  parser/   Lightweight frontmatter parser for .md definition files
+  parser/   Static repository discovery: frontmatter/YAML parsing, a hand-
+            rolled file glob matcher, per-definition-type discoverers
+            (workflows/agents/skills/instructions/prompts/hooks/MCP servers),
+            and relationship extraction (name/path-matched, evidence-tagged,
+            never hallucinated from prose similarity)
 ```
 
 A run is modeled as a tree of **spans** (OpenTelemetry-inspired: id, parentSpanId,
@@ -120,7 +124,11 @@ agent's frontmatter but never observed executing at runtime is shown as
 REST endpoints served by `apps/server`:
 
 - `GET /api/repositories`, `GET /api/repositories/:repoId`
-- `GET /api/repositories/:repoId/{workflows,agents,skills,runs,files,overview}`
+- `GET /api/repositories/:repoId/{workflows,agents,skills,runs,files,overview,relationships}`
+- `POST /api/repositories/:repoId/sync` — discovers static definitions from a
+  repository checkout already present on disk (`{ "checkoutDir": "..." }`)
+  and persists them. Idempotent (upserts by path); triggerable from the Flows
+  page's "Sync from disk" control.
 - `GET /api/runs/:runId`
 - `GET /api/runs/:runId/{trace,events,files,agents,skills,tools,logs,github,metrics,drift}`
 - `POST /api/telemetry/events`, `POST /api/telemetry/batch` — Zod-validated
@@ -131,25 +139,53 @@ span forest built by `apps/server/src/trace.ts`'s `buildSpanTree` (parent
 resolution + start-time sibling sorting), which the web app renders as a
 flame-chart in the Run Detail → Trace tab.
 
+## Static repository discovery
+
+`packages/parser`'s `discoverRepository(rootDir)` mechanically walks a
+repository checkout and discovers:
+
+- `.github/workflows/*.md` (+ paired `.lock.yml` compiled workflow, if present)
+- `.github/agents/*.md`
+- `SKILL.md` under `.github/skills/`, `.agents/skills/`, or `.claude/skills/`
+  (plus sibling scripts/resources in the same folder)
+- `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md`,
+  `AGENTS.md`
+- `.github/prompts/*.prompt.md`
+- `.github/hooks/*.json`
+- `.vscode/mcp.json`
+
+Relationships between definitions (`COMPILES_TO`, `CONFIGURES`, `CAN_CALL`)
+are only emitted when backed by a concrete match — a workflow's `.lock.yml`
+found alongside it (`observed` confidence), or an agent's frontmatter naming
+a skill/MCP server that was *also* independently discovered (`strong`
+confidence, since a rename could desync the two). An agent referencing a
+skill name that doesn't resolve to any discovered `SKILL.md` produces no
+relationship at all — the UI (Agents page) shows this explicitly as "Not
+resolved to a discovered SKILL.md" rather than silently linking it.
+
+`apps/server/src/sync.ts`'s `syncRepositoryFromDisk` persists discovery
+results via upsert-by-path, so re-syncing an unchanged repo is a no-op
+diff-wise. This is filesystem-only — it does not clone or fetch a remote
+repository (see Known limitations).
+
 ## Known limitations (Phase 1 scope)
 
 Per the spec's phased build order, this pass stops after Phase 1: monorepo
 init, domain model, seed data, application shell, Overview, Runs, and one
 excellent Run Detail trace experience — all on demo data. **Not yet built**:
 
-- GitHub API integration (live repository sync, Actions run ingestion) — the
-  `api.ts` adapter-method shape described in the spec is not implemented yet.
+- GitHub API integration (live repository sync from a *remote*, Actions run
+  ingestion) — the `api.ts` adapter-method shape described in the spec is not
+  implemented yet. Static discovery today only reads a checkout already
+  present on the local filesystem (see "Static repository discovery" above).
 - The runtime telemetry client package (`packages/telemetry-client`) and the
   `.agentic-telemetry/events.ndjson` file-based ingestion path — only the HTTP
   `/api/telemetry/*` endpoints exist so far.
 - The correlation engine that merges GitHub Actions + git + telemetry into one
   `WorkflowRun`.
-- The static repository parser that discovers `.github/workflows/*.md`,
-  `.github/agents/*.md`, `.github/skills/**`, etc. from a real checkout —
-  `packages/parser`'s `parseFrontmatter` exists as the building block, but
-  nothing yet walks a real filesystem tree with it.
 - The static architecture graph explorer (React Flow node/edge view of
-  Workflow/Agent/Skill/Instruction/Hook/MCP relationships).
+  Workflow/Agent/Skill/Instruction/Hook/MCP relationships) — relationships are
+  discovered and queryable via the API today, but not yet visualized as a graph.
 - Secret redaction is implemented (`packages/domain/src/redaction.ts`,
   `redactSecrets`) but not yet wired into any log/tool-argument display path.
 - Mock/live GitHub mode toggle, workflow manual-trigger action.

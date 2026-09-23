@@ -253,3 +253,27 @@ export interface FileHotspot {
   totalOps: number;
   failureCount: number;
 }
+
+export interface DefinitionRelationship {
+  id: string;
+  sourceDefinitionId: string;
+  sourceKind: string;
+  targetDefinitionId: string;
+  targetKind: string;
+  relationshipType: string;
+  evidenceSource: string;
+  evidenceConfidence: string;
+  evidenceNote: string | null;
+}
+
+export interface SyncResult {
+  ok: boolean;
+  workflows: number;
+  agents: number;
+  skills: number;
+  instructions: number;
+  prompts: number;
+  hooks: number;
+  mcpServers: number;
+  relationships: number;
+}
