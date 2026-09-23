@@ -1,5 +1,6 @@
 import type {
   AgentDefinition,
+  ArchitectureGraphResponse,
   DefinitionRelationship,
   DriftFinding,
   FileHotspot,
@@ -66,6 +67,8 @@ export const api = {
     getJson<FileHotspot[]>(`/api/repositories/${repoId}/files`),
   listRelationships: (repoId: string) =>
     getJson<DefinitionRelationship[]>(`/api/repositories/${repoId}/relationships`),
+  getArchitecture: (repoId: string) =>
+    getJson<ArchitectureGraphResponse>(`/api/repositories/${repoId}/architecture`),
   syncRepository: (repoId: string, checkoutDir: string) =>
     postJson<SyncResult>(`/api/repositories/${repoId}/sync`, { checkoutDir }),
   listRuns: (repoId: string, filters?: { workflowId?: string; status?: string }) => {

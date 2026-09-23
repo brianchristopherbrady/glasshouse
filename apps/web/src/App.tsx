@@ -10,6 +10,7 @@ import { RunDetailPage } from './pages/RunDetailPage.js';
 import { AgentsPage } from './pages/AgentsPage.js';
 import { SkillsPage } from './pages/SkillsPage.js';
 import { FilesPage } from './pages/FilesPage.js';
+import { ArchitecturePage } from './pages/ArchitecturePage.js';
 
 function RepoRedirect(): JSX.Element {
   const { data: repositories, isLoading } = useQuery({
@@ -55,6 +56,7 @@ function RepoLayout(): JSX.Element {
           <Route path="agents" element={<AgentsPage />} />
           <Route path="skills" element={<SkillsPage />} />
           <Route path="files" element={<FilesPage />} />
+          <Route path="architecture" element={<ArchitecturePage />} />
         </Routes>
       </main>
     </div>

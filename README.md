@@ -40,8 +40,7 @@ kept entirely separate from runtime data and never conflated.
 ## Tech stack
 
 - **Frontend**: React, TypeScript, Vite, React Router, TanStack Query, Tailwind CSS,
-  Lucide icons. (`@xyflow/react` is installed for a future architecture-graph
-  view; the Phase 1 build does not yet use it.)
+  Lucide icons, `@xyflow/react` (architecture graph).
 - **Backend**: Node.js, TypeScript, Fastify, Zod, Prisma.
 - **Database**: **SQLite** for local development (see note below), swappable to
   PostgreSQL for production via a one-line Prisma datasource change.
@@ -124,7 +123,7 @@ agent's frontmatter but never observed executing at runtime is shown as
 REST endpoints served by `apps/server`:
 
 - `GET /api/repositories`, `GET /api/repositories/:repoId`
-- `GET /api/repositories/:repoId/{workflows,agents,skills,runs,files,overview,relationships}`
+- `GET /api/repositories/:repoId/{workflows,agents,skills,runs,files,overview,relationships,architecture}`
 - `POST /api/repositories/:repoId/sync` — discovers static definitions from a
   repository checkout already present on disk (`{ "checkoutDir": "..." }`)
   and persists them. Idempotent (upserts by path); triggerable from the Flows
@@ -166,41 +165,64 @@ resolved to a discovered SKILL.md" rather than silently linking it.
 `apps/server/src/sync.ts`'s `syncRepositoryFromDisk` persists discovery
 results via upsert-by-path, so re-syncing an unchanged repo is a no-op
 diff-wise. This is filesystem-only — it does not clone or fetch a remote
-repository (see Known limitations).
+repository.
 
-## Known limitations (Phase 1 scope)
+## Architecture graph
 
-Per the spec's phased build order, this pass stops after Phase 1: monorepo
-init, domain model, seed data, application shell, Overview, Runs, and one
-excellent Run Detail trace experience — all on demo data. **Not yet built**:
+`GET /api/repositories/:repoId/architecture` returns every discovered
+definition (across all kinds) as a node and every `DefinitionRelationship`
+as an edge — a pure read-model over data that already exists, no new
+discovery logic. The web app's **Architecture** tab
+(`apps/web/src/pages/ArchitecturePage.tsx`) renders this with `@xyflow/react`:
 
-- GitHub API integration (live repository sync from a *remote*, Actions run
-  ingestion) — the `api.ts` adapter-method shape described in the spec is not
-  implemented yet. Static discovery today only reads a checkout already
-  present on the local filesystem (see "Static repository discovery" above).
+- `apps/web/src/architecture/layout.ts`: a deterministic layered layout
+  (longest-path depth from any root node determines the column; nodes within
+  a column are stacked vertically). Not a physics/force simulation —
+  appropriate for the tens-of-nodes graphs this product deals with, and fully
+  unit-tested including a cycle guard and dangling-edge handling.
+- Clicking a node opens a detail drawer showing every relationship it
+  participates in (both directions), each with its own `EvidenceTag` —
+  evidence is never hidden behind a hover tooltip.
+- Nodes are colored/iconified by kind (`apps/web/src/architecture/kindMeta.ts`),
+  consistent with the legend shown above the graph.
+
+## Project scope: demo app
+
+This project is scoped as a **self-contained demo application** — there is no
+planned live GitHub API integration (OAuth/PAT auth, remote repo
+clone/fetch, real Actions-run ingestion). Everything works against:
+
+1. Seeded demo data (`apps/server/prisma/seed.ts`) for runs, traces, agents,
+   skills, and GitHub-shaped outputs (PRs/issues/checks).
+2. Static discovery (`packages/parser`) against a repository checkout
+   already present on the local filesystem, triggered via the Flows page's
+   "Sync from disk" control or `POST /api/repositories/:repoId/sync`.
+
+**Not built, and not planned, for this scope:**
+
+- GitHub API integration (remote repo sync, live Actions-run ingestion, PAT/
+  GitHub App auth, mock/live mode toggle).
 - The runtime telemetry client package (`packages/telemetry-client`) and the
-  `.agentic-telemetry/events.ndjson` file-based ingestion path — only the HTTP
-  `/api/telemetry/*` endpoints exist so far.
-- The correlation engine that merges GitHub Actions + git + telemetry into one
-  `WorkflowRun`.
-- The static architecture graph explorer (React Flow node/edge view of
-  Workflow/Agent/Skill/Instruction/Hook/MCP relationships) — relationships are
-  discovered and queryable via the API today, but not yet visualized as a graph.
+  `.agentic-telemetry/events.ndjson` file-based ingestion path — the HTTP
+  `/api/telemetry/*` endpoints exist and are exercised by tests, but nothing
+  emits to them outside of tests.
+- The correlation engine that would merge GitHub Actions + git + telemetry
+  into one `WorkflowRun` (only meaningful once a live GitHub source exists).
 - Secret redaction is implemented (`packages/domain/src/redaction.ts`,
   `redactSecrets`) but not yet wired into any log/tool-argument display path.
-- Mock/live GitHub mode toggle, workflow manual-trigger action.
+- Workflow manual-trigger action.
 
 As documented in the product spec: GitHub Actions alone will not expose every
 internal agent event (model calls, skill context loading, sub-agent
 orchestration, tool calls) — high-fidelity views require runtime telemetry or
 structured artifacts, which is why the telemetry ingestion endpoints exist
-independently of the GitHub adapter.
+independently of any GitHub adapter.
 
 ## Development commands
 
 ```powershell
 npm run typecheck   # tsc -b across all workspaces
 npm run lint        # eslint .
-npm test            # vitest run (packages/domain, packages/parser, apps/server)
+npm test            # vitest run (packages/domain, packages/parser, apps/server, apps/web)
 npm run build       # builds every workspace (domain/parser dist, server dist, web dist)
 ```

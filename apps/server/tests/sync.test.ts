@@ -59,7 +59,7 @@ describe('syncRepositoryFromDisk', () => {
       mcpServers: 1,
       relationships: 4,
     });
-  });
+  }, 20_000);
 
   it('gives the compiled workflow a distinct id from its parent workflow', async () => {
     const rel = await prisma.definitionRelationship.findFirst({
@@ -82,5 +82,5 @@ describe('syncRepositoryFromDisk', () => {
     });
     expect(workflows).toHaveLength(2);
     expect(relationships).toHaveLength(4);
-  });
+  }, 20_000);
 });

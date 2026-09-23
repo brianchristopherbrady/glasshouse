@@ -277,3 +277,37 @@ export interface SyncResult {
   mcpServers: number;
   relationships: number;
 }
+
+export type DefinitionKind =
+  | 'workflow'
+  | 'compiled-workflow'
+  | 'agent'
+  | 'skill'
+  | 'instruction'
+  | 'prompt'
+  | 'hook'
+  | 'mcp-server';
+
+export interface ArchitectureNode {
+  id: string;
+  kind: DefinitionKind;
+  name: string;
+  path: string;
+}
+
+export interface ArchitectureEdge {
+  id: string;
+  source: string;
+  target: string;
+  sourceKind: string;
+  targetKind: string;
+  relationshipType: string;
+  evidenceSource: string;
+  evidenceConfidence: string;
+  evidenceNote: string | null;
+}
+
+export interface ArchitectureGraphResponse {
+  nodes: ArchitectureNode[];
+  edges: ArchitectureEdge[];
+}

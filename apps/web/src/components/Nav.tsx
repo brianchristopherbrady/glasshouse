@@ -1,6 +1,14 @@
 import { NavLink, useParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { LayoutDashboard, GitBranch, PlayCircle, Users, Sparkles, FileText } from 'lucide-react';
+import {
+  LayoutDashboard,
+  GitBranch,
+  PlayCircle,
+  Users,
+  Sparkles,
+  FileText,
+  Network,
+} from 'lucide-react';
 
 const ITEMS = [
   { to: '', label: 'Overview', icon: LayoutDashboard, end: true },
@@ -9,6 +17,7 @@ const ITEMS = [
   { to: 'agents', label: 'Agents', icon: Users, end: false },
   { to: 'skills', label: 'Skills', icon: Sparkles, end: false },
   { to: 'files', label: 'Files', icon: FileText, end: false },
+  { to: 'architecture', label: 'Architecture', icon: Network, end: false },
 ] as const;
 
 export function Nav(): JSX.Element {

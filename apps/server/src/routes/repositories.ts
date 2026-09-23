@@ -159,6 +159,70 @@ export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
+  // Static architecture graph: every discovered definition across all kinds
+  // as a node, every DefinitionRelationship as an edge. Purely a read-model
+  // over data that already exists — no new discovery logic here.
+  app.get<{ Params: { repoId: string } }>(
+    '/api/repositories/:repoId/architecture',
+    async (req) => {
+      const repositoryId = req.params.repoId;
+      const [workflows, agents, skills, instructions, prompts, hooks, mcpServers, relationships] =
+        await Promise.all([
+          prisma.workflowDefinition.findMany({ where: { repositoryId } }),
+          prisma.agentDefinition.findMany({ where: { repositoryId } }),
+          prisma.skillDefinition.findMany({ where: { repositoryId } }),
+          prisma.instructionDefinition.findMany({ where: { repositoryId } }),
+          prisma.promptDefinition.findMany({ where: { repositoryId } }),
+          prisma.hookDefinition.findMany({ where: { repositoryId } }),
+          prisma.mcpServerDefinition.findMany({ where: { repositoryId } }),
+          prisma.definitionRelationship.findMany({ where: { repositoryId } }),
+        ]);
+      const compiledWorkflows = await prisma.compiledWorkflow.findMany({
+        where: { workflowDefinitionId: { in: workflows.map((w) => w.id) } },
+      });
+
+      const nodes = [
+        ...workflows.map((w) => ({ id: w.id, kind: 'workflow', name: w.name, path: w.path })),
+        ...compiledWorkflows.map((c) => ({
+          id: c.id,
+          kind: 'compiled-workflow',
+          name: c.path.split('/').pop() ?? c.path,
+          path: c.path,
+        })),
+        ...agents.map((a) => ({ id: a.id, kind: 'agent', name: a.name, path: a.path })),
+        ...skills.map((s) => ({ id: s.id, kind: 'skill', name: s.name, path: s.path })),
+        ...instructions.map((i) => ({
+          id: i.id,
+          kind: 'instruction',
+          name: i.path.split('/').pop() ?? i.path,
+          path: i.path,
+        })),
+        ...prompts.map((p) => ({ id: p.id, kind: 'prompt', name: p.name, path: p.path })),
+        ...hooks.map((h) => ({
+          id: h.id,
+          kind: 'hook',
+          name: h.path.split('/').pop() ?? h.path,
+          path: h.path,
+        })),
+        ...mcpServers.map((m) => ({ id: m.id, kind: 'mcp-server', name: m.name, path: m.path })),
+      ];
+
+      const edges = relationships.map((r) => ({
+        id: r.id,
+        source: r.sourceDefinitionId,
+        target: r.targetDefinitionId,
+        sourceKind: r.sourceKind,
+        targetKind: r.targetKind,
+        relationshipType: r.relationshipType,
+        evidenceSource: r.evidenceSource,
+        evidenceConfidence: r.evidenceConfidence,
+        evidenceNote: r.evidenceNote,
+      }));
+
+      return { nodes, edges };
+    },
+  );
+
   // Discovers static repo artifacts (workflows/agents/skills/instructions/
   // prompts/hooks/mcp servers) from a checkout on disk and persists them.
   // Live GitHub-API-backed sync (cloning/fetching a remote repo) is a
