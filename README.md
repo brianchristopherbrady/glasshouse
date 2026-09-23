@@ -1,132 +1,170 @@
-# FLOWBOOK
+# Agentic Flows
 
-**A Storybook for agentic AI.**
+Observability and visualization for agentic software-development workflows.
 
-Flowbook is an interactive explorer and debugger for agentic systems. It
-turns agents, prompts, instructions, skills, tools, artifacts, handoffs,
-evaluations, and scenarios into an understandable, executable visual
-system -- and then actually **runs** them against the real repository, not
-a scripted animation.
+Agentic Flows lets engineering teams understand what autonomous or semi-autonomous
+agents actually did during a repository workflow: what triggered a run, which
+agents and sub-agents participated, what skills were configured versus actually
+evidenced as loaded, which tools and MCP servers were called, what files
+changed, and what GitHub outputs (PRs, issues, checks) resulted.
 
-See [plan.md](plan.md) for the full product spec and
-[docs/flowbook-vision.md](docs/flowbook-vision.md) for exactly what's
-implemented vs. still a gap.
+The product's core mental model is **definition vs. execution**: the system
+separately tracks what a repository *declares* (workflows, agents, skills,
+instructions) and what a run *actually did*, with every fact tagged by
+evidence source and confidence. Inference is never presented as fact.
 
-The core distinction the whole product is built around:
+## Architecture
 
-- **Blueprint** -- what a workflow is designed to do (its declared
-  agents/prompts/skills/tools/artifacts/evaluations and the relationships
-  between them), read straight from a workflow's own registration.
-- **Run** -- what actually happened during one real execution: a genuine
-  trace made of real `Span`s (real start/end times, real status, real
-  input/output), produced by the workflow's own code actually running.
+```
+apps/
+  web/      React + TypeScript + Vite + Tailwind + React Router + TanStack Query
+  server/   Fastify + TypeScript + Zod + Prisma
 
----
-
-## Quick start (any repo)
-
-```bash
-cd /path/to/the/repo/you/want/to/explore
-npx flowbook init     # scaffolds an empty flowbook.config.mjs
-npx flowbook start    # starts the orchestrator + dashboard, watching this repo
+packages/
+  domain/   Normalized Zod domain model (Repository, WorkflowDefinition,
+            AgentDefinition, SkillDefinition, Span, AgentEvent, WorkflowRun,
+            evidence/confidence types, redaction service, drift types)
+  parser/   Lightweight frontmatter parser for .md definition files
 ```
 
-Open **http://localhost:4317**. Declare your own workflows in
-`flowbook.config.mjs`'s `workflows` glob list -- any matching file that
-calls `registerWorkflow()` when imported is discovered automatically (see
-`packages/core/shared/flowbook-config.ts` / `server/runner/discovery.ts`).
+A run is modeled as a tree of **spans** (OpenTelemetry-inspired: id, parentSpanId,
+type, actor, start/end, status, attributes, source, confidence), with a parallel
+normalized **event stream** for chronological/timeline views. Static repository
+definitions (workflows, agents, skills, instructions, hooks, MCP servers) are
+kept entirely separate from runtime data and never conflated.
 
-`flowbook start` accepts:
+## Tech stack
 
-```bash
-npx flowbook start --repo /path/to/other/repo
-npx flowbook start --port 4400 --client-port 5180
-```
+- **Frontend**: React, TypeScript, Vite, React Router, TanStack Query, Tailwind CSS,
+  Lucide icons. (`@xyflow/react` is installed for a future architecture-graph
+  view; the Phase 1 build does not yet use it.)
+- **Backend**: Node.js, TypeScript, Fastify, Zod, Prisma.
+- **Database**: **SQLite** for local development (see note below), swappable to
+  PostgreSQL for production via a one-line Prisma datasource change.
+- **Testing**: Vitest.
+- **Formatting/linting**: ESLint, Prettier.
 
-## Developing Flowbook itself
+### Database note: SQLite instead of Docker Compose Postgres
 
-```bash
+The original spec calls for PostgreSQL via Docker Compose. This machine has
+neither Docker nor a usable WSL distribution installed, so local development
+uses **SQLite** instead — zero extra installs, same Prisma schema and query
+API. Two schema details differ solely because of this substitution:
+
+- All fields that would be a native Prisma `Json` column are declared as
+  `String` and JSON-serialized/parsed by hand (`apps/server/src/serialize.ts`,
+  `apps/server/prisma/seed.ts`'s `j()` helper) — SQLite's Prisma connector
+  does not support the `Json` type.
+- `prisma/schema.prisma`'s `datasource` block is `provider = "sqlite"`.
+
+To move to PostgreSQL: install Docker (or a local Postgres), add a
+`docker-compose.yml` service, change `provider` to `"postgresql"` in
+`apps/server/prisma/schema.prisma`, change the `Json`-eligible `String` fields
+back to `Json`, remove the manual `JSON.stringify`/`JSON.parse` calls, and
+re-run `prisma migrate dev`.
+
+## Setup
+
+```powershell
 npm install
-npm start
+npm run db:migrate --workspace apps/server   # creates apps/server/prisma/dev.db + seeds demo data
+npm run dev --workspace apps/server          # Fastify on :4000
+npm run dev --workspace apps/web             # Vite on :5173 (proxies /api to :4000)
 ```
 
-This runs the orchestrator/API server (port 4317) and the Vite dev client
-(port 5173) together. Open **http://localhost:5173**.
+Or build everything and run in production mode:
 
-```bash
-npm test          # vitest
-npm run build     # tsc -b && vite build (also what `npx flowbook start` serves)
+```powershell
+npm run build
+npm run start --workspace apps/server
 ```
 
----
+The web app has no separate "demo mode" flag — it's simply the only data in
+the database until a real GitHub repository is synced. Every demo record goes
+through the same Prisma models a live ingestion pipeline would populate.
 
-## What you're looking at
+## Demo data
 
-The whole product is one screen: the **Workflow** view.
+`apps/server/prisma/seed.ts` seeds a realistic `acme/payments` repository:
 
-- **Explorer** (left) -- every resource any registered workflow declares,
-  grouped by kind (Workflows/Agents/Prompts/Instructions/Skills/Tools/
-  Artifacts/Evaluations), with fuzzy search. Clicking an item navigates to
-  its owning workflow and selects it.
-- **Controls** -- pick a workflow + scenario, edit its input as real JSON,
-  then **▶ Run with changes** to actually execute it.
-- **Canvas** -- the Blueprint graph (real `elkjs` layered layout) in
-  Blueprint mode; live status rings once a Run starts. In Run mode, switch
-  between **Map** (the same graph, overlaid with live span status),
-  **Sequence** (a UML-style actor-lane diagram), and **Waterfall** (a
-  latency Gantt chart) -- all driven by the same real Run/Span data.
-- **Trace** -- the chronological list of real Spans as they're produced.
-- **Inspector** -- click a resource or a span to see its detail: a Prompt's
-  real Template vs. Resolved text (Monaco), a Handoff's real
-  included/excluded context checklist, or an Artifact's **View Diff**
-  (real before/after content with +/- hunks).
+- 3 workflow definitions (Issue Triage, Dependency Audit, Documentation Sync),
+  each with a compiled `.lock.yml` companion.
+- 4 agent definitions (triage-agent, security-reviewer, dependency-agent,
+  docs-writer) and 4 skill definitions.
+- 15 workflow runs covering: a successful single-agent run, a failed run, a
+  multi-agent handoff (triage → security-reviewer), a parallel-agent run
+  (dependency-agent + docs-writer overlapping), a deep 3-level handoff chain,
+  an unexpected file modification (a real Run Drift finding), a skill that is
+  configured but has no runtime evidence (honestly labeled "Unknown", not
+  "used"), a tool failure followed by a successful retry, and PR/issue/test
+  outcomes throughout.
 
-Every Run streams live over SSE (`GET /api/runner/stream`) the moment
-`POST /api/runner/runs` starts it -- no polling, no page refresh.
+## Domain model
 
----
+See [packages/domain/src](packages/domain/src) for the full Zod schemas.
+Key types: `Repository`, `WorkflowDefinition`, `CompiledWorkflow`,
+`AgentDefinition`, `SkillDefinition`, `InstructionDefinition`,
+`DefinitionRelationship` (static architecture graph, always evidence-tagged),
+`WorkflowRun`, `Span`, `AgentEvent`, `AgentRun`, `AgentHandoff`, `SkillUsage`,
+`FileOperation`, `ToolInvocation`, `DriftFinding`.
 
-## How a workflow becomes real
+Skill usage is deliberately **never** collapsed into a single boolean. It is
+tracked as five independent facts: `available`, `configured`, `loaded`,
+`referenced`, `executionEvidence` (the latter three are `true | false |
+"unknown"`, not just `true | false`) — a skill that is configured in an
+agent's frontmatter but never observed executing at runtime is shown as
+"Loaded: Unknown", never as "used" or "not used".
 
-1. A workflow module calls `registerWorkflow({ id, label, resources,
-   relationships, scenarios, run })` (see
-   `packages/core/server/runner/workflows/document-refactor/index.ts` for
-   the one built-in example). `resources`/`relationships` are the
-   Blueprint -- exactly what the workflow declares, nothing inferred.
-   `scenarios` are reproducible named inputs.
-2. Pressing **▶ Run** calls `POST /api/runner/runs`, which calls
-   `startRun()` (`packages/core/server/runner/engine.ts`). It returns
-   immediately with a `status: "running"` Run and continues executing in
-   the background.
-3. Inside the workflow's own `run(ctx)` function, every real unit of work
-   is wrapped in `ctx.span(kind, label, fn)` -- this creates a real `Span`
-   with a real `Date.now()` start time, runs `fn`, and closes the span with
-   real success/failure based on whether `fn` actually threw. A workflow
-   can genuinely branch on a real evaluation's result (see
-   `document-refactor`'s repair loop: a real accessibility check fails,
-   the Builder genuinely re-edits the file, the check genuinely passes).
-4. Every Span is broadcast live over `server/runner/runBus.ts` the instant
-   it's created/closed, and persisted to `.flowbook/runs/<runId>.json`.
+## API
 
-A repo declares its own workflows via `flowbook.config.mjs`'s `workflows`
-glob list; `server/runner/discovery.ts` expands the globs and dynamically
-imports each matched file purely for its `registerWorkflow()` side effect.
-A single broken workflow module is caught, logged, and skipped -- it never
-prevents every other real, working workflow from loading.
+REST endpoints served by `apps/server`:
 
----
+- `GET /api/repositories`, `GET /api/repositories/:repoId`
+- `GET /api/repositories/:repoId/{workflows,agents,skills,runs,files,overview}`
+- `GET /api/runs/:runId`
+- `GET /api/runs/:runId/{trace,events,files,agents,skills,tools,logs,github,metrics,drift}`
+- `POST /api/telemetry/events`, `POST /api/telemetry/batch` — Zod-validated
+  ingestion endpoints for the (not-yet-built) runtime telemetry client.
 
-## Project layout
+`GET /api/runs/:runId/trace` returns `{ run, trace }` where `trace` is a real
+span forest built by `apps/server/src/trace.ts`'s `buildSpanTree` (parent
+resolution + start-time sibling sorting), which the web app renders as a
+flame-chart in the Run Detail → Trace tab.
 
-```text
-packages/core/    the engine: shared domain model (shared/flowbook-types.ts),
-                  the real orchestrator (server/runner/), repository
-                  discovery/config (shared/flowbook-config.ts,
-                  shared/glob.ts, server/runner/discovery.ts), and the
-                  HTTP/SSE API server. Knows nothing about React.
-packages/cli/     the `flowbook` CLI (start/init)
-packages/ui/      the React + Vite browser workbench (packages/ui/src/workflow/)
-docs/             flowbook-vision.md tracks implementation status vs. plan.md
+## Known limitations (Phase 1 scope)
+
+Per the spec's phased build order, this pass stops after Phase 1: monorepo
+init, domain model, seed data, application shell, Overview, Runs, and one
+excellent Run Detail trace experience — all on demo data. **Not yet built**:
+
+- GitHub API integration (live repository sync, Actions run ingestion) — the
+  `api.ts` adapter-method shape described in the spec is not implemented yet.
+- The runtime telemetry client package (`packages/telemetry-client`) and the
+  `.agentic-telemetry/events.ndjson` file-based ingestion path — only the HTTP
+  `/api/telemetry/*` endpoints exist so far.
+- The correlation engine that merges GitHub Actions + git + telemetry into one
+  `WorkflowRun`.
+- The static repository parser that discovers `.github/workflows/*.md`,
+  `.github/agents/*.md`, `.github/skills/**`, etc. from a real checkout —
+  `packages/parser`'s `parseFrontmatter` exists as the building block, but
+  nothing yet walks a real filesystem tree with it.
+- The static architecture graph explorer (React Flow node/edge view of
+  Workflow/Agent/Skill/Instruction/Hook/MCP relationships).
+- Secret redaction is implemented (`packages/domain/src/redaction.ts`,
+  `redactSecrets`) but not yet wired into any log/tool-argument display path.
+- Mock/live GitHub mode toggle, workflow manual-trigger action.
+
+As documented in the product spec: GitHub Actions alone will not expose every
+internal agent event (model calls, skill context loading, sub-agent
+orchestration, tool calls) — high-fidelity views require runtime telemetry or
+structured artifacts, which is why the telemetry ingestion endpoints exist
+independently of the GitHub adapter.
+
+## Development commands
+
+```powershell
+npm run typecheck   # tsc -b across all workspaces
+npm run lint        # eslint .
+npm test            # vitest run (packages/domain, packages/parser, apps/server)
+npm run build       # builds every workspace (domain/parser dist, server dist, web dist)
 ```
-
-More detail on how the pieces fit together: [docs/architecture.md](docs/architecture.md).

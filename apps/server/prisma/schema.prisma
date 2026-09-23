@@ -1,0 +1,438 @@
+// Local dev uses SQLite (zero-install). Swap provider to "postgresql" and
+// point DATABASE_URL at a real Postgres instance for production — see
+// README.md "Database" section for the documented migration path.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Repository {
+  id              String   @id @default(cuid())
+  owner           String
+  name            String
+  fullName        String   @unique
+  defaultBranch   String
+  provider        String   @default("github")
+  providerRepoId  String
+  createdAt       DateTime @default(now())
+
+  workflowDefinitions   WorkflowDefinition[]
+  agentDefinitions      AgentDefinition[]
+  skillDefinitions      SkillDefinition[]
+  instructionDefinitions InstructionDefinition[]
+  promptDefinitions     PromptDefinition[]
+  hookDefinitions       HookDefinition[]
+  mcpServerDefinitions  McpServerDefinition[]
+  workflowRuns          WorkflowRun[]
+}
+
+model WorkflowDefinition {
+  id                 String   @id @default(cuid())
+  repositoryId       String
+  path               String
+  name               String
+  frontmatter        String
+  body               String
+  triggers           String
+  engine             String?
+  permissions        String?
+  safeOutputs        String?
+  compiledWorkflowId String?  @unique
+
+  repository       Repository        @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  compiledWorkflow CompiledWorkflow?
+  workflowRuns     WorkflowRun[]
+
+  @@unique([repositoryId, path])
+}
+
+model CompiledWorkflow {
+  id                   String @id @default(cuid())
+  workflowDefinitionId String @unique
+  path                 String
+  rawYaml              String
+
+  workflowDefinition WorkflowDefinition @relation(fields: [workflowDefinitionId], references: [id], onDelete: Cascade)
+}
+
+model AgentDefinition {
+  id               String  @id @default(cuid())
+  repositoryId     String
+  path             String
+  name             String
+  frontmatter      String
+  body             String
+  tools            String?
+  mcpServers       String?
+  configuredSkills String?
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  agentRuns  AgentRun[]
+
+  @@unique([repositoryId, path])
+}
+
+model SkillDefinition {
+  id           String  @id @default(cuid())
+  repositoryId String
+  path         String
+  name         String
+  description  String?
+  frontmatter  String
+  body         String
+  scripts      String?
+  resources    String?
+
+  repository Repository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  skillUsages SkillUsage[]
+
+  @@unique([repositoryId, path])
+}
+
+model InstructionDefinition {
+  id           String  @id @default(cuid())
+  repositoryId String
+  path         String
+  kind         String
+  applyTo      String?
+  body         String
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, path])
+}
+
+model PromptDefinition {
+  id           String @id @default(cuid())
+  repositoryId String
+  path         String
+  name         String
+  frontmatter  String
+  body         String
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, path])
+}
+
+model HookDefinition {
+  id           String @id @default(cuid())
+  repositoryId String
+  path         String
+  rawJson      String
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, path])
+}
+
+model McpServerDefinition {
+  id           String  @id @default(cuid())
+  repositoryId String
+  path         String
+  name         String
+  command      String?
+  args         String?
+  rawConfig    String
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryId, path])
+}
+
+model DefinitionRelationship {
+  id                   String @id @default(cuid())
+  sourceDefinitionId   String
+  sourceKind           String
+  targetDefinitionId   String
+  targetKind           String
+  relationshipType     String
+  evidenceSource       String
+  evidenceConfidence   String
+  evidenceNote         String?
+
+  @@index([sourceDefinitionId])
+  @@index([targetDefinitionId])
+}
+
+model WorkflowRun {
+  id                    String    @id @default(cuid())
+  repositoryId          String
+  workflowDefinitionId  String?
+  workflowName          String
+  providerRunId         String?
+  runAttempt            Int       @default(1)
+  trigger               String
+  branch                String?
+  commitSha             String?
+  pullRequestNumber     Int?
+  status                String
+  startTime             DateTime
+  endTime               DateTime?
+  durationMs            Int?
+  engine                String?
+
+  repository         Repository          @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  workflowDefinition WorkflowDefinition? @relation(fields: [workflowDefinitionId], references: [id])
+  spans              Span[]
+  events             Event[]
+  agentRuns          AgentRun[]
+  toolInvocations    ToolInvocation[]
+  fileOperations     FileOperation[]
+  commits            Commit[]
+  pullRequests       PullRequest[]
+  issueOperations    IssueOperation[]
+  checkOperations    CheckOperation[]
+  modelInvocations   ModelInvocation[]
+  artifacts          Artifact[]
+  logRecords         LogRecord[]
+  driftFindings      DriftFinding[]
+
+  @@index([repositoryId])
+}
+
+model Span {
+  id           String    @id @default(cuid())
+  runId        String
+  parentSpanId String?
+  type         String
+  name         String
+  actorId      String?
+  startTime    DateTime
+  endTime      DateTime?
+  durationMs   Int?
+  status       String
+  attributes   String
+  source       String
+  confidence   String
+
+  run    WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  events Event[]
+
+  @@index([runId])
+  @@index([parentSpanId])
+}
+
+model Event {
+  id           String   @id @default(cuid())
+  runId        String
+  spanId       String?
+  parentSpanId String?
+  timestamp    DateTime
+  kind         String
+  actorType    String?
+  actorId      String?
+  actorName    String?
+  data         String
+  evidenceSource     String
+  evidenceConfidence String
+  evidenceNote       String?
+
+  run  WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  span Span?       @relation(fields: [spanId], references: [id], onDelete: SetNull)
+
+  @@index([runId])
+  @@index([spanId])
+}
+
+model AgentRun {
+  id                String    @id @default(cuid())
+  runId             String
+  spanId            String
+  agentDefinitionId String?
+  name              String
+  parentAgentRunId  String?
+  startTime         DateTime
+  endTime           DateTime?
+  status            String
+
+  run              WorkflowRun      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  agentDefinition  AgentDefinition? @relation(fields: [agentDefinitionId], references: [id])
+  handoffsFrom     AgentHandoff[]   @relation("HandoffFrom")
+  handoffsTo       AgentHandoff[]   @relation("HandoffTo")
+
+  @@index([runId])
+}
+
+model AgentHandoff {
+  id              String   @id @default(cuid())
+  fromAgentRunId  String
+  toAgentRunId    String
+  timestamp       DateTime
+  reason          String?
+  inputSummary    String?
+  outputSummary   String?
+  evidenceSource     String
+  evidenceConfidence String
+
+  fromAgentRun AgentRun @relation("HandoffFrom", fields: [fromAgentRunId], references: [id], onDelete: Cascade)
+  toAgentRun   AgentRun @relation("HandoffTo", fields: [toAgentRunId], references: [id], onDelete: Cascade)
+}
+
+model SkillUsage {
+  id                String  @id @default(cuid())
+  skillDefinitionId String
+  agentRunId        String
+  available         Boolean
+  configured        Boolean
+  loaded            String // "true" | "false" | "unknown"
+  referenced        String // "true" | "false" | "unknown"
+  executionEvidence String // "true" | "false" | "unknown"
+  evidence          String
+
+  skillDefinition SkillDefinition @relation(fields: [skillDefinitionId], references: [id], onDelete: Cascade)
+
+  @@index([agentRunId])
+}
+
+model ToolInvocation {
+  id               String  @id @default(cuid())
+  runId            String
+  spanId           String
+  agentRunId       String?
+  category         String
+  toolName         String
+  argumentsPreview String?
+  resultPreview    String?
+  status           String
+  durationMs       Int?
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model FileOperation {
+  id            String  @id @default(cuid())
+  runId         String
+  spanId        String?
+  path          String
+  previousPath  String?
+  operation     String
+  additions     Int?
+  deletions     Int?
+  beforeSha     String?
+  afterSha      String?
+  diff          String?
+  actorId       String?
+  evidenceSource     String
+  evidenceConfidence String
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([path])
+}
+
+model Commit {
+  id         String   @id @default(cuid())
+  runId      String
+  sha        String
+  message    String
+  authorName String
+  authoredAt DateTime
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model PullRequest {
+  id        String   @id @default(cuid())
+  runId     String
+  action    String
+  number    Int
+  title     String
+  url       String
+  timestamp DateTime
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model IssueOperation {
+  id        String   @id @default(cuid())
+  runId     String
+  action    String
+  number    Int
+  title     String
+  url       String
+  timestamp DateTime
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model CheckOperation {
+  id         String    @id @default(cuid())
+  runId      String
+  name       String
+  status     String
+  detailsUrl String?
+  startTime  DateTime
+  endTime    DateTime?
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model ModelInvocation {
+  id            String  @id @default(cuid())
+  runId         String
+  spanId        String
+  model         String
+  tokensInput   Int?
+  tokensOutput  Int?
+  costUsd       Float?
+  durationMs    Int?
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model Artifact {
+  id        String  @id @default(cuid())
+  runId     String
+  name      String
+  sizeBytes Int?
+  url       String?
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model LogRecord {
+  id        String   @id @default(cuid())
+  runId     String
+  spanId    String?
+  source    String
+  timestamp DateTime
+  level     String
+  message   String
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model DriftFinding {
+  id          String @id @default(cuid())
+  runId       String
+  kind        String
+  description String
+  expected    String?
+  observed    String?
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
