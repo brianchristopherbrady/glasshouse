@@ -57,12 +57,16 @@ export function TraceView({
   }, [flat]);
 
   if (flat.length === 0) {
-    return <div className="text-text-muted">No span data recorded for this run.</div>;
+    return (
+      <div className="rounded-lg border border-border bg-surface-raised p-6 text-center text-text-muted shadow-raised">
+        No span data recorded for this run.
+      </div>
+    );
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface-raised p-3">
-      <div className="flex flex-col gap-1">
+    <div className="rounded-lg border border-border bg-surface-raised p-3 shadow-raised">
+      <div className="flex flex-col gap-0.5">
         {flat.map((span) => {
           const start = new Date(span.startTime).getTime();
           const end = span.endTime ? new Date(span.endTime).getTime() : start;
@@ -74,14 +78,17 @@ export function TraceView({
               key={span.id}
               type="button"
               onClick={() => onSelectSpan(span)}
+              aria-current={isSelected}
               className={clsx(
-                'group flex w-full items-center gap-2 rounded px-1 py-0.5 text-left transition-colors',
-                isSelected ? 'bg-surface-sunken' : 'hover:bg-surface-sunken/60',
+                'group flex w-full items-center gap-2 rounded px-1.5 py-1 text-left transition-colors',
+                isSelected
+                  ? 'bg-accent-wash ring-1 ring-inset ring-accent/30'
+                  : 'hover:bg-surface-sunken',
               )}
-              style={{ paddingLeft: `${span.depth * 16 + 4}px` }}
+              style={{ paddingLeft: `${span.depth * 16 + 6}px` }}
             >
-              <span className="w-52 shrink-0 truncate text-xs text-text">
-                <span className="mono mr-1 text-text-muted">{span.type}</span>
+              <span className="w-48 shrink-0 truncate text-xs text-text sm:w-56">
+                <span className="mono mr-1.5 text-text-faint">{span.type}</span>
                 {span.name}
               </span>
               <span className="relative h-4 flex-1 rounded bg-surface-sunken">

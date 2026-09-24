@@ -31,7 +31,7 @@ export function RunsPage(): JSX.Element {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-text">Runs</h1>
         <div className="flex gap-2">
           <select
@@ -65,44 +65,46 @@ export function RunsPage(): JSX.Element {
       {isLoading && <div className="text-text-muted">Loading runs…</div>}
 
       {!isLoading && (
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border bg-surface-raised shadow-raised">
           <table className="w-full text-left text-sm">
-            <thead className="bg-surface-raised text-text-muted">
+            <thead className="border-b border-border text-[11px] font-medium uppercase tracking-wide text-text-muted">
               <tr>
-                <th className="px-3 py-2 font-medium">Status</th>
-                <th className="px-3 py-2 font-medium">Workflow</th>
-                <th className="px-3 py-2 font-medium">Trigger</th>
-                <th className="px-3 py-2 font-medium">Branch</th>
-                <th className="px-3 py-2 font-medium">Started</th>
-                <th className="px-3 py-2 font-medium">Duration</th>
-                <th className="px-3 py-2 font-medium">Engine</th>
+                <th className="px-4 py-2.5 font-medium">Status</th>
+                <th className="px-4 py-2.5 font-medium">Workflow</th>
+                <th className="px-4 py-2.5 font-medium">Trigger</th>
+                <th className="px-4 py-2.5 font-medium">Branch</th>
+                <th className="px-4 py-2.5 font-medium">Started</th>
+                <th className="px-4 py-2.5 font-medium">Duration</th>
+                <th className="px-4 py-2.5 font-medium">Engine</th>
               </tr>
             </thead>
             <tbody>
               {runs?.map((run) => (
                 <tr
                   key={run.id}
-                  className="cursor-pointer border-t border-border hover:bg-surface-raised"
+                  className="group cursor-pointer border-t border-border transition-colors first:border-t-0 hover:bg-surface-sunken"
                   onClick={() => navigate(`/repos/${repoId}/runs/${run.id}`)}
                 >
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-2.5">
                     <StatusBadge status={run.status} />
                   </td>
-                  <td className="px-3 py-2 text-text">{run.workflowName}</td>
-                  <td className="px-3 py-2 text-text-muted">{run.trigger}</td>
-                  <td className="mono px-3 py-2 text-text-muted">{run.branch ?? '—'}</td>
-                  <td className="px-3 py-2 text-text-muted">
+                  <td className="px-4 py-2.5 font-medium text-text group-hover:text-accent">
+                    {run.workflowName}
+                  </td>
+                  <td className="px-4 py-2.5 text-text-muted">{run.trigger}</td>
+                  <td className="mono px-4 py-2.5 text-text-muted">{run.branch ?? '—'}</td>
+                  <td className="px-4 py-2.5 text-text-muted">
                     {formatRelativeTime(run.startTime)}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-2.5">
                     <Duration ms={run.durationMs} />
                   </td>
-                  <td className="px-3 py-2 text-text-muted">{run.engine ?? 'Unavailable'}</td>
+                  <td className="px-4 py-2.5 text-text-muted">{run.engine ?? 'Unavailable'}</td>
                 </tr>
               ))}
               {runs?.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-6 text-center text-text-muted">
+                  <td colSpan={7} className="px-4 py-8 text-center text-text-muted">
                     No runs match the current filters.
                   </td>
                 </tr>

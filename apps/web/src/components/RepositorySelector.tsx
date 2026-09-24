@@ -12,7 +12,7 @@ export function RepositorySelector(): JSX.Element {
 
   return (
     <select
-      className="rounded-md border border-border bg-surface-raised px-2 py-1.5 text-sm text-text"
+      className="max-w-[10rem] truncate rounded-md border border-border bg-surface-raised px-2 py-1.5 text-[13px] text-text sm:max-w-none"
       value={repoId ?? ''}
       onChange={(e) => navigate(`/repos/${e.target.value}`)}
       aria-label="Select repository"

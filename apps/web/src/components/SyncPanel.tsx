@@ -35,21 +35,21 @@ export function SyncPanel({
   });
 
   return (
-    <div className="flex flex-col items-end gap-1">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col items-end gap-1.5">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           type="text"
           value={checkoutDir}
           onChange={(e) => setCheckoutDir(e.target.value)}
           placeholder="Local checkout path to sync from"
-          className="w-72 rounded-md border border-border bg-surface-raised px-2 py-1.5 text-xs text-text"
+          className="w-64 rounded-md border border-border bg-surface-raised px-2.5 py-1.5 text-xs text-text placeholder:text-text-faint sm:w-72"
           aria-label="Repository checkout path"
         />
         <button
           type="button"
           disabled={!checkoutDir || mutation.isPending}
           onClick={() => mutation.mutate()}
-          className="flex items-center gap-1.5 rounded-md border border-border bg-surface-raised px-3 py-1.5 text-xs font-medium text-text hover:bg-surface-sunken disabled:opacity-50"
+          className="flex shrink-0 items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-contrast transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:bg-surface-raised disabled:text-text-faint"
         >
           <RefreshCw size={13} className={mutation.isPending ? 'animate-spin' : ''} />
           Sync from disk

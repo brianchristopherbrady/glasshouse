@@ -2,20 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Evidence-grade control room: a cool, forensic dark theme by default, with
+ * a complete light counterpart. Confidence/evidence colors intentionally
+ * reuse the status hues (observed=success green, strong=accent blue,
+ * inferred=running amber, unknown=neutral) so the two systems read as one
+ * coherent trust language instead of a competing palette.
+ */
 :root {
-  --bg: #0d1117;
-  --surface: #10161f;
-  --surface-raised: #161d29;
-  --surface-sunken: #0a0e14;
-  --border: #232b38;
-  --text: #e6edf3;
-  --text-muted: #8b95a5;
-  --accent: #58a6ff;
-  --status-success: #3fb950;
-  --status-failure: #f85149;
-  --status-running: #d29922;
-  --status-pending: #8b95a5;
-  --status-unknown: #6e7681;
+  color-scheme: dark;
+
+  --bg: #0a0d13;
+  --surface: #0f1420;
+  --surface-raised: #161c2b;
+  --surface-sunken: #060810;
+  --surface-overlay: #1b2233;
+  --border: #242c40;
+  --border-strong: #333d57;
+  --text: #eef1f8;
+  --text-muted: #96a1b8;
+  --text-faint: #626c85;
+
+  --accent: #5b8cff;
+  --accent-strong: #82a8ff;
+  --accent-contrast: #05070d;
+  --accent-wash: rgba(91, 140, 255, 0.12);
+
+  --status-success: #34c98e;
+  --status-success-wash: rgba(52, 201, 142, 0.14);
+  --status-failure: #f2685f;
+  --status-failure-wash: rgba(242, 104, 95, 0.14);
+  --status-running: #e3aa3b;
+  --status-running-wash: rgba(227, 170, 59, 0.14);
+  --status-pending: #96a1b8;
+  --status-pending-wash: rgba(150, 161, 184, 0.12);
+  --status-unknown: #6b7690;
+  --status-unknown-wash: rgba(107, 118, 144, 0.12);
+
+  --evidence-observed: var(--status-success);
+  --evidence-observed-wash: var(--status-success-wash);
+  --evidence-strong: var(--accent);
+  --evidence-strong-wash: var(--accent-wash);
+  --evidence-inferred: var(--status-running);
+  --evidence-inferred-wash: var(--status-running-wash);
+  --evidence-unknown: var(--text-faint);
+  --evidence-unknown-wash: rgba(98, 108, 133, 0.14);
+
+  /* Architecture graph definition-kind colors — tuned per theme for AA text contrast. */
+  --kind-workflow: #6badf5;
+  --kind-workflow-wash: rgba(107, 173, 245, 0.12);
+  --kind-compiled-workflow: #8fc4f7;
+  --kind-compiled-workflow-wash: rgba(143, 196, 247, 0.1);
+  --kind-agent: #4fd19b;
+  --kind-agent-wash: rgba(79, 209, 155, 0.12);
+  --kind-skill: #b088f5;
+  --kind-skill-wash: rgba(176, 136, 245, 0.12);
+  --kind-instruction: #e3aa3b;
+  --kind-instruction-wash: rgba(227, 170, 59, 0.12);
+  --kind-prompt: #e28fd8;
+  --kind-prompt-wash: rgba(226, 143, 216, 0.12);
+  --kind-hook: #e8935f;
+  --kind-hook-wash: rgba(232, 147, 95, 0.12);
+  --kind-mcp-server: #52c4d0;
+  --kind-mcp-server-wash: rgba(82, 196, 208, 0.12);
+
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 20px -8px rgba(0, 0, 0, 0.6);
+  --shadow-overlay: 0 4px 8px rgba(0, 0, 0, 0.4), 0 24px 48px -12px rgba(0, 0, 0, 0.7);
+}
+
+html.light {
+  color-scheme: light;
+
+  --bg: #f3f5fa;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eaedf5;
+  --surface-overlay: #ffffff;
+  --border: #dfe3ee;
+  --border-strong: #c4cbdd;
+  --text: #121729;
+  --text-muted: #5a6480;
+  --text-faint: #8890a6;
+
+  --accent: #3160e0;
+  --accent-strong: #2249b8;
+  --accent-contrast: #ffffff;
+  --accent-wash: rgba(49, 96, 224, 0.08);
+
+  --status-success: #1a9d68;
+  --status-success-wash: rgba(26, 157, 104, 0.1);
+  --status-failure: #d6373a;
+  --status-failure-wash: rgba(214, 55, 58, 0.1);
+  --status-running: #b8790f;
+  --status-running-wash: rgba(184, 121, 15, 0.1);
+  --status-pending: #5a6480;
+  --status-pending-wash: rgba(90, 100, 128, 0.1);
+  --status-unknown: #798199;
+  --status-unknown-wash: rgba(121, 129, 153, 0.1);
+
+  --kind-workflow: #1c5fc4;
+  --kind-workflow-wash: rgba(28, 95, 196, 0.08);
+  --kind-compiled-workflow: #3f7ad1;
+  --kind-compiled-workflow-wash: rgba(63, 122, 209, 0.08);
+  --kind-agent: #0f8f5f;
+  --kind-agent-wash: rgba(15, 143, 95, 0.08);
+  --kind-skill: #7d3fd1;
+  --kind-skill-wash: rgba(125, 63, 209, 0.08);
+  --kind-instruction: #b8790f;
+  --kind-instruction-wash: rgba(184, 121, 15, 0.08);
+  --kind-prompt: #b23fa0;
+  --kind-prompt-wash: rgba(178, 63, 160, 0.08);
+  --kind-hook: #c15a26;
+  --kind-hook-wash: rgba(193, 90, 38, 0.08);
+  --kind-mcp-server: #12808c;
+  --kind-mcp-server-wash: rgba(18, 128, 140, 0.08);
+
+  --shadow-raised: 0 1px 2px rgba(23, 30, 55, 0.06), 0 8px 20px -10px rgba(23, 30, 55, 0.15);
+  --shadow-overlay: 0 4px 8px rgba(23, 30, 55, 0.08), 0 24px 48px -16px rgba(23, 30, 55, 0.22);
 }
 
 html,
@@ -29,11 +132,14 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  font-size: 13px;
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13.5px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.15s ease;
 }
 
-a {
+a:not([class]) {
   color: var(--accent);
 }
 
@@ -42,7 +148,7 @@ a {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-strong);
   border-radius: 6px;
 }
 ::-webkit-scrollbar-track {
@@ -52,18 +158,21 @@ a {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .mono {
   font-family:
     'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-variant-ligatures: none;
 }
 
 .status-dot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 .status-dot--success {
   background: var(--status-success);
@@ -89,5 +198,15 @@ a {
   }
   50% {
     opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot--running {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

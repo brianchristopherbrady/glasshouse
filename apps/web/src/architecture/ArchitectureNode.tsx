@@ -9,12 +9,12 @@ export function ArchitectureNodeView({ data }: { data: ArchNodeData }): JSX.Elem
   return (
     <div
       className={clsx(
-        'w-56 rounded-lg border bg-surface-raised px-3 py-2 shadow-sm',
+        'w-56 rounded-lg border bg-surface-raised px-3 py-2 shadow-raised transition-shadow hover:shadow-overlay',
         meta.colorClass,
       )}
     >
-      <Handle type="target" position={Position.Left} className="!bg-border" />
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide opacity-80">
+      <Handle type="target" position={Position.Left} className="!border-none !bg-border-strong" />
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide opacity-80">
         <Icon size={11} />
         {meta.label}
       </div>
@@ -24,7 +24,7 @@ export function ArchitectureNodeView({ data }: { data: ArchNodeData }): JSX.Elem
       <div className="mono truncate text-[10px] text-text-muted" title={data.path}>
         {data.path}
       </div>
-      <Handle type="source" position={Position.Right} className="!bg-border" />
+      <Handle type="source" position={Position.Right} className="!border-none !bg-border-strong" />
     </div>
   );
 }

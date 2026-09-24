@@ -15,7 +15,7 @@ export function ArchitecturePage(): JSX.Element {
   if (isLoading) return <div className="text-text-muted">Loading architecture graph…</div>;
   if (error || !data) {
     return (
-      <div className="rounded-lg border border-status-failure/40 bg-surface-raised p-4 text-status-failure">
+      <div className="rounded-lg border border-status-failure/40 bg-status-failure-wash p-4 text-status-failure">
         Failed to load the architecture graph.
       </div>
     );
@@ -26,14 +26,17 @@ export function ArchitecturePage(): JSX.Element {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-text">Architecture</h1>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
           {KIND_ORDER.filter((k) => (kindCounts.get(k) ?? 0) > 0).map((k) => {
             const meta = KIND_META[k];
             const Icon = meta.icon;
             return (
-              <span key={k} className={`flex items-center gap-1 text-xs ${meta.colorClass}`}>
+              <span
+                key={k}
+                className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${meta.badgeClass}`}
+              >
                 <Icon size={12} />
                 {meta.label} ({kindCounts.get(k)})
               </span>

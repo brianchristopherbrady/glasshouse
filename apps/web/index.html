@@ -3,7 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
     <title>Agentic Flows</title>
+    <script>
+      // Applied before paint to avoid a flash of the wrong theme.
+      (function () {
+        var saved = localStorage.getItem('agentic-flows-theme');
+        var wantsLight = saved ? saved === 'light' : !window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (wantsLight) document.documentElement.classList.add('light');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

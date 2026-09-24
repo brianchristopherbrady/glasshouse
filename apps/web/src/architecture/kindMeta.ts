@@ -13,24 +13,56 @@ import type { DefinitionKind } from '../api/types.js';
 
 export const KIND_META: Record<
   DefinitionKind,
-  { label: string; icon: LucideIcon; colorClass: string }
+  { label: string; icon: LucideIcon; colorClass: string; badgeClass: string }
 > = {
-  workflow: { label: 'Workflow', icon: GitBranch, colorClass: 'text-sky-400 border-sky-500/40' },
+  workflow: {
+    label: 'Workflow',
+    icon: GitBranch,
+    colorClass: 'text-kind-workflow border-kind-workflow/40',
+    badgeClass: 'text-kind-workflow bg-kind-workflow-wash',
+  },
   'compiled-workflow': {
     label: 'Compiled workflow',
     icon: FileCode2,
-    colorClass: 'text-sky-300 border-sky-500/30',
+    colorClass: 'text-kind-compiled-workflow border-kind-compiled-workflow/40',
+    badgeClass: 'text-kind-compiled-workflow bg-kind-compiled-workflow-wash',
   },
-  agent: { label: 'Agent', icon: Users, colorClass: 'text-emerald-400 border-emerald-500/40' },
-  skill: { label: 'Skill', icon: Sparkles, colorClass: 'text-purple-400 border-purple-500/40' },
+  agent: {
+    label: 'Agent',
+    icon: Users,
+    colorClass: 'text-kind-agent border-kind-agent/40',
+    badgeClass: 'text-kind-agent bg-kind-agent-wash',
+  },
+  skill: {
+    label: 'Skill',
+    icon: Sparkles,
+    colorClass: 'text-kind-skill border-kind-skill/40',
+    badgeClass: 'text-kind-skill bg-kind-skill-wash',
+  },
   instruction: {
     label: 'Instruction',
     icon: BookText,
-    colorClass: 'text-amber-400 border-amber-500/40',
+    colorClass: 'text-kind-instruction border-kind-instruction/40',
+    badgeClass: 'text-kind-instruction bg-kind-instruction-wash',
   },
-  prompt: { label: 'Prompt', icon: PromptIcon, colorClass: 'text-fuchsia-400 border-fuchsia-500/40' },
-  hook: { label: 'Hook', icon: Webhook, colorClass: 'text-orange-400 border-orange-500/40' },
-  'mcp-server': { label: 'MCP server', icon: Plug, colorClass: 'text-cyan-400 border-cyan-500/40' },
+  prompt: {
+    label: 'Prompt',
+    icon: PromptIcon,
+    colorClass: 'text-kind-prompt border-kind-prompt/40',
+    badgeClass: 'text-kind-prompt bg-kind-prompt-wash',
+  },
+  hook: {
+    label: 'Hook',
+    icon: Webhook,
+    colorClass: 'text-kind-hook border-kind-hook/40',
+    badgeClass: 'text-kind-hook bg-kind-hook-wash',
+  },
+  'mcp-server': {
+    label: 'MCP server',
+    icon: Plug,
+    colorClass: 'text-kind-mcp-server border-kind-mcp-server/40',
+    badgeClass: 'text-kind-mcp-server bg-kind-mcp-server-wash',
+  },
 };
 
 export const KIND_ORDER: DefinitionKind[] = [

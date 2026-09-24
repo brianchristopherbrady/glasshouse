@@ -23,7 +23,7 @@ const ITEMS = [
 export function Nav(): JSX.Element {
   const { repoId } = useParams();
   return (
-    <nav className="flex items-center gap-1">
+    <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto" aria-label="Primary">
       {ITEMS.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
@@ -31,15 +31,15 @@ export function Nav(): JSX.Element {
           end={end}
           className={({ isActive }) =>
             clsx(
-              'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+              'relative flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors',
               isActive
-                ? 'bg-surface-raised text-text'
+                ? 'bg-accent-wash text-accent'
                 : 'text-text-muted hover:bg-surface-raised hover:text-text',
             )
           }
         >
-          <Icon size={15} />
-          {label}
+          <Icon size={15} strokeWidth={2.25} />
+          <span className="hidden md:inline">{label}</span>
         </NavLink>
       ))}
     </nav>
