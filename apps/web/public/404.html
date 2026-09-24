@@ -1,0 +1,21 @@
+<!doctype html>
+<!--
+  GitHub Pages serves this for any unmatched path (e.g. a deep-linked or
+  refreshed client-side route like /glasshouse/repos/x/runs/y). It re-encodes
+  the path into a query string and redirects to index.html, which restores it
+  via history.replaceState before React Router mounts. Standard workaround:
+  https://github.com/rafgraph/spa-github-pages
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Agentic Flows</title>
+    <script>
+      var basePath = '/glasshouse';
+      var path = location.pathname.slice(basePath.length);
+      var redirectQuery = encodeURIComponent(path + location.search).replace(/%2F/g, '/');
+      location.replace(basePath + '/?redirect=' + redirectQuery + location.hash);
+    </script>
+  </head>
+  <body></body>
+</html>

@@ -34,6 +34,14 @@ export function SyncPanel({
     },
   });
 
+  if (import.meta.env.VITE_STATIC_DEMO === 'true') {
+    return (
+      <div className="rounded-md bg-status-pending-wash px-3 py-1.5 text-xs text-text-muted">
+        Sync from disk is unavailable in this static demo.
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-end gap-1.5">
       <div className="flex flex-wrap items-center gap-2">

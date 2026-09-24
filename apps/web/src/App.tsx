@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Radar } from 'lucide-react';
 import { Nav } from './components/Nav.js';
@@ -36,15 +36,15 @@ function Header(): JSX.Element {
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
       <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
         <div className="flex min-w-0 items-center gap-5">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="flex shrink-0 items-center gap-2 text-[13px] font-semibold tracking-wide text-text no-underline"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent text-accent-contrast">
               <Radar size={15} strokeWidth={2.25} />
             </span>
             <span className="hidden sm:inline">AGENTIC FLOWS</span>
-          </a>
+          </Link>
           <Nav />
         </div>
         <div className="flex shrink-0 items-center gap-2">

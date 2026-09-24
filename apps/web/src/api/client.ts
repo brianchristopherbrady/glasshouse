@@ -30,6 +30,13 @@ class ApiError extends Error {
   }
 }
 
+// Set VITE_STATIC_DEMO=true (see apps/web/.env.production for the GitHub
+// Pages build) to serve pre-exported JSON snapshots instead of the live
+// Fastify API — Pages can only host static files, so this is what powers
+// the hosted demo. Local development always talks to the real backend.
+const STATIC_DEMO = import.meta.env.VITE_STATIC_DEMO === 'true';
+const STATIC_BASE = import.meta.env.BASE_URL.replace(/\/$/, '') + '/demo-data';
+
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(path, { headers: { Accept: 'application/json' } });
   if (!res.ok) {
@@ -52,7 +59,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return (await res.json()) as T;
 }
 
-export const api = {
+const liveApi = {
   listRepositories: () => getJson<Repository[]>('/api/repositories'),
   getRepository: (repoId: string) => getJson<Repository>(`/api/repositories/${repoId}`),
   getOverview: (repoId: string) =>
@@ -92,5 +99,55 @@ export const api = {
   getRunMetrics: (runId: string) => getJson<RunMetrics>(`/api/runs/${runId}/metrics`),
   getRunDrift: (runId: string) => getJson<DriftFinding[]>(`/api/runs/${runId}/drift`),
 };
+
+const staticApi: typeof liveApi = {
+  listRepositories: () => getJson<Repository[]>(`${STATIC_BASE}/repositories.json`),
+  getRepository: (repoId) => getJson<Repository>(`${STATIC_BASE}/repositories/${repoId}.json`),
+  getOverview: (repoId) =>
+    getJson<OverviewResponse>(`${STATIC_BASE}/repositories/${repoId}/overview.json`),
+  listWorkflows: (repoId) =>
+    getJson<WorkflowDefinition[]>(`${STATIC_BASE}/repositories/${repoId}/workflows.json`),
+  getWorkflow: async (repoId, workflowId) => {
+    const workflows = await staticApi.listWorkflows(repoId);
+    const found = workflows.find((w) => w.id === workflowId);
+    if (!found) throw new ApiError(404, 'workflow_not_found');
+    return found;
+  },
+  listAgents: (repoId) => getJson<AgentDefinition[]>(`${STATIC_BASE}/repositories/${repoId}/agents.json`),
+  listSkills: (repoId) => getJson<SkillDefinition[]>(`${STATIC_BASE}/repositories/${repoId}/skills.json`),
+  listFileHotspots: (repoId) =>
+    getJson<FileHotspot[]>(`${STATIC_BASE}/repositories/${repoId}/files.json`),
+  listRelationships: (repoId) =>
+    getJson<DefinitionRelationship[]>(`${STATIC_BASE}/repositories/${repoId}/relationships.json`),
+  getArchitecture: (repoId) =>
+    getJson<ArchitectureGraphResponse>(`${STATIC_BASE}/repositories/${repoId}/architecture.json`),
+  syncRepository: () => {
+    throw new ApiError(
+      501,
+      'Sync from disk is unavailable in this static demo — it requires a live server with filesystem access.',
+    );
+  },
+  listRuns: async (repoId, filters) => {
+    const runs = await getJson<WorkflowRun[]>(`${STATIC_BASE}/repositories/${repoId}/runs.json`);
+    return runs.filter(
+      (r) =>
+        (!filters?.workflowId || r.workflowDefinitionId === filters.workflowId) &&
+        (!filters?.status || r.status === filters.status),
+    );
+  },
+  getRun: (runId) => getJson<WorkflowRun>(`${STATIC_BASE}/runs/${runId}.json`),
+  getRunTrace: (runId) => getJson<RunTraceResponse>(`${STATIC_BASE}/runs/${runId}/trace.json`),
+  getRunEvents: (runId) => getJson<RunEvent[]>(`${STATIC_BASE}/runs/${runId}/events.json`),
+  getRunFiles: (runId) => getJson<FileOperation[]>(`${STATIC_BASE}/runs/${runId}/files.json`),
+  getRunAgents: (runId) => getJson<RunAgentsResponse>(`${STATIC_BASE}/runs/${runId}/agents.json`),
+  getRunSkills: (runId) => getJson<SkillUsage[]>(`${STATIC_BASE}/runs/${runId}/skills.json`),
+  getRunTools: (runId) => getJson<ToolInvocation[]>(`${STATIC_BASE}/runs/${runId}/tools.json`),
+  getRunLogs: (runId) => getJson<LogRecord[]>(`${STATIC_BASE}/runs/${runId}/logs.json`),
+  getRunGithub: (runId) => getJson<RunGithubResponse>(`${STATIC_BASE}/runs/${runId}/github.json`),
+  getRunMetrics: (runId) => getJson<RunMetrics>(`${STATIC_BASE}/runs/${runId}/metrics.json`),
+  getRunDrift: (runId) => getJson<DriftFinding[]>(`${STATIC_BASE}/runs/${runId}/drift.json`),
+};
+
+export const api = STATIC_DEMO ? staticApi : liveApi;
 
 export { ApiError };
