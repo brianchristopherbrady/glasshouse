@@ -40,7 +40,7 @@ jobs:
 
       - name: Wait for API server
         run: |
-          for i in $(seq 1 30); do
+          for i in $(seq 1 60); do
             if curl -sf http://localhost:4000/api/health > /dev/null; then
               echo "server is up"
               exit 0
@@ -49,6 +49,10 @@ jobs:
           done
           echo "server did not become ready in time" >&2
           exit 1
+
+      - name: Dump server log on failure
+        if: failure()
+        run: cat server.log || true
 
       - name: Export static demo data
         run: node scripts/export-static-demo.mjs
