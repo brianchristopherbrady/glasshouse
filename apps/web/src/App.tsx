@@ -33,8 +33,8 @@ function RepoRedirect(): JSX.Element {
 
 function Header(): JSX.Element {
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
+    <header className="sticky top-0 z-20 h-14 shrink-0 border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
+      <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-5">
           <Link
             to="/"
@@ -60,9 +60,9 @@ function RepoLayout(): JSX.Element {
   const { repoId } = useParams();
   if (!repoId) return <Navigate to="/" replace />;
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="flex min-h-screen flex-col bg-bg">
       <Header />
-      <main className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">
+      <main className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col px-4 py-6 sm:px-6">
         <Routes>
           <Route index element={<OverviewPage />} />
           <Route path="flows" element={<FlowsPage />} />

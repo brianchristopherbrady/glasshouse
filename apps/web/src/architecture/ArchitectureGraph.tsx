@@ -60,26 +60,28 @@ export function ArchitectureGraph({
   const selectedNode = selectedId ? nodesById.get(selectedId) : null;
 
   return (
-    <div className="relative h-[600px] rounded-lg border border-border bg-surface-sunken">
-      <ReactFlow
-        nodes={flowNodes}
-        edges={flowEdges}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.2 }}
-        onNodeClick={(_, n) => setSelectedId(n.id)}
-        onPaneClick={() => setSelectedId(null)}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background color="var(--border)" gap={20} />
-        <Controls showInteractive={false} />
-        <MiniMap
-          pannable
-          zoomable
-          nodeColor="var(--surface-raised)"
-          maskColor="rgba(13,17,23,0.6)"
-        />
-      </ReactFlow>
+    <div className="relative min-h-[420px] flex-1 rounded-lg border border-border bg-surface-sunken">
+      <div className="absolute inset-0">
+        <ReactFlow
+          nodes={flowNodes}
+          edges={flowEdges}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.2 }}
+          onNodeClick={(_, n) => setSelectedId(n.id)}
+          onPaneClick={() => setSelectedId(null)}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background color="var(--border)" gap={20} />
+          <Controls showInteractive={false} />
+          <MiniMap
+            pannable
+            zoomable
+            nodeColor="var(--surface-raised)"
+            maskColor="rgba(13,17,23,0.6)"
+          />
+        </ReactFlow>
+      </div>
       {selectedNode && (
         <NodeDetailDrawer
           node={selectedNode}

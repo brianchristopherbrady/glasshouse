@@ -25,7 +25,7 @@ export function ArchitecturePage(): JSX.Element {
   for (const n of data.nodes) kindCounts.set(n.kind, (kindCounts.get(n.kind) ?? 0) + 1);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-text">Architecture</h1>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -46,7 +46,8 @@ export function ArchitecturePage(): JSX.Element {
       </div>
       <p className="text-xs text-text-muted">
         Static relationships discovered from the repository's own files — click a node for
-        details, including the evidence behind each connection.
+        details, including the evidence behind each connection. Scroll or trackpad-pinch to
+        zoom, drag the canvas to pan.
       </p>
       <ArchitectureGraph nodes={data.nodes} edges={data.edges} />
     </div>
