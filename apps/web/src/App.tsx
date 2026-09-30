@@ -1,10 +1,14 @@
+import { useEffect } from 'react';
 import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Radar } from 'lucide-react';
 import { Nav } from './components/Nav.js';
 import { RepositorySelector } from './components/RepositorySelector.js';
 import { ThemeToggle } from './components/ThemeToggle.js';
+import { DemoBanner } from './components/DemoBanner.js';
 import { api } from './api/client.js';
+
+const STATIC_DEMO = import.meta.env.VITE_STATIC_DEMO === 'true';
 import { OverviewPage } from './pages/OverviewPage.js';
 import { FlowsPage } from './pages/FlowsPage.js';
 import { RunsPage } from './pages/RunsPage.js';
@@ -44,6 +48,11 @@ function Header(): JSX.Element {
               <Radar size={15} strokeWidth={2.25} />
             </span>
             <span className="hidden sm:inline">AGENTIC FLOWS</span>
+            {STATIC_DEMO && (
+              <span className="rounded-full bg-status-running-wash px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-status-running">
+                Demo
+              </span>
+            )}
           </Link>
           <Nav />
         </div>
@@ -79,10 +88,16 @@ function RepoLayout(): JSX.Element {
 }
 
 export default function App(): JSX.Element {
+  useEffect(() => {
+    if (STATIC_DEMO) document.title = 'Agentic Flows — Live Demo';
+  }, []);
   return (
-    <Routes>
-      <Route path="/" element={<RepoRedirect />} />
-      <Route path="/repos/:repoId/*" element={<RepoLayout />} />
-    </Routes>
+    <>
+      <DemoBanner />
+      <Routes>
+        <Route path="/" element={<RepoRedirect />} />
+        <Route path="/repos/:repoId/*" element={<RepoLayout />} />
+      </Routes>
+    </>
   );
 }
