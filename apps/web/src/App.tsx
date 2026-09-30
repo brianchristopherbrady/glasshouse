@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Radar } from 'lucide-react';
@@ -6,6 +6,7 @@ import { Nav } from './components/Nav.js';
 import { RepositorySelector } from './components/RepositorySelector.js';
 import { ThemeToggle } from './components/ThemeToggle.js';
 import { DemoBanner } from './components/DemoBanner.js';
+import { DemoLanding } from './components/DemoLanding.js';
 import { api } from './api/client.js';
 
 const STATIC_DEMO = import.meta.env.VITE_STATIC_DEMO === 'true';
@@ -33,6 +34,15 @@ function RepoRedirect(): JSX.Element {
     );
   }
   return <Navigate to={`/repos/${first.id}`} replace />;
+}
+
+// Shows the demo splash screen once per page load in the static-demo build
+// only — a direct link into a specific repo/page still bypasses it entirely,
+// so bookmarked/shared demo URLs keep working.
+function RootRoute(): JSX.Element {
+  const [entered, setEntered] = useState(!STATIC_DEMO);
+  if (!entered) return <DemoLanding onEnter={() => setEntered(true)} />;
+  return <RepoRedirect />;
 }
 
 function Header(): JSX.Element {
@@ -95,7 +105,7 @@ export default function App(): JSX.Element {
     <>
       <DemoBanner />
       <Routes>
-        <Route path="/" element={<RepoRedirect />} />
+        <Route path="/" element={<RootRoute />} />
         <Route path="/repos/:repoId/*" element={<RepoLayout />} />
       </Routes>
     </>
