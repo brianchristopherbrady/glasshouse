@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "./packages/domain" },
+    { "path": "./packages/telemetry-client" },
     { "path": "./apps/server" },
     { "path": "./apps/web" }
   ]
