@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { redactSecrets } from '@agentic-flows/domain';
 import { prisma } from '../db.js';
 import { buildSpanTree } from '../trace.js';
 import { serializeAgentDefinition, serializeEvent, serializeSkillDefinition, serializeSkillUsage } from '../serialize.js';
@@ -30,7 +31,9 @@ export async function runsRoutes(app: FastifyInstance): Promise<void> {
   });
 
   app.get<{ Params: { runId: string } }>('/api/runs/:runId/files', async (req) => {
-    return prisma.fileOperation.findMany({ where: { runId: req.params.runId } });
+    const fileOps = await prisma.fileOperation.findMany({ where: { runId: req.params.runId } });
+    // Diffs can contain secrets committed/edited during a run — redact before display.
+    return fileOps.map((f) => ({ ...f, diff: f.diff ? redactSecrets(f.diff) : f.diff }));
   });
 
   app.get<{ Params: { runId: string } }>('/api/runs/:runId/agents', async (req) => {
@@ -65,14 +68,22 @@ export async function runsRoutes(app: FastifyInstance): Promise<void> {
   });
 
   app.get<{ Params: { runId: string } }>('/api/runs/:runId/tools', async (req) => {
-    return prisma.toolInvocation.findMany({ where: { runId: req.params.runId } });
+    const invocations = await prisma.toolInvocation.findMany({ where: { runId: req.params.runId } });
+    // Tool call arguments/results are the most likely place a raw secret
+    // (an API key passed as an arg, a token in a response body) shows up.
+    return invocations.map((t) => ({
+      ...t,
+      argumentsPreview: t.argumentsPreview ? redactSecrets(t.argumentsPreview) : t.argumentsPreview,
+      resultPreview: t.resultPreview ? redactSecrets(t.resultPreview) : t.resultPreview,
+    }));
   });
 
   app.get<{ Params: { runId: string } }>('/api/runs/:runId/logs', async (req) => {
-    return prisma.logRecord.findMany({
+    const records = await prisma.logRecord.findMany({
       where: { runId: req.params.runId },
       orderBy: { timestamp: 'asc' },
     });
+    return records.map((r) => ({ ...r, message: redactSecrets(r.message) }));
   });
 
   app.get<{ Params: { runId: string } }>('/api/runs/:runId/github', async (req) => {

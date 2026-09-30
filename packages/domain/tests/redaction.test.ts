@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { redactSecrets } from '../src/redaction.js';
+import { redactSecrets, redactSecretsDeep } from '../src/redaction.js';
 
 describe('redactSecrets', () => {
   it('redacts GitHub personal access tokens', () => {
@@ -20,5 +20,27 @@ describe('redactSecrets', () => {
   it('leaves ordinary text untouched', () => {
     const input = 'This is a normal log line with no secrets.';
     expect(redactSecrets(input)).toBe(input);
+  });
+});
+
+describe('redactSecretsDeep', () => {
+  it('redacts string leaves nested inside objects and arrays', () => {
+    const input = {
+      command: 'curl -H "Authorization: Bearer ghp_abcdefghijklmnopqrstuvwxyz0123456789"',
+      args: ['safe', 'api_key: "sk-abc123def456ghi789"'],
+      nested: { untouched: 'fine', note: 'token: "sk-abc123def456ghi789xyz"' },
+    };
+    const result = redactSecretsDeep(input);
+    expect(result.command).toContain('[REDACTED]');
+    expect(result.args[0]).toBe('safe');
+    expect(result.args[1]).toContain('[REDACTED]');
+    expect(result.nested.untouched).toBe('fine');
+    expect(result.nested.note).toContain('[REDACTED]');
+  });
+
+  it('passes through non-string primitives unchanged', () => {
+    expect(redactSecretsDeep(42)).toBe(42);
+    expect(redactSecretsDeep(null)).toBe(null);
+    expect(redactSecretsDeep(true)).toBe(true);
   });
 });

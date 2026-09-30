@@ -1,3 +1,5 @@
+import { redactSecretsDeep } from '@agentic-flows/domain';
+
 /**
  * SQLite has no native Json column; JSON-typed fields are stored as text
  * and must be parsed back into real objects/arrays before being sent to
@@ -70,6 +72,8 @@ export function serializeSkillUsage<T extends { evidence: string }>(u: T) {
 export function serializeEvent<T extends { data: string }>(e: T) {
   return {
     ...e,
-    data: parseJson<Record<string, unknown>>(e.data, {}),
+    // Event data comes from external agent/tool producers and is displayed
+    // verbatim in the timeline/inspector — redact before it ever renders.
+    data: redactSecretsDeep(parseJson<Record<string, unknown>>(e.data, {})),
   };
 }

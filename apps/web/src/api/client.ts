@@ -37,8 +37,13 @@ class ApiError extends Error {
 const STATIC_DEMO = import.meta.env.VITE_STATIC_DEMO === 'true';
 const STATIC_BASE = import.meta.env.BASE_URL.replace(/\/$/, '') + '/demo-data';
 
+// Only needed once a deployment sets AGENTIC_FLOWS_API_TOKEN server-side —
+// unset by default, matching the server's own unauthenticated-by-default mode.
+const API_TOKEN = import.meta.env.VITE_API_TOKEN as string | undefined;
+const authHeaders: Record<string, string> = API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {};
+
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(path, { headers: { Accept: 'application/json' } });
+  const res = await fetch(path, { headers: { Accept: 'application/json', ...authHeaders } });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new ApiError(res.status, `${res.status} ${res.statusText}: ${body}`);
@@ -49,7 +54,7 @@ async function getJson<T>(path: string): Promise<T> {
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...authHeaders },
     body: JSON.stringify(body),
   });
   if (!res.ok) {

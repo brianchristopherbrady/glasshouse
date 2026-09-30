@@ -1,8 +1,9 @@
 import type { Span as PrismaSpan } from '@prisma/client';
+import { redactSecretsDeep } from '@agentic-flows/domain';
 
 function parseJsonColumn(raw: string): unknown {
   try {
-    return JSON.parse(raw);
+    return redactSecretsDeep(JSON.parse(raw));
   } catch {
     return {};
   }
