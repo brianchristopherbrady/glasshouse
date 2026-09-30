@@ -67,7 +67,15 @@ export function ArchitectureGraph({
           edges={flowEdges}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.2 }}
+          // Cap fitView to real (1x) size — never auto-shrink nodes to cram
+          // everything into view. Scrolling then pans like a normal
+          // scrollable surface instead of requiring click-and-drag.
+          fitViewOptions={{ padding: 0.2, minZoom: 1, maxZoom: 1 }}
+          minZoom={0.5}
+          maxZoom={1.5}
+          panOnScroll
+          zoomOnScroll={false}
+          zoomOnPinch
           onNodeClick={(_, n) => setSelectedId(n.id)}
           onPaneClick={() => setSelectedId(null)}
           proOptions={{ hideAttribution: true }}

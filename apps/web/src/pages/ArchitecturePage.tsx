@@ -46,8 +46,8 @@ export function ArchitecturePage(): JSX.Element {
       </div>
       <p className="text-xs text-text-muted">
         Static relationships discovered from the repository's own files — click a node for
-        details, including the evidence behind each connection. Scroll or trackpad-pinch to
-        zoom, drag the canvas to pan.
+        details, including the evidence behind each connection. Scroll to pan, pinch or use the
+        zoom controls to zoom.
       </p>
       <ArchitectureGraph nodes={data.nodes} edges={data.edges} />
     </div>
