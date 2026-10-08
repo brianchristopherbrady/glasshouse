@@ -65,6 +65,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # `migrate diff` replays migrations into a shadow database but, unlike
+      # `migrate dev`, does not create it.
+      - name: Create the shadow database
+        run: docker exec ${{ job.services.postgres.id }} createdb -U ci shadow
       - name: Postgres migrations match the Postgres schema
         working-directory: apps/server
         run: >
@@ -133,12 +137,23 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" http://localhost:4000/api/repositories)" = 200
           docker compose exec -T db psql -U agentic -d agentic_flows -tAc 'SELECT count(*) FROM "ApiToken"' | grep -qx 1
           echo "smoke test passed"
+      - name: Same image in its default SQLite mode (no DATABASE_URL)
+        run: |
+          docker run -d --name af-sqlite -p 4001:4000 -e AGENTIC_FLOWS_API_TOKEN=ci-sqlite-token agentic-flows:local
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:4001/api/ready > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -sf -H 'Authorization: Bearer ci-sqlite-token' http://localhost:4001/api/repositories
+          echo "sqlite mode passed"
       - name: Graceful shutdown
         run: |
           docker compose stop --timeout 15 app
           docker compose logs app | grep -q 'shutting down'
       - name: Logs on failure
         if: failure()
-        run: docker compose logs
+        run: |
+          docker compose logs
+          docker logs af-sqlite || true
       - run: docker compose down -v
         if: always()

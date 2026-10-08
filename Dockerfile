@@ -41,8 +41,13 @@ COPY --from=build /app/apps/server/bin ./apps/server/bin
 COPY --from=build /app/apps/server/prisma ./apps/server/prisma
 COPY --from=build /app/apps/server/dist/bundle.mjs /app/apps/server/dist/bundle.mjs.map ./apps/server/dist/
 COPY --from=build /app/apps/server/dist/web ./apps/server/dist/web
-# The CLI (re)generates the Prisma client for the configured provider at startup.
-RUN mkdir -p /data node_modules/.prisma && chown -R node:node /data node_modules/.prisma node_modules/@prisma/client
+# Pre-generate the PostgreSQL client (the docker-compose deployment) as root.
+# This also fetches Prisma's engines into node_modules/prisma, which the
+# non-root runtime user cannot write. If another provider is configured (e.g.
+# the SQLite default), the CLI regenerates into the node-owned client dir.
+RUN DATABASE_URL=postgresql://build-placeholder/db node apps/server/bin/agentic-flows.mjs generate \
+  && mkdir -p /data \
+  && chown -R node:node /data node_modules/.prisma node_modules/@prisma/client
 USER node
 VOLUME ["/data"]
 EXPOSE 4000

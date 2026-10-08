@@ -76,7 +76,8 @@ The `agentic-flows` CLI creates a data directory (`~/.agentic-flows`, or
 `AGENTIC_FLOWS_DATA_DIR`), generates the database client for the configured
 provider if needed, applies migrations, and serves the API and web UI on one
 port (`PORT`, default 4000). Other commands: `agentic-flows ingest <file.ndjson>
-[--url <server>]`, `--version`, `--help`.
+[--url <server>]`, `agentic-flows generate` (pre-generate the database client,
+e.g. at image build time), `--version`, `--help`.
 
 ### With Docker (app + PostgreSQL)
 

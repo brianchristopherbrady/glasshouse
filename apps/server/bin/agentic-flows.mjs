@@ -130,6 +130,7 @@ async function ingest(filePath, baseUrl) {
 const USAGE = `Usage:
   agentic-flows [start]                         run migrations, then start the server
   agentic-flows ingest <file.ndjson> [--url U]  forward offline-captured telemetry
+  agentic-flows generate                        generate the database client for DATABASE_URL
   agentic-flows --version | --help
 
 Configuration is via environment variables — see the README.`;
@@ -147,6 +148,8 @@ if (command === 'ingest') {
   await ingest(positional[0], baseUrl);
 } else if (command === undefined || command === 'start') {
   await start();
+} else if (command === 'generate') {
+  ensureClientGenerated(selectSchema(process.env.DATABASE_URL ?? ''));
 } else if (command === '--help' || command === '-h' || command === 'help') {
   console.log(USAGE);
 } else if (command === '--version' || command === '-v') {
