@@ -1,0 +1,12 @@
+.git
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+**/*.db
+**/*.db-journal
+.env
+**/.env
+apps/web/public/demo-data
+test-results
+playwright-report
+*.tgz

@@ -1,0 +1,40 @@
+# Production-style deployment: the app plus PostgreSQL.
+#   cp .env.example .env   # then set real secrets
+#   docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: agentic
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: agentic_flows
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U agentic -d agentic_flows']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://agentic:${POSTGRES_PASSWORD}@db:5432/agentic_flows
+      AGENTIC_FLOWS_API_TOKEN: ${AGENTIC_FLOWS_API_TOKEN:?set AGENTIC_FLOWS_API_TOKEN}
+      AGENTIC_FLOWS_ALLOWED_ORIGINS: ${AGENTIC_FLOWS_ALLOWED_ORIGINS:-}
+      AGENTIC_FLOWS_TRUST_PROXY: ${AGENTIC_FLOWS_TRUST_PROXY:-false}
+      AGENTIC_FLOWS_GITHUB_TOKEN: ${AGENTIC_FLOWS_GITHUB_TOKEN:-}
+      AGENTIC_FLOWS_GITHUB_APP_ID: ${AGENTIC_FLOWS_GITHUB_APP_ID:-}
+      AGENTIC_FLOWS_GITHUB_APP_PRIVATE_KEY: ${AGENTIC_FLOWS_GITHUB_APP_PRIVATE_KEY:-}
+      AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET: ${AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    ports:
+      - '${PORT:-4000}:4000'
+    restart: unless-stopped
+
+volumes:
+  pgdata:

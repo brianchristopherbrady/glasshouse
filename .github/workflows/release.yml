@@ -1,0 +1,45 @@
+name: Release
+
+# Publishes @agentic-flows/{domain,telemetry-client,server} when a vX.Y.Z tag
+# is pushed. Requires an NPM_TOKEN repository secret with publish rights to
+# the @agentic-flows npm scope.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - name: Tag matches package versions
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for pkg in packages/domain packages/telemetry-client apps/server; do
+            version=$(node -p "require('./$pkg/package.json').version")
+            if [ "$version" != "$tag" ]; then echo "$pkg is $version, tag is $tag" >&2; exit 1; fi
+          done
+      - run: npx prisma generate --schema apps/server/prisma/schema.prisma
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          REQUIRE_WEB_DIST: 'true'
+      - name: Publish
+        run: |
+          npm publish -w packages/domain --provenance
+          npm publish -w packages/telemetry-client --provenance
+          npm publish -w apps/server --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

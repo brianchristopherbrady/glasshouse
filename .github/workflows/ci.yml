@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PRISMA_HIDE_UPDATE_MESSAGE: '1'
+  DATABASE_URL: file:./dev.db
+
+jobs:
+  verify:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate --schema apps/server/prisma/schema.prisma
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Schema and migration drift checks
+        run: npm run db:check
+      - run: npm test
+      - name: Build (server bundle must include the web UI)
+        run: npm run build
+        env:
+          REQUIRE_WEB_DIST: 'true'
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+
+  postgres:
+    name: PostgreSQL migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: agentic_flows
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/agentic_flows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Postgres migrations match the Postgres schema
+        working-directory: apps/server
+        run: >
+          npx prisma migrate diff
+          --from-migrations prisma/postgres/migrations
+          --to-schema-datamodel prisma/postgres/schema.prisma
+          --shadow-database-url postgresql://ci:ci@localhost:5432/shadow
+          --exit-code
+      - name: Apply migrations to a real PostgreSQL
+        working-directory: apps/server
+        run: npx prisma migrate deploy --schema prisma/postgres/schema.prisma
+
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate --schema apps/server/prisma/schema.prisma
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  docker:
+    name: Docker image + Compose (PostgreSQL) smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      POSTGRES_PASSWORD: ci-postgres-password
+      AGENTIC_FLOWS_API_TOKEN: ci-bootstrap-token
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the stack
+        run: docker compose up -d --build
+      - name: Wait for readiness
+        run: |
+          for i in $(seq 1 90); do
+            if curl -sf http://localhost:4000/api/ready > /dev/null; then echo "ready"; exit 0; fi
+            sleep 2
+          done
+          echo "app did not become ready" >&2
+          exit 1
+      - name: Smoke test
+        run: |
+          set -e
+          curl -sf http://localhost:4000/api/health
+          curl -sf http://localhost:4000/ | grep -q '<title>Agentic Flows'
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4000/api/repositories)" = 401
+          curl -sf -H "Authorization: Bearer $AGENTIC_FLOWS_API_TOKEN" http://localhost:4000/api/repositories
+          curl -sfI http://localhost:4000/ | grep -qi '^content-security-policy:'
+          token=$(curl -sf -X POST -H "Authorization: Bearer $AGENTIC_FLOWS_API_TOKEN" -H 'Content-Type: application/json' \
+            -d '{"name":"ci","role":"viewer"}' http://localhost:4000/api/tokens | node -pe 'JSON.parse(require("fs").readFileSync(0)).token')
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" http://localhost:4000/api/repositories)" = 200
+          docker compose exec -T db psql -U agentic -d agentic_flows -tAc 'SELECT count(*) FROM "ApiToken"' | grep -qx 1
+          echo "smoke test passed"
+      - name: Graceful shutdown
+        run: |
+          docker compose stop --timeout 15 app
+          docker compose logs app | grep -q 'shutting down'
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+      - run: docker compose down -v
+        if: always()
