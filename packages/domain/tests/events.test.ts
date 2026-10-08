@@ -26,4 +26,25 @@ describe('AgentEventSchema', () => {
     const result = AgentEventSchema.safeParse(withoutEvidence);
     expect(result.success).toBe(false);
   });
+
+  it('accepts a GitHub Actions correlation instead of an internal runId', () => {
+    const result = AgentEventSchema.safeParse({
+      ...base,
+      runId: undefined,
+      correlation: { repository: 'acme/payments', providerRunId: '123456' },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects an event with neither runId nor correlation', () => {
+    expect(AgentEventSchema.safeParse({ ...base, runId: undefined }).success).toBe(false);
+  });
+
+  it('rejects a malformed correlation repository', () => {
+    const result = AgentEventSchema.safeParse({
+      ...base,
+      correlation: { repository: '../../etc', providerRunId: '1' },
+    });
+    expect(result.success).toBe(false);
+  });
 });

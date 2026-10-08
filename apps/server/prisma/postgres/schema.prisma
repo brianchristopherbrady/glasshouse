@@ -1,11 +1,11 @@
-// Canonical schema (SQLite: zero-install default). prisma/postgres/schema.prisma
-// is generated from this file by scripts/sync-postgres-schema.mjs — edit here.
+// GENERATED from ../schema.prisma by scripts/sync-postgres-schema.mjs — do not edit.
+// Used automatically when DATABASE_URL is a postgres:// or postgresql:// URL.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

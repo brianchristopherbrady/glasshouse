@@ -166,6 +166,9 @@ export interface FileOperation {
   afterSha: string | null;
   diff: string | null;
   actorId: string | null;
+  evidenceSource: string;
+  evidenceConfidence: string;
+  evidenceNote: string | null;
 }
 
 export interface RunEvent {
@@ -310,4 +313,44 @@ export interface ArchitectureEdge {
 export interface ArchitectureGraphResponse {
   nodes: ArchitectureNode[];
   edges: ArchitectureEdge[];
+}
+
+export type Role = 'admin' | 'viewer' | 'ingest';
+
+export interface Me {
+  authEnabled: boolean;
+  name: string;
+  role: Role;
+  kind: 'bootstrap' | 'token' | 'anonymous';
+  repositoryId: string | null;
+}
+
+export interface ApiTokenRecord {
+  id: string;
+  name: string;
+  role: Role;
+  repositoryId: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+}
+
+export interface CreatedApiToken extends ApiTokenRecord {
+  /** Plaintext — returned only once, at creation. */
+  token: string;
+}
+
+export interface ConnectGithubResult {
+  ok: boolean;
+  repository: Repository;
+  sync: Omit<SyncResult, 'ok'>;
+}
+
+export interface GithubRunSyncResult {
+  ok: boolean;
+  created: number;
+  updated: number;
+  total: number;
+  changedFiles: number;
+  fileErrors: string[];
 }

@@ -1,12 +1,27 @@
 {
   "name": "@agentic-flows/domain",
-  "private": true,
   "version": "0.1.0",
+  "description": "Zod domain model for Agentic Flows: runs, spans, events, evidence, and redaction.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brianchristopherbrady/glasshouse.git",
+    "directory": "packages/domain"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b",

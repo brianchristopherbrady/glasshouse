@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 const packageRoot = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
@@ -16,25 +17,67 @@ function resolveDataDir() {
   return dir;
 }
 
+function selectSchema(databaseUrl) {
+  const isPostgres = /^postgres(ql)?:\/\//i.test(databaseUrl);
+  return path.join(
+    packageRoot,
+    'prisma',
+    ...(isPostgres ? ['postgres', 'schema.prisma'] : ['schema.prisma']),
+  );
+}
+
+// Invoke Prisma's CLI entry script directly rather than `npx prisma` — spawning
+// a .cmd shim without shell:true fails on Windows, and this avoids depending
+// on `prisma` being on PATH. require.resolve is robust to npm hoisting.
+function prisma(args) {
+  const prismaCli = require.resolve('prisma/build/index.js');
+  execFileSync(process.execPath, [prismaCli, ...args], {
+    stdio: 'inherit',
+    env: { ...process.env, PRISMA_HIDE_UPDATE_MESSAGE: '1' },
+  });
+}
+
+/**
+ * The generated client is provider-specific and, for an npm-installed
+ * package, may not exist at all. Prisma reformats its copy of the schema, so
+ * freshness is tracked with our own hash marker next to the generated client.
+ */
+function ensureClientGenerated(schemaPath) {
+  const wanted = createHash('sha256').update(readFileSync(schemaPath)).digest('hex');
+  let marker = null;
+  try {
+    const clientRequire = createRequire(require.resolve('@prisma/client/package.json'));
+    marker = path.join(
+      path.dirname(clientRequire.resolve('.prisma/client/package.json')),
+      '.agentic-flows-schema',
+    );
+    if (readFileSync(marker, 'utf8') === wanted) return;
+  } catch {
+    // no generated client or no marker yet
+  }
+  console.log(
+    'agentic-flows: generating database client for',
+    path.relative(packageRoot, schemaPath),
+  );
+  prisma(['generate', '--schema', schemaPath]);
+  const clientRequire = createRequire(require.resolve('@prisma/client/package.json'));
+  marker = path.join(
+    path.dirname(clientRequire.resolve('.prisma/client/package.json')),
+    '.agentic-flows-schema',
+  );
+  writeFileSync(marker, wanted);
+}
+
 async function start() {
   const dataDir = resolveDataDir();
-  // A real env var always wins — lets a user point at their own Postgres/etc
+  // A real env var always wins — lets a user point at their own Postgres
   // instead of the default per-install SQLite file.
   if (!process.env.DATABASE_URL) {
     process.env.DATABASE_URL = `file:${path.join(dataDir, 'data.db')}`;
   }
-
-  // Invoke Prisma's CLI entry script directly rather than `npx prisma` — spawning
-  // a .cmd shim without shell:true fails on Windows (see repo notes), and this
-  // avoids depending on `prisma` being globally installed or resolvable via PATH.
-  // Resolved via real module resolution (not a hardcoded node_modules path) so
-  // this works regardless of npm workspace hoisting.
-  const prismaCli = require.resolve('prisma/build/index.js');
-  const schemaPath = path.join(packageRoot, 'prisma', 'schema.prisma');
-  execFileSync(process.execPath, [prismaCli, 'migrate', 'deploy', '--schema', schemaPath], {
-    stdio: 'inherit',
-    env: process.env,
-  });
+  const schemaPath = selectSchema(process.env.DATABASE_URL);
+  ensureClientGenerated(schemaPath);
+  prisma(['migrate', 'deploy', '--schema', schemaPath]);
 
   if (!existsSync(path.join(packageRoot, 'dist', 'bundle.mjs'))) {
     console.error('agentic-flows: build output missing — run `npm run build` first.');
@@ -76,11 +119,20 @@ async function ingest(filePath, baseUrl) {
   }
   const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ events }) });
   if (!res.ok) {
-    console.error(`agentic-flows: ingest failed: ${res.status} ${await res.text().catch(() => '')}`);
+    console.error(
+      `agentic-flows: ingest failed: ${res.status} ${await res.text().catch(() => '')}`,
+    );
     process.exit(1);
   }
   console.log(`agentic-flows: ingested ${events.length} event(s) from ${filePath}.`);
 }
+
+const USAGE = `Usage:
+  agentic-flows [start]                         run migrations, then start the server
+  agentic-flows ingest <file.ndjson> [--url U]  forward offline-captured telemetry
+  agentic-flows --version | --help
+
+Configuration is via environment variables — see the README.`;
 
 const [command, ...rest] = process.argv.slice(2);
 
@@ -88,11 +140,18 @@ if (command === 'ingest') {
   const urlFlagIndex = rest.indexOf('--url');
   const baseUrl =
     urlFlagIndex !== -1 ? rest[urlFlagIndex + 1] : `http://localhost:${process.env.PORT ?? 4000}`;
-  const filePath = rest.filter((_, i) => i !== urlFlagIndex && i !== urlFlagIndex + 1)[0];
-  await ingest(filePath, baseUrl);
+  const positional =
+    urlFlagIndex === -1
+      ? rest
+      : rest.filter((_, i) => i !== urlFlagIndex && i !== urlFlagIndex + 1);
+  await ingest(positional[0], baseUrl);
 } else if (command === undefined || command === 'start') {
   await start();
+} else if (command === '--help' || command === '-h' || command === 'help') {
+  console.log(USAGE);
+} else if (command === '--version' || command === '-v') {
+  console.log(JSON.parse(readFileSync(path.join(packageRoot, 'package.json'), 'utf8')).version);
 } else {
-  console.error(`agentic-flows: unrecognized command "${command}". Usage: agentic-flows [start|ingest <file>]`);
+  console.error(`agentic-flows: unrecognized command "${command}".\n\n${USAGE}`);
   process.exit(1);
 }

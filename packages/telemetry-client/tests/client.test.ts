@@ -1,6 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createTelemetryClient } from '../src/client.js';
+import { createTelemetryClient, githubActionsCorrelation } from '../src/client.js';
 import type { AgentEvent } from '@agentic-flows/domain';
+
+describe('githubActionsCorrelation', () => {
+  it('reads the run identity GitHub Actions exposes to every job', () => {
+    expect(githubActionsCorrelation({ GITHUB_REPOSITORY: 'acme/payments', GITHUB_RUN_ID: '42' })).toEqual({
+      repository: 'acme/payments',
+      providerRunId: '42',
+    });
+  });
+
+  it('returns null outside GitHub Actions', () => {
+    expect(githubActionsCorrelation({})).toBeNull();
+  });
+});
 
 const sampleEvent: AgentEvent = {
   id: 'evt_1',

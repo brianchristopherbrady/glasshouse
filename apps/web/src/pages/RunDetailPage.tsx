@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { CircleCheck, TriangleAlert } from 'lucide-react';
@@ -11,6 +11,7 @@ import { TraceView } from '../components/TraceView.js';
 import { SpanDetail } from '../components/SpanDetail.js';
 import { EvidenceTag } from '../components/EvidenceTag.js';
 import { TriStatePill } from '../components/TriStatePill.js';
+import { ChangedFiles } from '../components/ChangedFiles.js';
 
 const TABS = [
   'trace',
@@ -26,19 +27,60 @@ const TABS = [
 ] as const;
 type Tab = (typeof TABS)[number];
 
-function RunHeader(): JSX.Element | null {
+const TAB_LABELS: Record<Tab, string> = {
+  trace: 'Trace',
+  timeline: 'Timeline',
+  files: 'Changed files',
+  agents: 'Agents',
+  skills: 'Skills',
+  tools: 'Tools',
+  logs: 'Logs',
+  metrics: 'Metrics',
+  github: 'GitHub',
+  drift: 'Drift',
+};
+
+function useRunFiles(runId: string | undefined) {
+  return useQuery({
+    queryKey: ['run-files', runId],
+    queryFn: () => api.getRunFiles(runId!),
+    enabled: !!runId,
+  });
+}
+
+function RunHeader({ onShowFiles }: { onShowFiles: () => void }): JSX.Element | null {
   const { runId } = useParams();
   const { data: run } = useQuery({
     queryKey: ['run', runId],
     queryFn: () => api.getRun(runId!),
     enabled: !!runId,
   });
+  const { data: files } = useRunFiles(runId);
   if (!run) return null;
+  const changed = files?.filter((f) => f.operation !== 'read') ?? [];
+  const changedPaths = new Set(changed.map((f) => f.path)).size;
   return (
     <div className="rounded-lg border border-border bg-surface-raised p-4 shadow-raised sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-lg font-semibold text-text">{run.workflowName}</h1>
-        <StatusBadge status={run.status} />
+        <div className="flex items-center gap-3">
+          {files && (
+            <button
+              type="button"
+              onClick={onShowFiles}
+              className="mono text-xs text-text-muted underline-offset-2 hover:text-text hover:underline"
+            >
+              {changedPaths} {changedPaths === 1 ? 'file' : 'files'} changed{' '}
+              <span className="text-status-success">
+                +{changed.reduce((s, f) => s + (f.additions ?? 0), 0)}
+              </span>{' '}
+              <span className="text-status-failure">
+                −{changed.reduce((s, f) => s + (f.deletions ?? 0), 0)}
+              </span>
+            </button>
+          )}
+          <StatusBadge status={run.status} />
+        </div>
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs sm:grid-cols-3 md:grid-cols-6">
         <div>
@@ -125,39 +167,9 @@ function TimelineTab(): JSX.Element {
 
 function FilesTab(): JSX.Element {
   const { runId } = useParams();
-  const { data: files, isLoading } = useQuery({
-    queryKey: ['run-files', runId],
-    queryFn: () => api.getRunFiles(runId!),
-    enabled: !!runId,
-  });
-  if (isLoading) return <div className="text-text-muted">Loading files…</div>;
-  return (
-    <div className="flex flex-col gap-2">
-      {files?.map((f) => (
-        <div
-          key={f.id}
-          className="rounded-lg border border-border bg-surface-raised p-3 text-xs shadow-raised"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="mono text-text">{f.path}</span>
-            <span className="rounded-full bg-surface-sunken px-2 py-0.5 text-text-muted">
-              {f.operation}
-            </span>
-          </div>
-          <div className="mono mt-1.5 flex gap-3">
-            {f.additions != null && <span className="text-status-success">+{f.additions}</span>}
-            {f.deletions != null && <span className="text-status-failure">-{f.deletions}</span>}
-          </div>
-          {f.diff && (
-            <pre className="mono mt-2 max-h-40 overflow-auto rounded bg-surface-sunken p-2 text-[11px] text-text">
-              {f.diff}
-            </pre>
-          )}
-        </div>
-      ))}
-      {files?.length === 0 && <div className="text-text-muted">No file operations recorded.</div>}
-    </div>
-  );
+  const { data: files, isLoading } = useRunFiles(runId);
+  if (isLoading) return <div className="text-text-muted">Loading changed files…</div>;
+  return <ChangedFiles files={files ?? []} />;
 }
 
 function AgentsTab(): JSX.Element {
@@ -486,11 +498,22 @@ function DriftTab(): JSX.Element {
 }
 
 export function RunDetailPage(): JSX.Element {
-  const [tab, setTab] = useState<Tab>('trace');
+  const { runId } = useParams();
+  // Tab lives in the URL so a link can point straight at a run's changed files.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requested = searchParams.get('tab');
+  const tab: Tab = (TABS as readonly string[]).includes(requested ?? '')
+    ? (requested as Tab)
+    : 'trace';
+  const setTab = (t: Tab) => setSearchParams(t === 'trace' ? {} : { tab: t }, { replace: true });
+  const { data: files } = useRunFiles(runId);
+  const changedCount = files
+    ? new Set(files.filter((f) => f.operation !== 'read').map((f) => f.path)).size
+    : null;
 
   return (
     <div className="flex flex-col gap-5">
-      <RunHeader />
+      <RunHeader onShowFiles={() => setTab('files')} />
       <div
         role="tablist"
         aria-label="Run detail sections"
@@ -499,22 +522,29 @@ export function RunDetailPage(): JSX.Element {
         {TABS.map((t) => (
           <button
             key={t}
+            id={`run-tab-${t}`}
             type="button"
             role="tab"
             aria-selected={tab === t}
+            aria-controls="run-tabpanel"
             onClick={() => setTab(t)}
             className={clsx(
-              'shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium capitalize transition-colors',
+              'flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors',
               tab === t
                 ? 'border-accent text-accent'
                 : 'border-transparent text-text-muted hover:text-text',
             )}
           >
-            {t}
+            {TAB_LABELS[t]}
+            {t === 'files' && changedCount !== null && (
+              <span className="rounded-full bg-surface-sunken px-1.5 text-[11px] tabular-nums text-text-muted">
+                {changedCount}
+              </span>
+            )}
           </button>
         ))}
       </div>
-      <div role="tabpanel">
+      <div role="tabpanel" id="run-tabpanel" aria-labelledby={`run-tab-${tab}`}>
         {tab === 'trace' && <TraceTab />}
         {tab === 'timeline' && <TimelineTab />}
         {tab === 'files' && <FilesTab />}

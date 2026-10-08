@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.js';
+import { ErrorBoundary, installGlobalErrorReporting } from './components/ErrorBoundary.js';
 import './styles/theme.css';
 
 // Restores the real deep-linked path GitHub Pages' 404.html redirect
@@ -28,12 +29,16 @@ const queryClient = new QueryClient({
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('#root element not found');
 
+installGlobalErrorReporting();
+
 ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <App />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <App />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

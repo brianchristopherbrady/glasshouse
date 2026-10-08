@@ -50,16 +50,34 @@ export const ActorSchema = z.object({
 });
 export type Actor = z.infer<typeof ActorSchema>;
 
-/** Normalized event stream entry. Evidence provenance is always attached. */
-export const AgentEventSchema = z.object({
-  id: IdSchema,
-  runId: IdSchema,
-  spanId: IdSchema.optional(),
-  parentSpanId: IdSchema.optional(),
-  timestamp: z.string().datetime(),
-  kind: EventKindSchema,
-  actor: ActorSchema.optional(),
-  data: z.record(z.string(), z.unknown()),
-  evidence: EvidenceSchema,
+/**
+ * Identifies a run by its GitHub Actions identity instead of an internal id
+ * — what a producer running inside a workflow actually knows
+ * (GITHUB_REPOSITORY + GITHUB_RUN_ID). The server resolves it to a
+ * WorkflowRun, creating a placeholder if the Actions run hasn't synced yet.
+ */
+export const RunCorrelationSchema = z.object({
+  repository: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/, 'expected "owner/repo"'),
+  providerRunId: z.string().regex(/^\d+$/, 'expected a numeric GitHub Actions run id'),
 });
+export type RunCorrelation = z.infer<typeof RunCorrelationSchema>;
+
+/** Normalized event stream entry. Evidence provenance is always attached. */
+export const AgentEventSchema = z
+  .object({
+    id: IdSchema,
+    runId: IdSchema.optional(),
+    correlation: RunCorrelationSchema.optional(),
+    spanId: IdSchema.optional(),
+    parentSpanId: IdSchema.optional(),
+    timestamp: z.string().datetime(),
+    kind: EventKindSchema,
+    actor: ActorSchema.optional(),
+    data: z.record(z.string(), z.unknown()),
+    evidence: EvidenceSchema,
+  })
+  .refine((e) => e.runId !== undefined || e.correlation !== undefined, {
+    message: 'either runId or correlation is required',
+    path: ['runId'],
+  });
 export type AgentEvent = z.infer<typeof AgentEventSchema>;

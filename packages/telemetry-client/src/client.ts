@@ -1,4 +1,15 @@
-import type { AgentEvent } from '@agentic-flows/domain';
+import type { AgentEvent, RunCorrelation } from '@agentic-flows/domain';
+
+/**
+ * Run correlation for code executing inside a GitHub Actions job, read from
+ * the runner's own GITHUB_REPOSITORY / GITHUB_RUN_ID. Returns null outside
+ * Actions so callers can fall back to an explicit runId.
+ */
+export function githubActionsCorrelation(env: NodeJS.ProcessEnv = process.env): RunCorrelation | null {
+  const repository = env.GITHUB_REPOSITORY;
+  const providerRunId = env.GITHUB_RUN_ID;
+  return repository && providerRunId ? { repository, providerRunId } : null;
+}
 
 export interface TelemetryClientOptions {
   /** Base URL of the Agentic Flows server, e.g. "http://localhost:4000". */

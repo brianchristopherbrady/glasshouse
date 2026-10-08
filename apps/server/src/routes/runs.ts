@@ -1,10 +1,18 @@
 import type { FastifyInstance } from 'fastify';
+import type { PrismaClient } from '@prisma/client';
 import { redactSecrets } from '@agentic-flows/domain';
-import { prisma } from '../db.js';
 import { buildSpanTree } from '../trace.js';
-import { serializeAgentDefinition, serializeEvent, serializeSkillDefinition, serializeSkillUsage } from '../serialize.js';
+import {
+  serializeAgentDefinition,
+  serializeEvent,
+  serializeSkillDefinition,
+  serializeSkillUsage,
+} from '../serialize.js';
 
-export async function runsRoutes(app: FastifyInstance): Promise<void> {
+export async function runsRoutes(
+  app: FastifyInstance,
+  { prisma }: { prisma: PrismaClient },
+): Promise<void> {
   app.get<{ Params: { runId: string } }>('/api/runs/:runId', async (req, reply) => {
     const run = await prisma.workflowRun.findUnique({ where: { id: req.params.runId } });
     if (!run) {
@@ -31,7 +39,10 @@ export async function runsRoutes(app: FastifyInstance): Promise<void> {
   });
 
   app.get<{ Params: { runId: string } }>('/api/runs/:runId/files', async (req) => {
-    const fileOps = await prisma.fileOperation.findMany({ where: { runId: req.params.runId } });
+    const fileOps = await prisma.fileOperation.findMany({
+      where: { runId: req.params.runId },
+      orderBy: [{ evidenceSource: 'asc' }, { path: 'asc' }],
+    });
     // Diffs can contain secrets committed/edited during a run — redact before display.
     return fileOps.map((f) => ({ ...f, diff: f.diff ? redactSecrets(f.diff) : f.diff }));
   });
@@ -68,7 +79,9 @@ export async function runsRoutes(app: FastifyInstance): Promise<void> {
   });
 
   app.get<{ Params: { runId: string } }>('/api/runs/:runId/tools', async (req) => {
-    const invocations = await prisma.toolInvocation.findMany({ where: { runId: req.params.runId } });
+    const invocations = await prisma.toolInvocation.findMany({
+      where: { runId: req.params.runId },
+    });
     // Tool call arguments/results are the most likely place a raw secret
     // (an API key passed as an arg, a token in a response body) shows up.
     return invocations.map((t) => ({

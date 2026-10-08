@@ -8,6 +8,7 @@ import {
   Sparkles,
   FileText,
   Network,
+  Settings,
 } from 'lucide-react';
 
 const ITEMS = [
@@ -18,6 +19,7 @@ const ITEMS = [
   { to: 'skills', label: 'Skills', icon: Sparkles, end: false },
   { to: 'files', label: 'Files', icon: FileText, end: false },
   { to: 'architecture', label: 'Architecture', icon: Network, end: false },
+  { to: 'settings', label: 'Settings', icon: Settings, end: false },
 ] as const;
 
 export function Nav(): JSX.Element {

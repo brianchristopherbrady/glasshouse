@@ -3,22 +3,29 @@
   "private": true,
   "version": "0.1.0",
   "description": "Observability and visualization for agentic software-development workflows.",
+  "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=20.12"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
     "dev": "npm run dev --workspace apps/server & npm run dev --workspace apps/web",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w packages/domain && npm run build -w packages/parser && npm run build -w packages/telemetry-client && npm run build -w apps/web && npm run build -w apps/server",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "test": "vitest run --config vitest.config.ts",
+    "test:e2e": "playwright test",
     "db:generate": "npm run db:generate --workspace apps/server",
     "db:migrate": "npm run db:migrate --workspace apps/server",
-    "db:seed": "npm run db:seed --workspace apps/server"
+    "db:seed": "npm run db:seed --workspace apps/server",
+    "db:check": "npm run db:check --workspace apps/server"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
     "eslint": "^9.15.0",

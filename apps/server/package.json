@@ -1,17 +1,32 @@
 {
   "name": "@agentic-flows/server",
-  "private": true,
   "version": "0.1.0",
+  "description": "Self-hosted Agentic Flows server and web UI: observability for agentic software-development workflows.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brianchristopherbrady/glasshouse.git",
+    "directory": "apps/server"
+  },
   "type": "module",
   "bin": {
     "agentic-flows": "./bin/agentic-flows.mjs"
   },
   "files": [
-    "dist",
     "bin",
+    "dist/bundle.mjs",
+    "dist/bundle.mjs.map",
+    "dist/web",
     "prisma/schema.prisma",
-    "prisma/migrations"
+    "prisma/migrations",
+    "prisma/postgres"
   ],
+  "engines": {
+    "node": ">=20.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -b && node scripts/bundle.mjs",
@@ -19,15 +34,19 @@
     "typecheck": "tsc -b --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:sync-postgres": "node scripts/sync-postgres-schema.mjs",
+    "db:check": "node scripts/sync-postgres-schema.mjs --check && prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url file:./.shadow.db --exit-code"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
+    "@fastify/rate-limit": "^11.2.1",
     "@fastify/static": "^10.1.5",
     "@prisma/client": "^5.21.1",
+    "@sentry/node": "^11.6.0",
     "fastify": "^5.1.0",
     "prisma": "^5.21.1",
     "zod": "^3.23.8"

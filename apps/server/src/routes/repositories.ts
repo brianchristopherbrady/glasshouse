@@ -1,12 +1,19 @@
 import type { FastifyInstance } from 'fastify';
+import type { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { prisma } from '../db.js';
 import { syncRepositoryFromDisk } from '../sync.js';
-import { serializeAgentDefinition, serializeSkillDefinition, serializeWorkflowDefinition } from '../serialize.js';
+import {
+  serializeAgentDefinition,
+  serializeSkillDefinition,
+  serializeWorkflowDefinition,
+} from '../serialize.js';
 
 const SyncBodySchema = z.object({ checkoutDir: z.string().min(1) });
 
-export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
+export async function repositoriesRoutes(
+  app: FastifyInstance,
+  { prisma }: { prisma: PrismaClient },
+): Promise<void> {
   app.get('/api/repositories', async () => {
     const repositories = await prisma.repository.findMany({ orderBy: { fullName: 'asc' } });
     return repositories;
@@ -20,16 +27,13 @@ export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
     return repository;
   });
 
-  app.get<{ Params: { repoId: string } }>(
-    '/api/repositories/:repoId/workflows',
-    async (req) => {
-      const workflows = await prisma.workflowDefinition.findMany({
-        where: { repositoryId: req.params.repoId },
-        include: { compiledWorkflow: true },
-      });
-      return workflows.map(serializeWorkflowDefinition);
-    },
-  );
+  app.get<{ Params: { repoId: string } }>('/api/repositories/:repoId/workflows', async (req) => {
+    const workflows = await prisma.workflowDefinition.findMany({
+      where: { repositoryId: req.params.repoId },
+      include: { compiledWorkflow: true },
+    });
+    return workflows.map(serializeWorkflowDefinition);
+  });
 
   app.get<{ Params: { repoId: string; workflowId: string } }>(
     '/api/repositories/:repoId/workflows/:workflowId',
@@ -46,12 +50,16 @@ export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
   );
 
   app.get<{ Params: { repoId: string } }>('/api/repositories/:repoId/agents', async (req) => {
-    const agents = await prisma.agentDefinition.findMany({ where: { repositoryId: req.params.repoId } });
+    const agents = await prisma.agentDefinition.findMany({
+      where: { repositoryId: req.params.repoId },
+    });
     return agents.map(serializeAgentDefinition);
   });
 
   app.get<{ Params: { repoId: string } }>('/api/repositories/:repoId/skills', async (req) => {
-    const skills = await prisma.skillDefinition.findMany({ where: { repositoryId: req.params.repoId } });
+    const skills = await prisma.skillDefinition.findMany({
+      where: { repositoryId: req.params.repoId },
+    });
     return skills.map(serializeSkillDefinition);
   });
 
@@ -89,7 +97,9 @@ export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
       .map((r) => r.durationMs)
       .filter((d): d is number => typeof d === 'number');
     const averageDurationMs =
-      durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : null;
+      durations.length > 0
+        ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+        : null;
 
     const [toolCallCount, fileOpCount, prCount, handoffCount] = await Promise.all([
       prisma.toolInvocation.count({ where: { run: { repositoryId } } }),
@@ -122,7 +132,13 @@ export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
 
     const byPath = new Map<
       string,
-      { path: string; runIds: Set<string>; workflows: Set<string>; failureCount: number; totalOps: number }
+      {
+        path: string;
+        runIds: Set<string>;
+        workflows: Set<string>;
+        failureCount: number;
+        totalOps: number;
+      }
     >();
     for (const op of fileOps) {
       const entry = byPath.get(op.path) ?? {
@@ -162,95 +178,89 @@ export async function repositoriesRoutes(app: FastifyInstance): Promise<void> {
   // Static architecture graph: every discovered definition across all kinds
   // as a node, every DefinitionRelationship as an edge. Purely a read-model
   // over data that already exists — no new discovery logic here.
-  app.get<{ Params: { repoId: string } }>(
-    '/api/repositories/:repoId/architecture',
-    async (req) => {
-      const repositoryId = req.params.repoId;
-      const [workflows, agents, skills, instructions, prompts, hooks, mcpServers, relationships] =
-        await Promise.all([
-          prisma.workflowDefinition.findMany({ where: { repositoryId } }),
-          prisma.agentDefinition.findMany({ where: { repositoryId } }),
-          prisma.skillDefinition.findMany({ where: { repositoryId } }),
-          prisma.instructionDefinition.findMany({ where: { repositoryId } }),
-          prisma.promptDefinition.findMany({ where: { repositoryId } }),
-          prisma.hookDefinition.findMany({ where: { repositoryId } }),
-          prisma.mcpServerDefinition.findMany({ where: { repositoryId } }),
-          prisma.definitionRelationship.findMany({ where: { repositoryId } }),
-        ]);
-      const compiledWorkflows = await prisma.compiledWorkflow.findMany({
-        where: { workflowDefinitionId: { in: workflows.map((w) => w.id) } },
-      });
+  app.get<{ Params: { repoId: string } }>('/api/repositories/:repoId/architecture', async (req) => {
+    const repositoryId = req.params.repoId;
+    const [workflows, agents, skills, instructions, prompts, hooks, mcpServers, relationships] =
+      await Promise.all([
+        prisma.workflowDefinition.findMany({ where: { repositoryId } }),
+        prisma.agentDefinition.findMany({ where: { repositoryId } }),
+        prisma.skillDefinition.findMany({ where: { repositoryId } }),
+        prisma.instructionDefinition.findMany({ where: { repositoryId } }),
+        prisma.promptDefinition.findMany({ where: { repositoryId } }),
+        prisma.hookDefinition.findMany({ where: { repositoryId } }),
+        prisma.mcpServerDefinition.findMany({ where: { repositoryId } }),
+        prisma.definitionRelationship.findMany({ where: { repositoryId } }),
+      ]);
+    const compiledWorkflows = await prisma.compiledWorkflow.findMany({
+      where: { workflowDefinitionId: { in: workflows.map((w) => w.id) } },
+    });
 
-      const nodes = [
-        ...workflows.map((w) => ({ id: w.id, kind: 'workflow', name: w.name, path: w.path })),
-        ...compiledWorkflows.map((c) => ({
-          id: c.id,
-          kind: 'compiled-workflow',
-          name: c.path.split('/').pop() ?? c.path,
-          path: c.path,
-        })),
-        ...agents.map((a) => ({ id: a.id, kind: 'agent', name: a.name, path: a.path })),
-        ...skills.map((s) => ({ id: s.id, kind: 'skill', name: s.name, path: s.path })),
-        ...instructions.map((i) => ({
-          id: i.id,
-          kind: 'instruction',
-          name: i.path.split('/').pop() ?? i.path,
-          path: i.path,
-        })),
-        ...prompts.map((p) => ({ id: p.id, kind: 'prompt', name: p.name, path: p.path })),
-        ...hooks.map((h) => ({
-          id: h.id,
-          kind: 'hook',
-          name: h.path.split('/').pop() ?? h.path,
-          path: h.path,
-        })),
-        ...mcpServers.map((m) => ({ id: m.id, kind: 'mcp-server', name: m.name, path: m.path })),
-      ];
+    const nodes = [
+      ...workflows.map((w) => ({ id: w.id, kind: 'workflow', name: w.name, path: w.path })),
+      ...compiledWorkflows.map((c) => ({
+        id: c.id,
+        kind: 'compiled-workflow',
+        name: c.path.split('/').pop() ?? c.path,
+        path: c.path,
+      })),
+      ...agents.map((a) => ({ id: a.id, kind: 'agent', name: a.name, path: a.path })),
+      ...skills.map((s) => ({ id: s.id, kind: 'skill', name: s.name, path: s.path })),
+      ...instructions.map((i) => ({
+        id: i.id,
+        kind: 'instruction',
+        name: i.path.split('/').pop() ?? i.path,
+        path: i.path,
+      })),
+      ...prompts.map((p) => ({ id: p.id, kind: 'prompt', name: p.name, path: p.path })),
+      ...hooks.map((h) => ({
+        id: h.id,
+        kind: 'hook',
+        name: h.path.split('/').pop() ?? h.path,
+        path: h.path,
+      })),
+      ...mcpServers.map((m) => ({ id: m.id, kind: 'mcp-server', name: m.name, path: m.path })),
+    ];
 
-      const edges = relationships.map((r) => ({
-        id: r.id,
-        source: r.sourceDefinitionId,
-        target: r.targetDefinitionId,
-        sourceKind: r.sourceKind,
-        targetKind: r.targetKind,
-        relationshipType: r.relationshipType,
-        evidenceSource: r.evidenceSource,
-        evidenceConfidence: r.evidenceConfidence,
-        evidenceNote: r.evidenceNote,
-      }));
+    const edges = relationships.map((r) => ({
+      id: r.id,
+      source: r.sourceDefinitionId,
+      target: r.targetDefinitionId,
+      sourceKind: r.sourceKind,
+      targetKind: r.targetKind,
+      relationshipType: r.relationshipType,
+      evidenceSource: r.evidenceSource,
+      evidenceConfidence: r.evidenceConfidence,
+      evidenceNote: r.evidenceNote,
+    }));
 
-      return { nodes, edges };
-    },
-  );
+    return { nodes, edges };
+  });
 
   // Discovers static repo artifacts (workflows/agents/skills/instructions/
   // prompts/hooks/mcp servers) from a checkout on disk and persists them.
   // Live GitHub-API-backed sync (cloning/fetching a remote repo) is a
   // later phase; this endpoint operates on an already-present local path.
-  app.post<{ Params: { repoId: string } }>(
-    '/api/repositories/:repoId/sync',
-    async (req, reply) => {
-      const repository = await prisma.repository.findUnique({ where: { id: req.params.repoId } });
-      if (!repository) {
-        return reply.code(404).send({ error: 'repository_not_found' });
-      }
-      const parsed = SyncBodySchema.safeParse(req.body);
-      if (!parsed.success) {
-        return reply.code(400).send({ error: 'invalid_body', issues: parsed.error.issues });
-      }
-      try {
-        const summary = await syncRepositoryFromDisk(
-          prisma,
-          req.params.repoId,
-          parsed.data.checkoutDir,
-        );
-        return { ok: true, ...summary };
-      } catch (err) {
-        return reply.code(500).send({
-          error: 'sync_failed',
-          message: err instanceof Error ? err.message : String(err),
-        });
-      }
-    },
-  );
+  app.post<{ Params: { repoId: string } }>('/api/repositories/:repoId/sync', async (req, reply) => {
+    const repository = await prisma.repository.findUnique({ where: { id: req.params.repoId } });
+    if (!repository) {
+      return reply.code(404).send({ error: 'repository_not_found' });
+    }
+    const parsed = SyncBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'invalid_body', issues: parsed.error.issues });
+    }
+    try {
+      const summary = await syncRepositoryFromDisk(
+        prisma,
+        req.params.repoId,
+        parsed.data.checkoutDir,
+      );
+      return { ok: true, ...summary };
+    } catch (err) {
+      return reply.code(500).send({
+        error: 'sync_failed',
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  });
 }

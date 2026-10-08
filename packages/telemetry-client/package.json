@@ -1,18 +1,36 @@
 {
   "name": "@agentic-flows/telemetry-client",
-  "private": true,
   "version": "0.1.0",
+  "description": "Emit runtime telemetry from agents and CI jobs to an Agentic Flows server.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brianchristopherbrady/glasshouse.git",
+    "directory": "packages/telemetry-client"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --noEmit"
   },
-  "devDependencies": {
-    "@agentic-flows/domain": "*"
+  "dependencies": {
+    "@agentic-flows/domain": "^0.1.0"
   }
 }
