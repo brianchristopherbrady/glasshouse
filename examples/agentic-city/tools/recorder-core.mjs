@@ -287,8 +287,8 @@ export function normalizePayload(raw, fallbackEvent) {
   };
 }
 
-/** Workspace-relative paths a read-like tool call looked at. */
-function readPaths(root, toolName, input) {
+/** Paths a read-like tool call looked at; `rel` is set only inside the workspace. */
+function readTargets(root, toolName, input) {
   if (!READ_TOOL.test(toolName ?? '') || !input || typeof input !== 'object') return [];
   const candidates = [
     input.filePath,
@@ -300,7 +300,7 @@ function readPaths(root, toolName, input) {
   ]
     .flat()
     .filter((v) => typeof v === 'string');
-  const paths = [];
+  const targets = new Map();
   for (const candidate of candidates) {
     let absolute = candidate;
     if (candidate.startsWith('file:')) {
@@ -312,9 +312,10 @@ function readPaths(root, toolName, input) {
     }
     absolute = isAbsolute(absolute) ? absolute : resolve(root, absolute);
     const rel = relative(root, absolute);
-    if (rel && !rel.startsWith('..') && !isAbsolute(rel)) paths.push(toPosix(rel));
+    const inside = rel && !rel.startsWith('..') && !isAbsolute(rel);
+    targets.set(absolute, { abs: toPosix(absolute), rel: inside ? toPosix(rel) : null });
   }
-  return [...new Set(paths)];
+  return [...targets.values()];
 }
 
 // ------------------------------------------------------------------ state
@@ -677,15 +678,19 @@ function onPostToolUse(ctx, p) {
     agent: tool.agent,
   };
 
-  for (const path of readPaths(ctx.root, p.toolName, p.toolInput)) {
-    emitOnce(ctx, `read:${tool.spanId}:${path}`, {
-      kind: 'file.read',
-      spanId: tool.spanId,
-      actor: agentActor(owner.agent),
-      data: { path, agent: owner.agent },
-    });
-    const skill = SKILL_PATH.exec(path);
+  for (const { abs, rel } of readTargets(ctx.root, p.toolName, p.toolInput)) {
+    if (rel) {
+      emitOnce(ctx, `read:${tool.spanId}:${rel}`, {
+        kind: 'file.read',
+        spanId: tool.spanId,
+        actor: agentActor(owner.agent),
+        data: { path: rel, agent: owner.agent },
+      });
+    }
+    // Skills may live in this workspace or in the repository root's mirror.
+    const skill = SKILL_PATH.exec(abs);
     if (skill) {
+      const path = `.github/skills/${skill[1]}/SKILL.md`;
       emitOnce(ctx, `skill:${owner.spanId}:${skill[1]}`, {
         key: `skill.loaded:${owner.spanId}:${skill[1]}`,
         kind: 'skill.loaded',

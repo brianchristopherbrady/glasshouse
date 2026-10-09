@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient, WorkflowRun } from '@prisma/client';
 import type { AgentEvent } from '@brianbrady/glasshouse-domain';
+import { promptCommand } from './serialize.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -49,6 +50,53 @@ function summary(value: unknown): string | null {
 
 function isLocalSessionRun(run: WorkflowRun): boolean {
   return run.providerRunId?.startsWith(LOCAL_SESSION_PREFIX) ?? false;
+}
+
+type PromptRef = { id: string; name: string; frontmatter: string };
+
+/** The prompt file a run named `/found-district Noodle Heights` was started with. */
+function matchPrompt(prompts: PromptRef[], runName: string): PromptRef | undefined {
+  const command = /^\/([\w.-]+)(?:\s|$)/.exec(runName)?.[1];
+  return command ? prompts.find((p) => promptCommand(p) === command) : undefined;
+}
+
+function repositoryPrompts(db: Tx | PrismaClient, repositoryId: string): Promise<PromptRef[]> {
+  return db.promptDefinition.findMany({
+    where: { repositoryId },
+    select: { id: true, name: true, frontmatter: true },
+  });
+}
+
+/**
+ * Links local chat runs to the prompt file their first prompt invoked. Runs
+ * recorded before the prompt was discovered are linked on the next sync.
+ */
+export async function linkRunsToPrompts(
+  prisma: PrismaClient,
+  repositoryId: string,
+): Promise<number> {
+  const runs = await prisma.workflowRun.findMany({
+    where: {
+      repositoryId,
+      promptDefinitionId: null,
+      providerRunId: { startsWith: LOCAL_SESSION_PREFIX },
+      workflowName: { startsWith: '/' },
+    },
+    select: { id: true, workflowName: true },
+  });
+  if (runs.length === 0) return 0;
+  const prompts = await repositoryPrompts(prisma, repositoryId);
+  let linked = 0;
+  for (const run of runs) {
+    const prompt = matchPrompt(prompts, run.workflowName);
+    if (!prompt) continue;
+    await prisma.workflowRun.update({
+      where: { id: run.id },
+      data: { promptDefinitionId: prompt.id },
+    });
+    linked += 1;
+  }
+  return linked;
 }
 
 // External producers choose their own span ids, which only need to be unique
@@ -264,10 +312,17 @@ async function applyDerivedRecords(
   // and may carry run metadata the session didn't know up front.
   if (event.kind === 'workflow.started' && isLocalSessionRun(run)) {
     const name = str(event.data.name);
+    // The session is named after, and linked to, its first prompt only.
+    const firstPrompt = run.workflowName === LOCAL_PLACEHOLDER_NAME ? name : undefined;
+    const prompt =
+      firstPrompt && !run.promptDefinitionId
+        ? matchPrompt(await repositoryPrompts(tx, run.repositoryId), firstPrompt)
+        : undefined;
     await tx.workflowRun.update({
       where: { id: run.id },
       data: {
-        ...(name && run.workflowName === LOCAL_PLACEHOLDER_NAME ? { workflowName: name } : {}),
+        ...(firstPrompt ? { workflowName: firstPrompt } : {}),
+        ...(prompt ? { promptDefinitionId: prompt.id } : {}),
         ...(str(event.data.trigger) ? { trigger: str(event.data.trigger) } : {}),
         ...(str(event.data.engine) ? { engine: str(event.data.engine) } : {}),
         ...(str(event.data.branch) ? { branch: str(event.data.branch) } : {}),

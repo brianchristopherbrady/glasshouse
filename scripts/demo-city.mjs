@@ -183,10 +183,10 @@ async function main() {
  ${synced.prompts} prompts, ${synced.instructions} instructions, ${synced.relationships} relationships.
 
  Next:
-   1. Open the city in its own VS Code window:  code examples/agentic-city
-   2. Trust the folder, open Copilot Chat with the Local agent, and run:
+   1. In VS Code (this repository's window, or: code examples/agentic-city),
+      trust the folder, open Copilot Chat with the Local agent, pick "mayor", and run:
         /found-district Noodle Heights, built on a retired noodle factory
-   3. Watch the run appear (and update live) under Runs.
+   2. Watch the run appear (and update live) under Runs.
  No Copilot handy? In another terminal:  npm run city:replay
  Reset the city afterwards:              npm run city:reset
  Press Ctrl+C to stop.

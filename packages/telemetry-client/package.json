@@ -1,6 +1,6 @@
 {
   "name": "@brianbrady/glasshouse-telemetry-client",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Emit runtime telemetry from agents and CI jobs to a Glasshouse server.",
   "license": "MIT",
   "repository": {
@@ -31,6 +31,6 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
-    "@brianbrady/glasshouse-domain": "^0.1.0"
+    "@brianbrady/glasshouse-domain": "*"
   }
 }

@@ -77,3 +77,34 @@ export function serializeEvent<T extends { data: string }>(e: T) {
     data: redactSecretsDeep(parseJson<Record<string, unknown>>(e.data, {})),
   };
 }
+
+function frontmatterText(frontmatter: Record<string, unknown>, key: string): string | null {
+  const value = frontmatter[key];
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+/** The slash command a prompt file is invoked with: its `name:`, else its file name. */
+export function promptCommand(p: { name: string; frontmatter: string }): string {
+  return frontmatterText(parseJson<Record<string, unknown>>(p.frontmatter, {}), 'name') ?? p.name;
+}
+
+export function serializePromptDefinition<
+  T extends {
+    name: string;
+    frontmatter: string;
+    _count: { workflowRuns: number };
+    workflowRuns: Array<{ id: string; status: string; startTime: Date }>;
+  },
+>(p: T) {
+  const { _count, workflowRuns, ...rest } = p;
+  const frontmatter = parseJson<Record<string, unknown>>(p.frontmatter, {});
+  return {
+    ...rest,
+    frontmatter,
+    command: promptCommand(p),
+    description: frontmatterText(frontmatter, 'description'),
+    agent: frontmatterText(frontmatter, 'agent') ?? frontmatterText(frontmatter, 'mode'),
+    runCount: _count.workflowRuns,
+    lastRun: workflowRuns[0] ?? null,
+  };
+}

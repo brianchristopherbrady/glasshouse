@@ -30,10 +30,11 @@ async function main() {
     const repoId = repo.id;
     await writeJson(`repositories/${repoId}.json`, repo);
 
-    const [overview, workflows, agents, skills, files, relationships, architecture, runs] =
+    const [overview, workflows, prompts, agents, skills, files, relationships, architecture, runs] =
       await Promise.all([
         getJson(`/api/repositories/${repoId}/overview`),
         getJson(`/api/repositories/${repoId}/workflows`),
+        getJson(`/api/repositories/${repoId}/prompts`),
         getJson(`/api/repositories/${repoId}/agents`),
         getJson(`/api/repositories/${repoId}/skills`),
         getJson(`/api/repositories/${repoId}/files`),
@@ -44,12 +45,21 @@ async function main() {
 
     await writeJson(`repositories/${repoId}/overview.json`, overview);
     await writeJson(`repositories/${repoId}/workflows.json`, workflows);
+    await writeJson(`repositories/${repoId}/prompts.json`, prompts);
     await writeJson(`repositories/${repoId}/agents.json`, agents);
     await writeJson(`repositories/${repoId}/skills.json`, skills);
     await writeJson(`repositories/${repoId}/files.json`, files);
     await writeJson(`repositories/${repoId}/relationships.json`, relationships);
     await writeJson(`repositories/${repoId}/architecture.json`, architecture);
     await writeJson(`repositories/${repoId}/runs.json`, runs);
+
+    const fileHistory = {};
+    for (const { path: filePath } of files) {
+      fileHistory[filePath] = await getJson(
+        `/api/repositories/${repoId}/file-history?path=${encodeURIComponent(filePath)}`,
+      );
+    }
+    await writeJson(`repositories/${repoId}/file-history.json`, fileHistory);
 
     for (const run of runs) {
       const runId = run.id;
@@ -65,6 +75,7 @@ async function main() {
         github,
         metrics,
         drift,
+        definitions,
       ] = await Promise.all([
         getJson(`/api/runs/${runId}`),
         getJson(`/api/runs/${runId}/trace`),
@@ -77,6 +88,7 @@ async function main() {
         getJson(`/api/runs/${runId}/github`),
         getJson(`/api/runs/${runId}/metrics`),
         getJson(`/api/runs/${runId}/drift`),
+        getJson(`/api/runs/${runId}/definitions`),
       ]);
 
       await writeJson(`runs/${runId}.json`, runDetail);
@@ -90,6 +102,7 @@ async function main() {
       await writeJson(`runs/${runId}/github.json`, github);
       await writeJson(`runs/${runId}/metrics.json`, metrics);
       await writeJson(`runs/${runId}/drift.json`, drift);
+      await writeJson(`runs/${runId}/definitions.json`, definitions);
     }
   }
 

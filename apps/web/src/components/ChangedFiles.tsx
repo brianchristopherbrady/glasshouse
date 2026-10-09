@@ -51,7 +51,7 @@ function groupMeta(source: string) {
   return SOURCE_GROUPS[source] ?? { order: 9, title: `Source: ${source}`, description: '' };
 }
 
-function DiffView({ diff }: { diff: string }): JSX.Element {
+export function DiffView({ diff }: { diff: string }): JSX.Element {
   return (
     <pre className="mono max-h-96 overflow-auto border-t border-border bg-surface-sunken text-[11px] leading-5">
       {diff.split('\n').map((line, i) => (

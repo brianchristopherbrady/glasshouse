@@ -1,14 +1,31 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { AgentEventSchema } from '@brianbrady/glasshouse-domain';
+import { AgentEventSchema, type AgentEvent } from '@brianbrady/glasshouse-domain';
 import { IngestError, ingestEvent, type IngestScope } from '../correlation.js';
+import { captureRunDefinitions } from '../snapshots.js';
 
 const MAX_BATCH_SIZE = 1000;
 const BatchSchema = z.object({ events: z.array(AgentEventSchema).min(1).max(MAX_BATCH_SIZE) });
 
 function scopeOf(req: { principal?: { repositoryId: string | null } }): IngestScope {
   return { repositoryId: req.principal?.repositoryId ?? null };
+}
+
+// The telemetry is already stored; a missing snapshot only limits run comparison.
+async function snapshotOnSessionStart(
+  prisma: PrismaClient,
+  event: AgentEvent,
+  runId: string,
+  log: FastifyBaseLogger,
+): Promise<void> {
+  if (event.kind !== 'workflow.started' || !event.correlation) return;
+  if (!('sessionId' in event.correlation)) return;
+  try {
+    await captureRunDefinitions(prisma, runId);
+  } catch (err) {
+    log.warn({ err, runId }, 'could not snapshot the definitions this run started with');
+  }
 }
 
 export async function telemetryRoutes(
@@ -22,6 +39,7 @@ export async function telemetryRoutes(
     }
     try {
       const result = await ingestEvent(prisma, parsed.data, scopeOf(req));
+      await snapshotOnSessionStart(prisma, parsed.data, result.runId, req.log);
       return reply.code(result.status === 'ingested' ? 201 : 200).send({ ok: true, ...result });
     } catch (err) {
       if (err instanceof IngestError) {
@@ -44,6 +62,7 @@ export async function telemetryRoutes(
     for (const [index, event] of parsed.data.events.entries()) {
       try {
         const result = await ingestEvent(prisma, event, scopeOf(req));
+        await snapshotOnSessionStart(prisma, event, result.runId, req.log);
         if (result.status === 'ingested') ingested += 1;
         else duplicates += 1;
       } catch (err) {

@@ -1,6 +1,6 @@
 {
   "name": "@brianbrady/glasshouse-domain",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Zod domain model for Glasshouse: runs, spans, events, evidence, and redaction.",
   "license": "MIT",
   "repository": {

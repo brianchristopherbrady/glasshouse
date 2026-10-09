@@ -115,7 +115,8 @@ model PromptDefinition {
   frontmatter  String
   body         String
 
-  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  repository   Repository    @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  workflowRuns WorkflowRun[]
 
   @@unique([repositoryId, path])
 }
@@ -168,6 +169,8 @@ model WorkflowRun {
   id                    String    @id @default(cuid())
   repositoryId          String
   workflowDefinitionId  String?
+  // Local chat sessions started from a prompt file (`/name ...`).
+  promptDefinitionId    String?
   workflowName          String
   providerRunId         String?
   runAttempt            Int       @default(1)
@@ -180,9 +183,14 @@ model WorkflowRun {
   endTime               DateTime?
   durationMs            Int?
   engine                String?
+  savedAt               DateTime?
+  savedLabel            String?
+  // When the definition files this run started with were snapshotted (local runs).
+  definitionsCapturedAt DateTime?
 
   repository         Repository          @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
   workflowDefinition WorkflowDefinition? @relation(fields: [workflowDefinitionId], references: [id])
+  promptDefinition   PromptDefinition?   @relation(fields: [promptDefinitionId], references: [id], onDelete: SetNull)
   spans              Span[]
   events             Event[]
   agentRuns          AgentRun[]
@@ -196,9 +204,33 @@ model WorkflowRun {
   artifacts          Artifact[]
   logRecords         LogRecord[]
   driftFindings      DriftFinding[]
+  definitions        RunDefinition[]
 
   @@unique([repositoryId, providerRunId])
   @@index([repositoryId])
+}
+
+// File contents, stored once per distinct content and shared across runs.
+model DefinitionBlob {
+  sha256  String @id
+  content String
+
+  runDefinitions RunDefinition[]
+}
+
+// A definition file (agent, skill, prompt, ...) as it was when a run started.
+model RunDefinition {
+  id     String @id @default(cuid())
+  runId  String
+  kind   String
+  path   String
+  name   String
+  sha256 String
+
+  run  WorkflowRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  blob DefinitionBlob @relation(fields: [sha256], references: [sha256])
+
+  @@unique([runId, path])
 }
 
 model Span {

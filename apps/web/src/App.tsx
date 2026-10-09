@@ -14,6 +14,7 @@ import { OverviewPage } from './pages/OverviewPage.js';
 import { FlowsPage } from './pages/FlowsPage.js';
 import { RunsPage } from './pages/RunsPage.js';
 import { RunDetailPage } from './pages/RunDetailPage.js';
+import { ComparePage } from './pages/ComparePage.js';
 import { AgentsPage } from './pages/AgentsPage.js';
 import { SkillsPage } from './pages/SkillsPage.js';
 import { FilesPage } from './pages/FilesPage.js';
@@ -122,6 +123,7 @@ function RepoLayout(): JSX.Element {
         <Route path="flows" element={<FlowsPage />} />
         <Route path="runs" element={<RunsPage />} />
         <Route path="runs/:runId" element={<RunDetailPage />} />
+        <Route path="compare" element={<ComparePage />} />
         <Route path="agents" element={<AgentsPage />} />
         <Route path="skills" element={<SkillsPage />} />
         <Route path="files" element={<FilesPage />} />

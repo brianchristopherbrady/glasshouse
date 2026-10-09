@@ -24,15 +24,14 @@ Prompts (slash commands): `/found-district`, `/build-landmark`, `/city-crisis` (
 
    This serves the web UI on <http://localhost:5410> and the API on `127.0.0.1:4410` (loopback only, no auth). Pick **Agentic City (local)** in the repository dropdown.
 
-2. Open this folder as its own VS Code window (VS Code only loads `.github` agents, prompts, and skills from the folder you open):
+2. In VS Code, use either window. The agents, prompts, skills, and instructions work in both, and record to the same Glasshouse workspace:
 
-   ```bash
-   code examples/agentic-city
-   ```
+   - **The repository root** (the window you develop Glasshouse in). The root `.github/` holds a generated copy of this folder's customizations, with paths rewritten to `examples/agentic-city/...`.
+   - **This folder on its own** (`code examples/agentic-city`). Use this for a clean demo with nothing else in the chat context.
 
    Trust the workspace when asked. Agent hooks only run in trusted workspaces.
 
-3. In Copilot Chat, use the **Local** agent harness and run, for example:
+3. In Copilot Chat, use the **Local** agent harness, pick the **mayor** agent, and run, for example:
 
    ```text
    /found-district Noodle Heights, built on a retired noodle factory
@@ -40,9 +39,17 @@ Prompts (slash commands): `/found-district`, `/build-landmark`, `/city-crisis` (
 
 4. Watch **Runs** in Glasshouse. The run appears as soon as the Mayor starts and updates live: **Trace** (agents, subagents, tool calls, skills), **Agents** (handoffs with briefs and reports), and **Changed files** (every edit as a diff, labelled with the agent that made it).
 
+   The city has no GitHub Agentic Workflows; its prompt files play that role. **Flows** lists each prompt file with its run count, and a session whose first message is a slash command (`/found-district ...`) is linked to that prompt file. Free-form chats are recorded as runs too, just without a prompt link.
+
+5. Tune the council and compare. On a run's page, **Save run** with a label (e.g. `baseline: mayor v1`). Edit an agent, skill, or prompt in this folder, run the same prompt again, then open **Compare** (or tick two runs on **Runs**). Glasshouse snapshots the agent, skill, prompt, and instruction files when each session starts, so the comparison shows exactly what you changed in the setup next to how the results differed: agents and handoffs, skills loaded, and every changed file's diff side by side. **Files** shows every recorded change to one file across all runs.
+
 No Copilot handy? `npm run city:replay` (from the repository root) plays a scripted `/found-district` session through the same recorder. It makes real edits to the city, but no model is involved, and the run's engine says so.
 
 Reset the city to its last committed state with `npm run city:reset`. Recorded runs stay in Glasshouse.
+
+### Editing the agents
+
+This folder's `.github/` and `AGENTS.md` are the source of truth. After changing them, run `npm run city:sync` from the repository root to regenerate the root copy (`AGENTS.md` becomes `.github/instructions/agentic-city.instructions.md`, scoped to this folder so it stays out of unrelated chats). A test fails if the copy is out of date. Don't edit the root copies directly.
 
 ## How recording works
 

@@ -3,9 +3,11 @@ import type { PrismaClient } from '@prisma/client';
 import { statSync } from 'node:fs';
 import { basename, isAbsolute, resolve } from 'node:path';
 import { z } from 'zod';
+import { redactSecrets } from '@brianbrady/glasshouse-domain';
 import { syncRepositoryFromDisk } from '../sync.js';
 import {
   serializeAgentDefinition,
+  serializePromptDefinition,
   serializeSkillDefinition,
   serializeWorkflowDefinition,
 } from '../serialize.js';
@@ -118,32 +120,83 @@ export async function repositoriesRoutes(
     return skills.map(serializeSkillDefinition);
   });
 
-  app.get<{ Params: { repoId: string }; Querystring: { workflowId?: string; status?: string } }>(
-    '/api/repositories/:repoId/runs',
-    async (req) => {
-      return prisma.workflowRun.findMany({
-        where: {
-          repositoryId: req.params.repoId,
-          ...(req.query.workflowId ? { workflowDefinitionId: req.query.workflowId } : {}),
-          ...(req.query.status ? { status: req.query.status } : {}),
+  app.get<{ Params: { repoId: string } }>('/api/repositories/:repoId/prompts', async (req) => {
+    const prompts = await prisma.promptDefinition.findMany({
+      where: { repositoryId: req.params.repoId },
+      orderBy: { name: 'asc' },
+      include: {
+        _count: { select: { workflowRuns: true } },
+        workflowRuns: {
+          orderBy: { startTime: 'desc' },
+          take: 1,
+          select: { id: true, status: true, startTime: true },
         },
-        orderBy: { startTime: 'desc' },
+      },
+    });
+    return prompts.map(serializePromptDefinition);
+  });
+
+  app.get<{
+    Params: { repoId: string };
+    Querystring: { workflowId?: string; promptId?: string; status?: string; saved?: string };
+  }>('/api/repositories/:repoId/runs', async (req) => {
+    return prisma.workflowRun.findMany({
+      where: {
+        repositoryId: req.params.repoId,
+        ...(req.query.workflowId ? { workflowDefinitionId: req.query.workflowId } : {}),
+        ...(req.query.promptId ? { promptDefinitionId: req.query.promptId } : {}),
+        ...(req.query.status ? { status: req.query.status } : {}),
+        ...(req.query.saved === 'true' ? { savedAt: { not: null } } : {}),
+      },
+      orderBy: { startTime: 'desc' },
+    });
+  });
+
+  // Every recorded change to one file, newest run first, with its diff.
+  app.get<{ Params: { repoId: string }; Querystring: { path?: string } }>(
+    '/api/repositories/:repoId/file-history',
+    async (req, reply) => {
+      if (!req.query.path) {
+        return reply.code(400).send({ error: 'invalid_query', message: 'path is required' });
+      }
+      const ops = await prisma.fileOperation.findMany({
+        where: {
+          path: req.query.path,
+          operation: { not: 'read' },
+          run: { repositoryId: req.params.repoId },
+        },
+        include: {
+          run: {
+            select: {
+              id: true,
+              workflowName: true,
+              status: true,
+              startTime: true,
+              savedLabel: true,
+              savedAt: true,
+            },
+          },
+        },
+        orderBy: [{ run: { startTime: 'desc' } }, { id: 'asc' }],
       });
+      return ops.map((op) => ({ ...op, diff: op.diff ? redactSecrets(op.diff) : op.diff }));
     },
   );
 
   app.get<{ Params: { repoId: string } }>('/api/repositories/:repoId/overview', async (req) => {
     const repositoryId = req.params.repoId;
-    const [runs, agentDefCount, skillDefCount, workflowDefCount] = await Promise.all([
-      prisma.workflowRun.findMany({
-        where: { repositoryId },
-        orderBy: { startTime: 'desc' },
-        take: 50,
-      }),
-      prisma.agentDefinition.count({ where: { repositoryId } }),
-      prisma.skillDefinition.count({ where: { repositoryId } }),
-      prisma.workflowDefinition.count({ where: { repositoryId } }),
-    ]);
+    const [runs, agentDefCount, skillDefCount, workflowDefCount, promptDefCount] =
+      await Promise.all([
+        prisma.workflowRun.findMany({
+          where: { repositoryId },
+          orderBy: { startTime: 'desc' },
+          take: 50,
+        }),
+        prisma.agentDefinition.count({ where: { repositoryId } }),
+        prisma.skillDefinition.count({ where: { repositoryId } }),
+        prisma.workflowDefinition.count({ where: { repositoryId } }),
+        prisma.promptDefinition.count({ where: { repositoryId } }),
+      ]);
 
     const completed = runs.filter((r) => r.status === 'success' || r.status === 'failure');
     const successCount = runs.filter((r) => r.status === 'success').length;
@@ -171,6 +224,7 @@ export async function repositoriesRoutes(
       successRate,
       averageDurationMs,
       workflowDefCount,
+      promptDefCount,
       agentDefCount,
       skillDefCount,
       toolCallCount,

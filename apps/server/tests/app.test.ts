@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { execSync } from 'node:child_process';
 import { createHmac } from 'node:crypto';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -465,6 +465,164 @@ describe('local agent workspaces', () => {
       diff: '@@ -0,0 +1,1 @@\n+# Noodle Heights',
     });
     expect((await get('metrics')).filesChanged).toBe(1);
+  });
+
+  it('links runs to the prompt file that started them, live and on re-sync', async () => {
+    const promptsUrl = `/api/repositories/${cityRepoId}/prompts`;
+    const prompts = (await app.inject({ method: 'GET', url: promptsUrl, headers: admin })).json();
+    const found = prompts.find((p: { command: string }) => p.command === 'found-district');
+    expect(found).toMatchObject({
+      path: '.github/prompts/found-district.prompt.md',
+      agent: 'mayor',
+      runCount: 1,
+      lastRun: expect.objectContaining({ status: 'success' }),
+    });
+    expect(found.description).toContain('Found a new district');
+
+    const runsUrl = `/api/repositories/${cityRepoId}/runs`;
+    const linked = (
+      await app.inject({ method: 'GET', url: `${runsUrl}?promptId=${found.id}`, headers: admin })
+    ).json();
+    expect(linked).toHaveLength(1);
+    const detail = (
+      await app.inject({ method: 'GET', url: `/api/runs/${linked[0].id}`, headers: admin })
+    ).json();
+    expect(detail.prompt).toEqual({
+      id: found.id,
+      path: '.github/prompts/found-district.prompt.md',
+      command: 'found-district',
+    });
+
+    // Recorded before discovery (or with no prompt file): linked by the next sync only if it matches.
+    const crisis = prompts.find((p: { command: string }) => p.command === 'city-crisis');
+    const early = await prisma.workflowRun.create({
+      data: {
+        repositoryId: cityRepoId,
+        providerRunId: 'local-session:early',
+        workflowName: '/city-crisis the pigeons have unionized',
+        trigger: 'chat prompt',
+        status: 'success',
+        startTime: new Date('2026-10-08T14:00:00.000Z'),
+      },
+    });
+    const freeform = await prisma.workflowRun.create({
+      data: {
+        repositoryId: cityRepoId,
+        providerRunId: 'local-session:freeform',
+        workflowName: '/city-crisisless typo',
+        trigger: 'chat prompt',
+        status: 'success',
+        startTime: new Date('2026-10-08T14:01:00.000Z'),
+      },
+    });
+    await app.inject({
+      method: 'POST',
+      url: '/api/repositories/local',
+      headers: admin,
+      payload: { path: cityRoot },
+    });
+    expect((await prisma.workflowRun.findUniqueOrThrow({ where: { id: early.id } })).promptDefinitionId).toBe(crisis.id);
+    expect((await prisma.workflowRun.findUniqueOrThrow({ where: { id: freeform.id } })).promptDefinitionId).toBeNull();
+
+    const overview = (
+      await app.inject({ method: 'GET', url: `/api/repositories/${cityRepoId}/overview`, headers: admin })
+    ).json();
+    expect(overview).toMatchObject({ workflowDefCount: 0, promptDefCount: 4 });
+  });
+
+  it('snapshots the definitions a local run started with, once, sharing identical content', async () => {
+    const runsUrl = `/api/repositories/${cityRepoId}/runs`;
+    const [run] = (
+      await app.inject({ method: 'GET', url: `${runsUrl}?promptId=`, headers: admin })
+    )
+      .json()
+      .filter((r: { workflowName: string }) => r.workflowName === '/found-district Noodle Heights');
+    const definitionsOf = async (runId: string) =>
+      (await app.inject({ method: 'GET', url: `/api/runs/${runId}/definitions`, headers: admin })).json();
+
+    const first = await definitionsOf(run.id);
+    expect(first.capturedAt).not.toBeNull();
+    expect(first.definitions).toHaveLength(16);
+    const mayor = first.definitions.find((d: { path: string }) => d.path === '.github/agents/mayor.agent.md');
+    expect(mayor).toMatchObject({ kind: 'agent', name: 'mayor' });
+    expect(mayor.content).toBe(
+      readFileSync(join(cityRoot, '.github/agents/mayor.agent.md'), 'utf8').replace(/\r\n/g, '\n'),
+    );
+
+    // A later prompt in the same session keeps the original snapshot.
+    await app.inject({
+      method: 'POST',
+      url: '/api/telemetry/events',
+      headers: admin,
+      payload: local({ id: 'l13', kind: 'workflow.started', spanId: 'session-2', data: { name: 'again' } }),
+    });
+    expect((await definitionsOf(run.id)).capturedAt).toBe(first.capturedAt);
+
+    // A new session with unchanged files gets its own snapshot of the same content.
+    await app.inject({
+      method: 'POST',
+      url: '/api/telemetry/events',
+      headers: admin,
+      payload: event({
+        id: 'other-1',
+        kind: 'workflow.started',
+        spanId: 'session',
+        correlation: { repository: 'local/agentic-city', sessionId: 'second-session' },
+        data: { name: '/city-crisis pigeons' },
+      }),
+    });
+    const second = (await app.inject({ method: 'GET', url: runsUrl, headers: admin }))
+      .json()
+      .find((r: { workflowName: string }) => r.workflowName === '/city-crisis pigeons');
+    expect((await definitionsOf(second.id)).definitions).toHaveLength(16);
+    expect(await prisma.definitionBlob.count()).toBe(16);
+  });
+
+  it('saves and unsaves runs, and shows every recorded change to one file', async () => {
+    const runsUrl = `/api/repositories/${cityRepoId}/runs`;
+    const [run] = (await app.inject({ method: 'GET', url: runsUrl, headers: admin }))
+      .json()
+      .filter((r: { workflowName: string }) => r.workflowName === '/found-district Noodle Heights');
+    const save = (label?: string) =>
+      app.inject({
+        method: 'PUT',
+        url: `/api/runs/${run.id}/saved`,
+        headers: admin,
+        payload: label === undefined ? {} : { label },
+      });
+
+    const saved = (await save('baseline: mayor v1')).json();
+    expect(saved).toMatchObject({ savedLabel: 'baseline: mayor v1' });
+    expect(saved.savedAt).not.toBeNull();
+    const relabeled = (await save('  ')).json();
+    expect(relabeled).toMatchObject({ savedAt: saved.savedAt, savedLabel: null });
+    expect((await save('x'.repeat(121))).statusCode).toBe(400);
+
+    const onlySaved = (
+      await app.inject({ method: 'GET', url: `${runsUrl}?saved=true`, headers: admin })
+    ).json();
+    expect(onlySaved.map((r: { id: string }) => r.id)).toEqual([run.id]);
+
+    const removed = await app.inject({ method: 'DELETE', url: `/api/runs/${run.id}/saved`, headers: admin });
+    expect(removed.json()).toMatchObject({ savedAt: null, savedLabel: null });
+
+    const historyUrl = `/api/repositories/${cityRepoId}/file-history`;
+    expect((await app.inject({ method: 'GET', url: historyUrl, headers: admin })).statusCode).toBe(400);
+    const history = (
+      await app.inject({
+        method: 'GET',
+        url: `${historyUrl}?path=${encodeURIComponent('city/districts/noodle-heights.md')}`,
+        headers: admin,
+      })
+    ).json();
+    expect(history).toEqual([
+      expect.objectContaining({
+        operation: 'created',
+        actorId: 'city-planner',
+        diff: '@@ -0,0 +1,1 @@\n+# Noodle Heights',
+        run: expect.objectContaining({ id: run.id, workflowName: '/found-district Noodle Heights' }),
+      }),
+    ]);
   });
 });
 

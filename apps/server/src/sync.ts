@@ -1,8 +1,20 @@
-import { discoverRepository } from '@brianbrady/glasshouse-parser';
+import { discoverRepository, type DiscoveredRepository } from '@brianbrady/glasshouse-parser';
 import type { PrismaClient } from '@prisma/client';
+import { linkRunsToPrompts } from './correlation.js';
 
 function j(value: unknown): string {
   return JSON.stringify(value);
+}
+
+export interface SyncSummary {
+  workflows: number;
+  agents: number;
+  skills: number;
+  instructions: number;
+  prompts: number;
+  hooks: number;
+  mcpServers: number;
+  relationships: number;
 }
 
 /**
@@ -17,18 +29,15 @@ export async function syncRepositoryFromDisk(
   prisma: PrismaClient,
   repositoryId: string,
   checkoutDir: string,
-): Promise<{
-  workflows: number;
-  agents: number;
-  skills: number;
-  instructions: number;
-  prompts: number;
-  hooks: number;
-  mcpServers: number;
-  relationships: number;
-}> {
-  const discovered = discoverRepository(checkoutDir);
+): Promise<SyncSummary> {
+  return syncDiscovered(prisma, repositoryId, discoverRepository(checkoutDir));
+}
 
+export async function syncDiscovered(
+  prisma: PrismaClient,
+  repositoryId: string,
+  discovered: DiscoveredRepository,
+): Promise<SyncSummary> {
   // Definition-id lookup by path, populated as each kind is upserted, so
   // relationships (which only know paths) can be translated to real ids.
   const idByPath = new Map<string, string>();
@@ -212,6 +221,8 @@ export async function syncRepositoryFromDisk(
     });
     relationshipCount += 1;
   }
+
+  await linkRunsToPrompts(prisma, repositoryId);
 
   return {
     workflows: discovered.workflows.length,

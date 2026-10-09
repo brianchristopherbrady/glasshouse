@@ -1,24 +1,88 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
+import { z } from 'zod';
 import { redactSecrets } from '@brianbrady/glasshouse-domain';
 import { buildSpanTree } from '../trace.js';
 import {
+  promptCommand,
   serializeAgentDefinition,
   serializeEvent,
   serializeSkillDefinition,
   serializeSkillUsage,
 } from '../serialize.js';
 
+const SaveRunBodySchema = z.object({ label: z.string().trim().max(120).optional() });
+
 export async function runsRoutes(
   app: FastifyInstance,
   { prisma }: { prisma: PrismaClient },
 ): Promise<void> {
   app.get<{ Params: { runId: string } }>('/api/runs/:runId', async (req, reply) => {
+    const run = await prisma.workflowRun.findUnique({
+      where: { id: req.params.runId },
+      include: {
+        promptDefinition: { select: { id: true, name: true, path: true, frontmatter: true } },
+      },
+    });
+    if (!run) {
+      return reply.code(404).send({ error: 'run_not_found' });
+    }
+    const { promptDefinition: prompt, ...rest } = run;
+    return {
+      ...rest,
+      prompt: prompt ? { id: prompt.id, path: prompt.path, command: promptCommand(prompt) } : null,
+    };
+  });
+
+  app.put<{ Params: { runId: string } }>('/api/runs/:runId/saved', async (req, reply) => {
+    const parsed = SaveRunBodySchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'invalid_body', issues: parsed.error.issues });
+    }
     const run = await prisma.workflowRun.findUnique({ where: { id: req.params.runId } });
     if (!run) {
       return reply.code(404).send({ error: 'run_not_found' });
     }
-    return run;
+    return prisma.workflowRun.update({
+      where: { id: run.id },
+      data: { savedAt: run.savedAt ?? new Date(), savedLabel: parsed.data.label || null },
+    });
+  });
+
+  app.delete<{ Params: { runId: string } }>('/api/runs/:runId/saved', async (req, reply) => {
+    const run = await prisma.workflowRun.findUnique({ where: { id: req.params.runId } });
+    if (!run) {
+      return reply.code(404).send({ error: 'run_not_found' });
+    }
+    return prisma.workflowRun.update({
+      where: { id: run.id },
+      data: { savedAt: null, savedLabel: null },
+    });
+  });
+
+  app.get<{ Params: { runId: string } }>('/api/runs/:runId/definitions', async (req, reply) => {
+    const run = await prisma.workflowRun.findUnique({
+      where: { id: req.params.runId },
+      select: { definitionsCapturedAt: true },
+    });
+    if (!run) {
+      return reply.code(404).send({ error: 'run_not_found' });
+    }
+    const definitions = await prisma.runDefinition.findMany({
+      where: { runId: req.params.runId },
+      include: { blob: true },
+      orderBy: [{ kind: 'asc' }, { path: 'asc' }],
+    });
+    return {
+      capturedAt: run.definitionsCapturedAt,
+      definitions: definitions.map(({ blob, ...d }) => ({
+        kind: d.kind,
+        path: d.path,
+        name: d.name,
+        sha256: d.sha256,
+        content: redactSecrets(blob.content),
+      })),
+    };
   });
 
   app.get<{ Params: { runId: string } }>('/api/runs/:runId/trace', async (req, reply) => {

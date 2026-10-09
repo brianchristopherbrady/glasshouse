@@ -7,14 +7,17 @@ import type {
   DefinitionRelationship,
   DriftFinding,
   FileHotspot,
+  FileHistoryEntry,
   FileOperation,
   GithubRunSyncResult,
   LogRecord,
   Me,
   OverviewResponse,
+  PromptDefinition,
   Repository,
   Role,
   RunAgentsResponse,
+  RunDefinitionsResponse,
   RunEvent,
   RunGithubResponse,
   RunMetrics,
@@ -95,6 +98,8 @@ function unavailableInDemo(feature: string): never {
   );
 }
 
+type RunFilters = { workflowId?: string; promptId?: string; status?: string; saved?: boolean };
+
 const liveApi = {
   listRepositories: () => getJson<Repository[]>('/api/repositories'),
   getRepository: (repoId: string) => getJson<Repository>(`/api/repositories/${repoId}`),
@@ -106,21 +111,34 @@ const liveApi = {
     getJson<WorkflowDefinition>(`/api/repositories/${repoId}/workflows/${workflowId}`),
   listAgents: (repoId: string) => getJson<AgentDefinition[]>(`/api/repositories/${repoId}/agents`),
   listSkills: (repoId: string) => getJson<SkillDefinition[]>(`/api/repositories/${repoId}/skills`),
+  listPrompts: (repoId: string) =>
+    getJson<PromptDefinition[]>(`/api/repositories/${repoId}/prompts`),
   listFileHotspots: (repoId: string) => getJson<FileHotspot[]>(`/api/repositories/${repoId}/files`),
+  getFileHistory: (repoId: string, path: string) =>
+    getJson<FileHistoryEntry[]>(
+      `/api/repositories/${repoId}/file-history?path=${encodeURIComponent(path)}`,
+    ),
   listRelationships: (repoId: string) =>
     getJson<DefinitionRelationship[]>(`/api/repositories/${repoId}/relationships`),
   getArchitecture: (repoId: string) =>
     getJson<ArchitectureGraphResponse>(`/api/repositories/${repoId}/architecture`),
   syncRepository: (repoId: string, checkoutDir: string) =>
     postJson<SyncResult>(`/api/repositories/${repoId}/sync`, { checkoutDir }),
-  listRuns: (repoId: string, filters?: { workflowId?: string; status?: string }) => {
+  listRuns: (repoId: string, filters?: RunFilters) => {
     const params = new URLSearchParams();
     if (filters?.workflowId) params.set('workflowId', filters.workflowId);
+    if (filters?.promptId) params.set('promptId', filters.promptId);
     if (filters?.status) params.set('status', filters.status);
+    if (filters?.saved) params.set('saved', 'true');
     const qs = params.toString();
     return getJson<WorkflowRun[]>(`/api/repositories/${repoId}/runs${qs ? `?${qs}` : ''}`);
   },
   getRun: (runId: string) => getJson<WorkflowRun>(`/api/runs/${runId}`),
+  saveRun: (runId: string, label: string) =>
+    request<WorkflowRun>('PUT', `/api/runs/${runId}/saved`, { label }),
+  unsaveRun: (runId: string) => request<WorkflowRun>('DELETE', `/api/runs/${runId}/saved`),
+  getRunDefinitions: (runId: string) =>
+    getJson<RunDefinitionsResponse>(`/api/runs/${runId}/definitions`),
   getRunTrace: (runId: string) => getJson<RunTraceResponse>(`/api/runs/${runId}/trace`),
   getRunEvents: (runId: string) => getJson<RunEvent[]>(`/api/runs/${runId}/events`),
   getRunFiles: (runId: string) => getJson<FileOperation[]>(`/api/runs/${runId}/files`),
@@ -165,8 +183,16 @@ const staticApi: typeof liveApi = {
     getJson<AgentDefinition[]>(`${STATIC_BASE}/repositories/${repoId}/agents.json`),
   listSkills: (repoId) =>
     getJson<SkillDefinition[]>(`${STATIC_BASE}/repositories/${repoId}/skills.json`),
+  listPrompts: (repoId) =>
+    getJson<PromptDefinition[]>(`${STATIC_BASE}/repositories/${repoId}/prompts.json`),
   listFileHotspots: (repoId) =>
     getJson<FileHotspot[]>(`${STATIC_BASE}/repositories/${repoId}/files.json`),
+  getFileHistory: async (repoId, path) => {
+    const byPath = await getJson<Record<string, FileHistoryEntry[]>>(
+      `${STATIC_BASE}/repositories/${repoId}/file-history.json`,
+    );
+    return byPath[path] ?? [];
+  },
   listRelationships: (repoId) =>
     getJson<DefinitionRelationship[]>(`${STATIC_BASE}/repositories/${repoId}/relationships.json`),
   getArchitecture: (repoId) =>
@@ -177,10 +203,16 @@ const staticApi: typeof liveApi = {
     return runs.filter(
       (r) =>
         (!filters?.workflowId || r.workflowDefinitionId === filters.workflowId) &&
-        (!filters?.status || r.status === filters.status),
+        (!filters?.promptId || r.promptDefinitionId === filters.promptId) &&
+        (!filters?.status || r.status === filters.status) &&
+        (!filters?.saved || r.savedAt !== null),
     );
   },
   getRun: (runId) => getJson<WorkflowRun>(`${STATIC_BASE}/runs/${runId}.json`),
+  saveRun: () => unavailableInDemo('Saving runs'),
+  unsaveRun: () => unavailableInDemo('Saving runs'),
+  getRunDefinitions: (runId) =>
+    getJson<RunDefinitionsResponse>(`${STATIC_BASE}/runs/${runId}/definitions.json`),
   getRunTrace: (runId) => getJson<RunTraceResponse>(`${STATIC_BASE}/runs/${runId}/trace.json`),
   getRunEvents: (runId) => getJson<RunEvent[]>(`${STATIC_BASE}/runs/${runId}/events.json`),
   getRunFiles: (runId) => getJson<FileOperation[]>(`${STATIC_BASE}/runs/${runId}/files.json`),

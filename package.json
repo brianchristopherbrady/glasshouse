@@ -1,7 +1,7 @@
 {
   "name": "glasshouse",
   "private": true,
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Observability and visualization for agentic software-development workflows.",
   "license": "MIT",
   "type": "module",
@@ -22,6 +22,7 @@
     "demo": "node scripts/demo-city.mjs",
     "city:replay": "node examples/agentic-city/tools/replay-founding.mjs",
     "city:reset": "node examples/agentic-city/tools/reset-city.mjs",
+    "city:sync": "node examples/agentic-city/tools/sync-customizations.mjs",
     "db:generate": "npm run db:generate --workspace apps/server",
     "db:migrate": "npm run db:migrate --workspace apps/server",
     "db:seed": "npm run db:seed --workspace apps/server",

@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { ArrowRight, CircleCheck, TriangleAlert } from 'lucide-react';
-import { api } from '../api/client.js';
-import type { TraceSpanNode } from '../api/types.js';
+import {
+  ArrowRight,
+  Bookmark,
+  BookmarkCheck,
+  CircleCheck,
+  GitCompareArrows,
+  TriangleAlert,
+} from 'lucide-react';
+import { api, STATIC_DEMO } from '../api/client.js';
+import type { TraceSpanNode, WorkflowRun } from '../api/types.js';
 import { StatusBadge } from '../components/StatusBadge.js';
 import { Duration, formatRelativeTime } from '../components/Duration.js';
 import { TraceView } from '../components/TraceView.js';
@@ -66,8 +73,96 @@ function useRunFiles(runId: string | undefined) {
   });
 }
 
+function SaveRunControls({ run }: { run: WorkflowRun }): JSX.Element {
+  const { repoId } = useParams();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [label, setLabel] = useState(run.savedLabel ?? '');
+  const mutation = useMutation({
+    mutationFn: (action: { save: boolean; label?: string }) =>
+      action.save ? api.saveRun(run.id, action.label ?? '') : api.unsaveRun(run.id),
+    onSuccess: () => {
+      setEditing(false);
+      void queryClient.invalidateQueries({ queryKey: ['run', run.id] });
+      void queryClient.invalidateQueries({ queryKey: ['runs', repoId] });
+    },
+  });
+  // A saved run is the natural baseline; an unsaved one is compared against the latest saved run.
+  const compareUrl = `/repos/${repoId}/compare?${run.savedAt ? 'a' : 'b'}=${run.id}`;
+  const button =
+    'flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs text-text-muted enabled:hover:text-text disabled:opacity-60';
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {STATIC_DEMO ? (
+        run.savedAt && (
+          <span className="inline-flex items-center gap-1 rounded-sm bg-accent-wash px-1.5 py-0.5 text-xs font-medium text-accent">
+            <BookmarkCheck size={13} aria-hidden="true" />
+            {run.savedLabel ?? 'Saved'}
+          </span>
+        )
+      ) : editing ? (
+        <form
+          className="flex flex-wrap items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutation.mutate({ save: true, label });
+          }}
+        >
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            maxLength={120}
+            placeholder="Label, e.g. baseline: mayor v1"
+            aria-label="Saved run label"
+            className="w-64 max-w-full rounded-md border border-border bg-surface-sunken px-2 py-1 text-xs text-text"
+          />
+          <button type="submit" disabled={mutation.isPending} className={button}>
+            Save
+          </button>
+          <button type="button" onClick={() => setEditing(false)} className={button}>
+            Cancel
+          </button>
+        </form>
+      ) : run.savedAt ? (
+        <>
+          <span className="inline-flex items-center gap-1 rounded-sm bg-accent-wash px-1.5 py-0.5 text-xs font-medium text-accent">
+            <BookmarkCheck size={13} aria-hidden="true" />
+            {run.savedLabel ?? 'Saved'}
+          </span>
+          <button type="button" onClick={() => setEditing(true)} className={button}>
+            Edit label
+          </button>
+          <button
+            type="button"
+            onClick={() => mutation.mutate({ save: false })}
+            disabled={mutation.isPending}
+            className={button}
+          >
+            Unsave
+          </button>
+        </>
+      ) : (
+        <button type="button" onClick={() => setEditing(true)} className={button}>
+          <Bookmark size={13} aria-hidden="true" />
+          Save run
+        </button>
+      )}
+      <Link to={compareUrl} className={button}>
+        <GitCompareArrows size={13} aria-hidden="true" />
+        Compare
+      </Link>
+      {mutation.error && (
+        <span role="alert" className="text-xs text-status-failure">
+          {mutation.error.message}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function RunHeader({ onShowFiles }: { onShowFiles: () => void }): JSX.Element | null {
-  const { runId } = useParams();
+  const { repoId, runId } = useParams();
   const { data: run } = useRun(runId);
   const { data: files } = useRunFiles(runId);
   if (!run) return null;
@@ -102,6 +197,19 @@ function RunHeader({ onShowFiles }: { onShowFiles: () => void }): JSX.Element | 
           <StatusBadge status={run.status} />
         </div>
       </div>
+      {run.prompt && (
+        <p className="mt-1 text-xs text-text-muted">
+          Started from prompt file <span className="mono text-text">/{run.prompt.command}</span>{' '}
+          (<span className="mono">{run.prompt.path}</span>) ·{' '}
+          <Link
+            to={`/repos/${repoId}/runs?prompt=${run.prompt.id}`}
+            className="text-accent underline-offset-2 hover:underline"
+          >
+            all runs of this prompt
+          </Link>
+        </p>
+      )}
+      <SaveRunControls key={`${run.id}:${run.savedLabel ?? ''}`} run={run} />
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs sm:grid-cols-3 md:grid-cols-6">
         <div>
           <dt className="text-[11px] uppercase tracking-wide text-text-muted">Trigger</dt>

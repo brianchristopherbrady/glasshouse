@@ -43,12 +43,27 @@ export interface SkillDefinition {
   body: string;
 }
 
+export interface PromptDefinition {
+  id: string;
+  path: string;
+  name: string;
+  /** The slash command, e.g. `found-district` for `/found-district`. */
+  command: string;
+  description: string | null;
+  agent: string | null;
+  runCount: number;
+  lastRun: { id: string; status: RunStatus; startTime: string } | null;
+}
+
 export type RunStatus = 'pending' | 'running' | 'success' | 'failure' | 'unknown';
 
 export interface WorkflowRun {
   id: string;
   repositoryId: string;
   workflowDefinitionId: string | null;
+  promptDefinitionId: string | null;
+  /** Only on the single-run response. */
+  prompt?: { id: string; path: string; command: string } | null;
   workflowName: string;
   trigger: string;
   branch: string | null;
@@ -59,6 +74,33 @@ export interface WorkflowRun {
   endTime: string | null;
   durationMs: number | null;
   engine: string | null;
+  savedAt: string | null;
+  savedLabel: string | null;
+  definitionsCapturedAt: string | null;
+}
+
+export interface RunDefinitionFile {
+  kind: string;
+  path: string;
+  name: string;
+  sha256: string;
+  content: string;
+}
+
+export interface RunDefinitionsResponse {
+  capturedAt: string | null;
+  definitions: RunDefinitionFile[];
+}
+
+export interface FileHistoryEntry extends FileOperation {
+  run: {
+    id: string;
+    workflowName: string;
+    status: RunStatus;
+    startTime: string;
+    savedAt: string | null;
+    savedLabel: string | null;
+  };
 }
 
 export interface OverviewResponse {
@@ -67,6 +109,7 @@ export interface OverviewResponse {
   successRate: number | null;
   averageDurationMs: number | null;
   workflowDefCount: number;
+  promptDefCount: number;
   agentDefCount: number;
   skillDefCount: number;
   toolCallCount: number;

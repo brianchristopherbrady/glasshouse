@@ -23,11 +23,22 @@ changed file as a diff.
 
 ```bash
 npm run demo              # web UI on http://localhost:5410, API on 127.0.0.1:4410
-code examples/agentic-city
-# in Copilot Chat (Local agent): /found-district Noodle Heights, built on a retired noodle factory
+# in Copilot Chat (Local agent), pick the mayor agent, then:
+#   /found-district Noodle Heights, built on a retired noodle factory
 npm run city:replay       # no Copilot? play a scripted session through the same recorder
 npm run city:reset        # restore the city to its committed state
+npm run city:sync         # after editing the city's agents, regenerate the root .github copy
 ```
+
+The city agents work from this repository's window (the root `.github/` holds a
+generated copy of the city's agents, skills, prompts, and instructions) or from
+`code examples/agentic-city` on its own.
+
+Each local session snapshots the agent, skill, prompt, and instruction files it
+started with. Save a run as a baseline, edit an agent, run again, and **Compare**
+shows the setup change next to how the results differed. **Files** shows every
+recorded change to a file across runs, with diffs. The hosted demo includes
+recorded city sessions (`scripts/seed-demo-city.mjs`) so all of this works there too.
 
 See [examples/agentic-city/README.md](examples/agentic-city/README.md) for details.
 

@@ -164,6 +164,21 @@ describe('handleHook', () => {
     expect(first).toHaveLength(1);
     expect(second).toEqual([]);
   });
+
+  it('records a skill read from the repository root mirror, but not the read itself', () => {
+    const rootMirror = join(root, '..', '..', '.github', 'skills', 'civic-budget', 'SKILL.md');
+    hook('UserPromptSubmit', 'treasurer', { prompt: 'Audit the books.' });
+    const events = hook('PostToolUse', 'treasurer', {
+      tool_name: 'read_file',
+      tool_use_id: 'read-root',
+      tool_input: { filePath: rootMirror },
+    });
+    expect(events.find((e) => e.kind === 'skill.loaded')?.data).toEqual({
+      name: 'civic-budget',
+      path: '.github/skills/civic-budget/SKILL.md',
+    });
+    expect(events.some((e) => e.kind === 'file.read')).toBe(false);
+  });
 });
 
 describe('deliver', () => {

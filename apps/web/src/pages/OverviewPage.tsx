@@ -49,7 +49,11 @@ export function OverviewPage(): JSX.Element {
         <Metric label="Success rate" value={pct(data.successRate)} icon={CheckCircle2} />
         <Metric label="Avg duration" value={formatDuration(data.averageDurationMs)} icon={Timer} />
         <Metric label="Handoffs" value={data.handoffCount} icon={GitMerge} />
-        <Metric label="Workflows" value={data.workflowDefCount} icon={GitBranch} />
+        <Metric
+          label="Workflows / prompts"
+          value={`${data.workflowDefCount} / ${data.promptDefCount}`}
+          icon={GitBranch}
+        />
         <Metric label="Agents configured" value={data.agentDefCount} icon={Users} />
         <Metric label="Skills configured" value={data.skillDefCount} icon={Sparkles} />
         <Metric label="Tool calls" value={data.toolCallCount} icon={Wrench} />
