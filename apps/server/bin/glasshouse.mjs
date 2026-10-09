@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 
 function resolveDataDir() {
   const override = process.env.AGENTIC_FLOWS_DATA_DIR;
-  const dir = override ? path.resolve(override) : path.join(homedir(), '.agentic-flows');
+  const dir = override ? path.resolve(override) : path.join(homedir(), '.glasshouse');
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -49,21 +49,21 @@ function ensureClientGenerated(schemaPath) {
     const clientRequire = createRequire(require.resolve('@prisma/client/package.json'));
     marker = path.join(
       path.dirname(clientRequire.resolve('.prisma/client/package.json')),
-      '.agentic-flows-schema',
+      '.glasshouse-schema',
     );
     if (readFileSync(marker, 'utf8') === wanted) return;
   } catch {
     // no generated client or no marker yet
   }
   console.log(
-    'agentic-flows: generating database client for',
+    'glasshouse: generating database client for',
     path.relative(packageRoot, schemaPath),
   );
   prisma(['generate', '--schema', schemaPath]);
   const clientRequire = createRequire(require.resolve('@prisma/client/package.json'));
   marker = path.join(
     path.dirname(clientRequire.resolve('.prisma/client/package.json')),
-    '.agentic-flows-schema',
+    '.glasshouse-schema',
   );
   writeFileSync(marker, wanted);
 }
@@ -80,7 +80,7 @@ async function start() {
   prisma(['migrate', 'deploy', '--schema', schemaPath]);
 
   if (!existsSync(path.join(packageRoot, 'dist', 'bundle.mjs'))) {
-    console.error('agentic-flows: build output missing — run `npm run build` first.');
+    console.error('glasshouse: build output missing — run `npm run build` first.');
     process.exit(1);
   }
 
@@ -96,7 +96,7 @@ async function start() {
 // exactly the set that gets bundled/published (see repo notes).
 async function ingest(filePath, baseUrl) {
   if (!filePath) {
-    console.error('agentic-flows: usage: agentic-flows ingest <file.ndjson> [--url <serverUrl>]');
+    console.error('glasshouse: usage: glasshouse ingest <file.ndjson> [--url <serverUrl>]');
     process.exit(1);
   }
   const events = [];
@@ -105,11 +105,11 @@ async function ingest(filePath, baseUrl) {
     try {
       events.push(JSON.parse(line));
     } catch {
-      console.warn(`agentic-flows: skipping malformed line in ${filePath}`);
+      console.warn(`glasshouse: skipping malformed line in ${filePath}`);
     }
   }
   if (events.length === 0) {
-    console.log('agentic-flows: no events to ingest.');
+    console.log('glasshouse: no events to ingest.');
     return;
   }
   const url = `${baseUrl.replace(/\/$/, '')}/api/telemetry/batch`;
@@ -120,18 +120,18 @@ async function ingest(filePath, baseUrl) {
   const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ events }) });
   if (!res.ok) {
     console.error(
-      `agentic-flows: ingest failed: ${res.status} ${await res.text().catch(() => '')}`,
+      `glasshouse: ingest failed: ${res.status} ${await res.text().catch(() => '')}`,
     );
     process.exit(1);
   }
-  console.log(`agentic-flows: ingested ${events.length} event(s) from ${filePath}.`);
+  console.log(`glasshouse: ingested ${events.length} event(s) from ${filePath}.`);
 }
 
 const USAGE = `Usage:
-  agentic-flows [start]                         run migrations, then start the server
-  agentic-flows ingest <file.ndjson> [--url U]  forward offline-captured telemetry
-  agentic-flows generate                        generate the database client for DATABASE_URL
-  agentic-flows --version | --help
+  glasshouse [start]                         run migrations, then start the server
+  glasshouse ingest <file.ndjson> [--url U]  forward offline-captured telemetry
+  glasshouse generate                        generate the database client for DATABASE_URL
+  glasshouse --version | --help
 
 Configuration is via environment variables — see the README.`;
 
@@ -155,6 +155,6 @@ if (command === 'ingest') {
 } else if (command === '--version' || command === '-v') {
   console.log(JSON.parse(readFileSync(path.join(packageRoot, 'package.json'), 'utf8')).version);
 } else {
-  console.error(`agentic-flows: unrecognized command "${command}".\n\n${USAGE}`);
+  console.error(`glasshouse: unrecognized command "${command}".\n\n${USAGE}`);
   process.exit(1);
 }

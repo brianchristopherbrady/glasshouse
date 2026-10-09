@@ -10,7 +10,7 @@ const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 const monitoringEnabled = await initMonitoring(version);
 const app = await buildApp({ prisma, logger: { level: process.env.LOG_LEVEL ?? 'info' } });
-app.log.info({ version }, 'agentic-flows server starting');
+app.log.info({ version }, 'glasshouse server starting');
 if (monitoringEnabled) app.log.info('error monitoring enabled (Sentry)');
 
 process.on('unhandledRejection', (reason) => {

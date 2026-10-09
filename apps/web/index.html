@@ -8,7 +8,7 @@
     <script>
       // Applied before paint to avoid a flash of the wrong theme.
       (function () {
-        var saved = localStorage.getItem('agentic-flows-theme');
+        var saved = localStorage.getItem('glasshouse-theme');
         var wantsLight = saved ? saved === 'light' : !window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (wantsLight) document.documentElement.classList.add('light');
       })();

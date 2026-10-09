@@ -19,7 +19,7 @@ services:
 
   app:
     build: .
-    image: agentic-flows:local
+    image: glasshouse:local
     depends_on:
       db:
         condition: service_healthy

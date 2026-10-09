@@ -1,5 +1,5 @@
 // Boots the real packaged server for E2E: seeds a throwaway SQLite database,
-// then starts apps/server/bin/agentic-flows.mjs (bundle + built web UI) with
+// then starts apps/server/bin/glasshouse.mjs (bundle + built web UI) with
 // authentication enabled — the same entry point a real install runs.
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -14,7 +14,7 @@ export const E2E_ADMIN_TOKEN = 'e2e-bootstrap-admin-token';
 const root = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const serverDir = path.join(root, 'apps/server');
 const require = createRequire(path.join(serverDir, 'package.json'));
-const dataDir = mkdtempSync(path.join(tmpdir(), 'agentic-flows-e2e-'));
+const dataDir = mkdtempSync(path.join(tmpdir(), 'glasshouse-e2e-'));
 
 const env = {
   ...process.env,
@@ -38,7 +38,7 @@ run([
 ]);
 run([require.resolve('tsx/cli'), 'prisma/seed.ts']);
 
-const server = spawn(process.execPath, [path.join(serverDir, 'bin/agentic-flows.mjs')], {
+const server = spawn(process.execPath, [path.join(serverDir, 'bin/glasshouse.mjs')], {
   env,
   stdio: 'inherit',
 });

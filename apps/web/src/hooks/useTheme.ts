@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'agentic-flows-theme';
+const STORAGE_KEY = 'glasshouse-theme';
 type Theme = 'dark' | 'light';
 
 function readInitialTheme(): Theme {

@@ -45,7 +45,7 @@ COPY --from=build /app/apps/server/dist/web ./apps/server/dist/web
 # This also fetches Prisma's engines into node_modules/prisma, which the
 # non-root runtime user cannot write. If another provider is configured (e.g.
 # the SQLite default), the CLI regenerates into the node-owned client dir.
-RUN DATABASE_URL=postgresql://build-placeholder/db node apps/server/bin/agentic-flows.mjs generate \
+RUN DATABASE_URL=postgresql://build-placeholder/db node apps/server/bin/glasshouse.mjs generate \
   && mkdir -p /data \
   && chown -R node:node /data node_modules/.prisma node_modules/@prisma/client
 USER node
@@ -53,5 +53,5 @@ VOLUME ["/data"]
 EXPOSE 4000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/api/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-ENTRYPOINT ["node", "apps/server/bin/agentic-flows.mjs"]
+ENTRYPOINT ["node", "apps/server/bin/glasshouse.mjs"]
 CMD ["start"]

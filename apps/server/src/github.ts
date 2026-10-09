@@ -50,7 +50,7 @@ function authHeaders(token: string | undefined): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
-    'User-Agent': 'agentic-flows',
+    'User-Agent': 'glasshouse',
   };
   if (token) headers.Authorization = `Bearer ${token}`;
   return headers;
@@ -141,7 +141,7 @@ export async function cloneRepoShallow(
 ): Promise<string> {
   assertValidSegment(owner, 'owner');
   assertValidSegment(repo, 'repo');
-  const dir = await mkdtemp(path.join(tmpdir(), 'agentic-flows-clone-'));
+  const dir = await mkdtemp(path.join(tmpdir(), 'glasshouse-clone-'));
   const url = `https://github.com/${owner}/${repo}.git`;
   const options = { env: gitEnv(token), timeout: GIT_TIMEOUT_MS, maxBuffer: 4 * 1024 * 1024 };
   try {

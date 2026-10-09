@@ -1,7 +1,7 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 const ADMIN_TOKEN = 'e2e-bootstrap-admin-token';
-const TOKEN_KEY = 'agentic-flows-api-token';
+const TOKEN_KEY = 'glasshouse-api-token';
 const admin = { Authorization: `Bearer ${ADMIN_TOKEN}` };
 
 async function signInWith(page: Page, token: string) {

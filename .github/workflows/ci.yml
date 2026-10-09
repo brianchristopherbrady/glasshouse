@@ -139,7 +139,7 @@ jobs:
           echo "smoke test passed"
       - name: Same image in its default SQLite mode (no DATABASE_URL)
         run: |
-          docker run -d --name af-sqlite -p 4001:4000 -e AGENTIC_FLOWS_API_TOKEN=ci-sqlite-token agentic-flows:local
+          docker run -d --name af-sqlite -p 4001:4000 -e AGENTIC_FLOWS_API_TOKEN=ci-sqlite-token glasshouse:local
           for i in $(seq 1 60); do
             if curl -sf http://localhost:4001/api/ready > /dev/null; then break; fi
             sleep 2

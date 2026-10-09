@@ -45,7 +45,7 @@ const STATIC_BASE = import.meta.env.BASE_URL.replace(/\/$/, '') + '/demo-data';
 
 // Each person signs in with their own API token (never baked into the
 // bundle, which anyone loading the page could read).
-const TOKEN_STORAGE_KEY = 'agentic-flows-api-token';
+const TOKEN_STORAGE_KEY = 'glasshouse-api-token';
 
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_STORAGE_KEY);

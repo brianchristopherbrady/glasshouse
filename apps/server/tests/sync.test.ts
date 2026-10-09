@@ -19,7 +19,7 @@ let repositoryId: string;
 beforeAll(async () => {
   // Real SQLite db in a throwaway temp dir, migrated via the actual schema
   // — this exercises the real Prisma client/schema, not a mock.
-  tmpDbDir = mkdtempSync(join(tmpdir(), 'agentic-flows-sync-test-'));
+  tmpDbDir = mkdtempSync(join(tmpdir(), 'glasshouse-sync-test-'));
   const dbPath = join(tmpDbDir, 'test.db');
   const schemaPath = join(dirname(fileURLToPath(import.meta.url)), '../prisma/schema.prisma');
   execSync(`npx prisma db push --schema "${schemaPath}" --skip-generate`, {

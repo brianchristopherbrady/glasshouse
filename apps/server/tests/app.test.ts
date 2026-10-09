@@ -20,7 +20,7 @@ let repoId: string;
 let otherRepoId: string;
 
 beforeAll(async () => {
-  tmpDir = mkdtempSync(join(tmpdir(), 'agentic-flows-app-test-'));
+  tmpDir = mkdtempSync(join(tmpdir(), 'glasshouse-app-test-'));
   const dbUrl = `file:${join(tmpDir, 'test.db')}`;
   const schemaPath = join(dirname(fileURLToPath(import.meta.url)), '../prisma/schema.prisma');
   execSync(`npx prisma db push --schema "${schemaPath}" --skip-generate`, {

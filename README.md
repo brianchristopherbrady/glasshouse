@@ -87,15 +87,16 @@ SQLite, run `db:sync-postgres`, and add the matching Postgres migration with
 
 ```bash
 npm install -g @brianbrady/glasshouse
-AGENTIC_FLOWS_API_TOKEN=<long-random-string> agentic-flows
+AGENTIC_FLOWS_API_TOKEN=<long-random-string> glasshouse
 ```
 
-The `agentic-flows` CLI creates a data directory (`~/.agentic-flows`, or
+The `glasshouse` CLI creates a data directory (`~/.glasshouse`, or
 `AGENTIC_FLOWS_DATA_DIR`), generates the database client for the configured
 provider if needed, applies migrations, and serves the API and web UI on one
-port (`PORT`, default 4000). Other commands: `agentic-flows ingest <file.ndjson>
-[--url <server>]`, `agentic-flows generate` (pre-generate the database client,
-e.g. at image build time), `--version`, `--help`.
+port (`PORT`, default 4000). Other commands: `glasshouse ingest <file.ndjson>
+[--url <server>]`, `glasshouse generate` (pre-generate the database client,
+e.g. at image build time), `--version`, `--help`. Without installing:
+`npx @brianbrady/glasshouse`.
 
 ### With Docker (app + PostgreSQL)
 
@@ -305,7 +306,7 @@ and records changed files, tool calls, and model calls. Ingestion is atomic
 per event and idempotent by event id, so batches can be retried safely. Use an
 `ingest`-role token scoped to the repository. Events captured offline can be
 written with `appendEventToFile` and forwarded later with
-`agentic-flows ingest <file.ndjson>`.
+`glasshouse ingest <file.ndjson>`.
 
 ## Changed files
 

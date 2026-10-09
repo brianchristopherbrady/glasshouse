@@ -1,6 +1,6 @@
 {
   "name": "@brianbrady/glasshouse",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Self-hosted Agentic Flows server and web UI: observability for agentic software-development workflows.",
   "license": "MIT",
   "repository": {
@@ -10,7 +10,7 @@
   },
   "type": "module",
   "bin": {
-    "agentic-flows": "./bin/agentic-flows.mjs"
+    "glasshouse": "./bin/glasshouse.mjs"
   },
   "files": [
     "bin",
