@@ -1,7 +1,7 @@
 {
   "name": "@brianbrady/glasshouse-domain",
-  "version": "0.1.1",
-  "description": "Zod domain model for Agentic Flows: runs, spans, events, evidence, and redaction.",
+  "version": "0.1.2",
+  "description": "Zod domain model for Glasshouse: runs, spans, events, evidence, and redaction.",
   "license": "MIT",
   "repository": {
     "type": "git",

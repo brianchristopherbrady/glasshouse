@@ -12,9 +12,9 @@ export function githubActionsCorrelation(env: NodeJS.ProcessEnv = process.env): 
 }
 
 export interface TelemetryClientOptions {
-  /** Base URL of the Agentic Flows server, e.g. "http://localhost:4000". */
+  /** Base URL of the Glasshouse server, e.g. "http://localhost:4000". */
   baseUrl: string;
-  /** Sent as `Authorization: Bearer <apiToken>` if the server has AGENTIC_FLOWS_API_TOKEN set. */
+  /** Sent as `Authorization: Bearer <apiToken>` if the server has GLASSHOUSE_API_TOKEN set. */
   apiToken?: string;
   /** Injectable for tests; defaults to the global fetch. */
   fetchImpl?: typeof fetch;

@@ -14,7 +14,7 @@ export function DemoLanding({ onEnter }: { onEnter: () => void }): JSX.Element {
       <span className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-accent-contrast shadow-lg shadow-accent/20">
         <Radar size={28} strokeWidth={2.25} />
       </span>
-      <h1 className="text-3xl font-bold tracking-tight text-text">Agentic Flows</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-text">Glasshouse</h1>
       <p className="mt-2 max-w-lg text-lg font-medium text-text-muted">
         Observability for agentic software-development workflows
       </p>

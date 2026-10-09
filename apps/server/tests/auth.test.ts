@@ -147,7 +147,7 @@ describe('createAuthHook', () => {
 
   it('only stores a hash: the same plaintext always hashes the same, different plaintexts differ', () => {
     const a = generateToken();
-    expect(a.startsWith('af_')).toBe(true);
+    expect(a.startsWith('glasshouse_')).toBe(true);
     expect(hashToken(a)).toBe(hashToken(a));
     expect(hashToken(a)).not.toBe(hashToken(generateToken()));
     expect(hashToken(a)).not.toContain(a);

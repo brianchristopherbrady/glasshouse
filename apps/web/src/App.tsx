@@ -82,7 +82,7 @@ function Header(): JSX.Element {
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent text-accent-contrast">
               <Radar size={15} strokeWidth={2.25} />
             </span>
-            <span className="hidden sm:inline">AGENTIC FLOWS</span>
+            <span className="hidden sm:inline">GLASSHOUSE</span>
             {STATIC_DEMO && (
               <span className="rounded-full bg-status-running-wash px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-status-running">
                 Demo
@@ -134,7 +134,7 @@ function RepoLayout(): JSX.Element {
 
 export default function App(): JSX.Element {
   useEffect(() => {
-    if (STATIC_DEMO) document.title = 'Agentic Flows — Live Demo';
+    if (STATIC_DEMO) document.title = 'Glasshouse — Live Demo';
   }, []);
   const routes = (
     <Routes>

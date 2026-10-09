@@ -40,9 +40,9 @@ test.beforeEach(({ page }) => {
 
 test('requires a valid token before showing any data', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Sign in to Agentic Flows' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in to Glasshouse' })).toBeVisible();
 
-  await page.getByLabel('API token').fill('af_not-a-real-token');
+  await page.getByLabel('API token').fill('glasshouse_not-a-real-token');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await expect(page.getByRole('alert')).toHaveText('That token was not accepted.');
 
@@ -52,7 +52,7 @@ test('requires a valid token before showing any data', async ({ page }) => {
   await expect(page).toHaveURL(/\/repos\/[^/]+$/);
 
   await page.getByRole('button', { name: /^Sign out/ }).click();
-  await expect(page.getByRole('heading', { name: 'Sign in to Agentic Flows' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in to Glasshouse' })).toBeVisible();
   expect(await page.evaluate((key) => localStorage.getItem(key), TOKEN_KEY)).toBeNull();
 });
 
@@ -114,7 +114,7 @@ test('admin can issue and revoke a token; a viewer token is read-only', async ({
   await page.getByLabel('Role').selectOption('viewer');
   await page.getByRole('button', { name: 'Create token' }).click();
   const viewerToken = (await page.getByTestId('new-token').textContent())?.trim() ?? '';
-  expect(viewerToken).toMatch(/^af_/);
+  expect(viewerToken).toMatch(/^glasshouse_/);
 
   const viewerRes = await request.get('/api/auth/me', {
     headers: { Authorization: `Bearer ${viewerToken}` },

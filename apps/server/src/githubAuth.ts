@@ -27,9 +27,9 @@ export function createAppJwt(config: GithubAppConfig, nowMs = Date.now()): strin
 
 /** Reads GitHub App credentials from env; null means "use a PAT (or nothing)". */
 export function loadGithubAppConfig(env: NodeJS.ProcessEnv = process.env): GithubAppConfig | null {
-  const appId = env.AGENTIC_FLOWS_GITHUB_APP_ID;
-  const inlineKey = env.AGENTIC_FLOWS_GITHUB_APP_PRIVATE_KEY;
-  const keyPath = env.AGENTIC_FLOWS_GITHUB_APP_PRIVATE_KEY_PATH;
+  const appId = env.GLASSHOUSE_GITHUB_APP_ID;
+  const inlineKey = env.GLASSHOUSE_GITHUB_APP_PRIVATE_KEY;
+  const keyPath = env.GLASSHOUSE_GITHUB_APP_PRIVATE_KEY_PATH;
   if (!appId || (!inlineKey && !keyPath)) return null;
   // Env-var PEMs are commonly stored with literal "\n" sequences.
   const pem = inlineKey ? inlineKey.replace(/\\n/g, '\n') : readFileSync(keyPath!, 'utf8');

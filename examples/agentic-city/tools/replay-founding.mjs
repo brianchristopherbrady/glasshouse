@@ -1,6 +1,6 @@
 // Plays a scripted "/found-district" session through the real recorder: the
 // same hook payloads VS Code sends, and real edits to the city files, but no
-// model. Useful for demoing Agentic Flows without a live Copilot session.
+// model. Useful for demoing Glasshouse without a live Copilot session.
 //
 //   node tools/replay-founding.mjs        (or `npm run city:replay` from the repo root)
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';

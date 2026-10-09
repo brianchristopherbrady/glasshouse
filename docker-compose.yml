@@ -5,13 +5,13 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: agentic
+      POSTGRES_USER: glasshouse
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
-      POSTGRES_DB: agentic_flows
+      POSTGRES_DB: glasshouse
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U agentic -d agentic_flows']
+      test: ['CMD-SHELL', 'pg_isready -U glasshouse -d glasshouse']
       interval: 5s
       timeout: 5s
       retries: 20
@@ -24,14 +24,14 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://agentic:${POSTGRES_PASSWORD}@db:5432/agentic_flows
-      AGENTIC_FLOWS_API_TOKEN: ${AGENTIC_FLOWS_API_TOKEN:?set AGENTIC_FLOWS_API_TOKEN}
-      AGENTIC_FLOWS_ALLOWED_ORIGINS: ${AGENTIC_FLOWS_ALLOWED_ORIGINS:-}
-      AGENTIC_FLOWS_TRUST_PROXY: ${AGENTIC_FLOWS_TRUST_PROXY:-false}
-      AGENTIC_FLOWS_GITHUB_TOKEN: ${AGENTIC_FLOWS_GITHUB_TOKEN:-}
-      AGENTIC_FLOWS_GITHUB_APP_ID: ${AGENTIC_FLOWS_GITHUB_APP_ID:-}
-      AGENTIC_FLOWS_GITHUB_APP_PRIVATE_KEY: ${AGENTIC_FLOWS_GITHUB_APP_PRIVATE_KEY:-}
-      AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET: ${AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET:-}
+      DATABASE_URL: postgresql://glasshouse:${POSTGRES_PASSWORD}@db:5432/glasshouse
+      GLASSHOUSE_API_TOKEN: ${GLASSHOUSE_API_TOKEN:?set GLASSHOUSE_API_TOKEN}
+      GLASSHOUSE_ALLOWED_ORIGINS: ${GLASSHOUSE_ALLOWED_ORIGINS:-}
+      GLASSHOUSE_TRUST_PROXY: ${GLASSHOUSE_TRUST_PROXY:-false}
+      GLASSHOUSE_GITHUB_TOKEN: ${GLASSHOUSE_GITHUB_TOKEN:-}
+      GLASSHOUSE_GITHUB_APP_ID: ${GLASSHOUSE_GITHUB_APP_ID:-}
+      GLASSHOUSE_GITHUB_APP_PRIVATE_KEY: ${GLASSHOUSE_GITHUB_APP_PRIVATE_KEY:-}
+      GLASSHOUSE_GITHUB_WEBHOOK_SECRET: ${GLASSHOUSE_GITHUB_WEBHOOK_SECRET:-}
       SENTRY_DSN: ${SENTRY_DSN:-}
     ports:
       - '${PORT:-4000}:4000'

@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 5173,
     proxy: {
-      '/api': process.env.AGENTIC_FLOWS_API_PROXY ?? 'http://localhost:4000',
+      '/api': process.env.GLASSHOUSE_API_PROXY ?? 'http://localhost:4000',
     },
   },
 }));

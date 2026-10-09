@@ -42,7 +42,7 @@ function TokenLogin(): JSX.Element {
           <Radar size={20} strokeWidth={2.25} />
         </span>
         <h1 id="signin-title" className="text-lg font-semibold text-text">
-          Sign in to Agentic Flows
+          Sign in to Glasshouse
         </h1>
         <p className="mt-1 text-sm text-text-muted">
           Paste the API token an administrator issued you. It is kept only in this browser.
@@ -60,7 +60,7 @@ function TokenLogin(): JSX.Element {
             value={token}
             onChange={(e) => setToken(e.target.value)}
             className="w-full bg-transparent py-2 text-sm text-text outline-hidden placeholder:text-text-faint"
-            placeholder="af_…"
+            placeholder="glasshouse_…"
           />
         </div>
         {error && (
@@ -88,7 +88,7 @@ export function AuthGate({ children }: { children: ReactNode }): JSX.Element {
   if (error || !data) {
     return (
       <div role="alert" className="p-6 text-status-failure">
-        Could not reach the Agentic Flows server.
+        Could not reach the Glasshouse server.
       </div>
     );
   }

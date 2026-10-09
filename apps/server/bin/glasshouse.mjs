@@ -11,7 +11,7 @@ const packageRoot = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '
 const require = createRequire(import.meta.url);
 
 function resolveDataDir() {
-  const override = process.env.AGENTIC_FLOWS_DATA_DIR;
+  const override = process.env.GLASSHOUSE_DATA_DIR;
   const dir = override ? path.resolve(override) : path.join(homedir(), '.glasshouse');
   mkdirSync(dir, { recursive: true });
   return dir;
@@ -114,8 +114,8 @@ async function ingest(filePath, baseUrl) {
   }
   const url = `${baseUrl.replace(/\/$/, '')}/api/telemetry/batch`;
   const headers = { 'Content-Type': 'application/json' };
-  if (process.env.AGENTIC_FLOWS_API_TOKEN) {
-    headers.Authorization = `Bearer ${process.env.AGENTIC_FLOWS_API_TOKEN}`;
+  if (process.env.GLASSHOUSE_API_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GLASSHOUSE_API_TOKEN}`;
   }
   const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ events }) });
   if (!res.ok) {

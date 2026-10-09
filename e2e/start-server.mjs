@@ -19,9 +19,9 @@ const dataDir = mkdtempSync(path.join(tmpdir(), 'glasshouse-e2e-'));
 const env = {
   ...process.env,
   DATABASE_URL: `file:${path.join(dataDir, 'e2e.db')}`,
-  AGENTIC_FLOWS_DATA_DIR: dataDir,
-  AGENTIC_FLOWS_API_TOKEN: E2E_ADMIN_TOKEN,
-  AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET: 'e2e-webhook-secret',
+  GLASSHOUSE_DATA_DIR: dataDir,
+  GLASSHOUSE_API_TOKEN: E2E_ADMIN_TOKEN,
+  GLASSHOUSE_GITHUB_WEBHOOK_SECRET: 'e2e-webhook-secret',
   PORT: String(E2E_PORT),
   HOST: '127.0.0.1',
   PRISMA_HIDE_UPDATE_MESSAGE: '1',

@@ -1,5 +1,5 @@
 // Restores city/ to its committed state (Day 3 of the Founding) and forgets
-// recorder session state. Recorded runs in Agentic Flows are kept.
+// recorder session state. Recorded runs in Glasshouse are kept.
 import { execFileSync } from 'node:child_process';
 import { rmSync } from 'node:fs';
 import { join } from 'node:path';

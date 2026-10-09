@@ -5,7 +5,7 @@ export const ROLES = ['admin', 'viewer', 'ingest'] as const;
 export type Role = (typeof ROLES)[number];
 
 export interface Principal {
-  /** "bootstrap" = AGENTIC_FLOWS_API_TOKEN; "anonymous" = auth disabled. */
+  /** "bootstrap" = GLASSHOUSE_API_TOKEN; "anonymous" = auth disabled. */
   kind: 'bootstrap' | 'token' | 'anonymous';
   tokenId: string | null;
   name: string;
@@ -36,7 +36,7 @@ export interface AuthOptions {
   markUsed?: (id: string) => Promise<void>;
 }
 
-const TOKEN_PREFIX = 'af_';
+const TOKEN_PREFIX = 'glasshouse_';
 const LAST_USED_WRITE_INTERVAL_MS = 60_000;
 
 /** 256 bits of randomness — high enough entropy that a fast hash is appropriate. */

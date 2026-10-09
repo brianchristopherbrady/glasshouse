@@ -1,8 +1,8 @@
-# Agentic Flows
+# Glasshouse
 
 Observability and visualization for agentic software-development workflows.
 
-Agentic Flows lets engineering teams understand what autonomous or semi-autonomous
+Glasshouse lets engineering teams understand what autonomous or semi-autonomous
 agents actually did during a repository workflow: what triggered a run, which
 agents and sub-agents participated, what skills were configured versus actually
 evidenced as loaded, which tools and MCP servers were called, what files
@@ -18,7 +18,7 @@ evidence source and confidence. Inference is never presented as fact.
 `examples/agentic-city` is a small text-only city run by Copilot agents (Mayor,
 City Planner, Building Inspector, Treasurer, Town Crier) that delegate to each
 other and edit Markdown files. Agent hooks record every chat with them, so
-Agentic Flows shows each prompt as a run: agents, handoffs, skills, and every
+Glasshouse shows each prompt as a run: agents, handoffs, skills, and every
 changed file as a diff.
 
 ```bash
@@ -87,11 +87,11 @@ SQLite, run `db:sync-postgres`, and add the matching Postgres migration with
 
 ```bash
 npm install -g @brianbrady/glasshouse
-AGENTIC_FLOWS_API_TOKEN=<long-random-string> glasshouse
+GLASSHOUSE_API_TOKEN=<long-random-string> glasshouse
 ```
 
 The `glasshouse` CLI creates a data directory (`~/.glasshouse`, or
-`AGENTIC_FLOWS_DATA_DIR`), generates the database client for the configured
+`GLASSHOUSE_DATA_DIR`), generates the database client for the configured
 provider if needed, applies migrations, and serves the API and web UI on one
 port (`PORT`, default 4000). Other commands: `glasshouse ingest <file.ndjson>
 [--url <server>]`, `glasshouse generate` (pre-generate the database client,
@@ -101,7 +101,7 @@ e.g. at image build time), `--version`, `--help`. Without installing:
 ### With Docker (app + PostgreSQL)
 
 ```bash
-cp .env.example .env    # set POSTGRES_PASSWORD and AGENTIC_FLOWS_API_TOKEN
+cp .env.example .env    # set POSTGRES_PASSWORD and GLASSHOUSE_API_TOKEN
 docker compose up -d --build
 ```
 
@@ -123,20 +123,20 @@ npm run dev --workspace apps/web             # Vite on :5173 (proxies /api to :4
 | Variable | Purpose |
 | --- | --- |
 | `DATABASE_URL` | `file:…` (SQLite) or `postgresql://…`. Defaults to SQLite in the data dir. |
-| `AGENTIC_FLOWS_API_TOKEN` | Bootstrap admin token. **When unset, authentication is disabled** (local use only). |
-| `AGENTIC_FLOWS_ALLOWED_ORIGINS` | Comma-separated CORS allowlist (default `http://localhost:5173`). |
-| `AGENTIC_FLOWS_TRUST_PROXY` | `true` behind a reverse proxy, so rate limits key on the real client IP. |
-| `AGENTIC_FLOWS_RATE_LIMIT_PER_MINUTE` | Global per-IP API limit (default 600; stricter limits apply to expensive routes). |
-| `AGENTIC_FLOWS_GITHUB_TOKEN` | GitHub personal access token for API calls and cloning. |
-| `AGENTIC_FLOWS_GITHUB_APP_ID`, `AGENTIC_FLOWS_GITHUB_APP_PRIVATE_KEY` (or `_PATH`) | GitHub App credentials; preferred over a PAT when set. |
-| `AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET` | Required to accept GitHub webhooks (unsigned deliveries are always rejected). |
+| `GLASSHOUSE_API_TOKEN` | Bootstrap admin token. **When unset, authentication is disabled** (local use only). |
+| `GLASSHOUSE_ALLOWED_ORIGINS` | Comma-separated CORS allowlist (default `http://localhost:5173`). |
+| `GLASSHOUSE_TRUST_PROXY` | `true` behind a reverse proxy, so rate limits key on the real client IP. |
+| `GLASSHOUSE_RATE_LIMIT_PER_MINUTE` | Global per-IP API limit (default 600; stricter limits apply to expensive routes). |
+| `GLASSHOUSE_GITHUB_TOKEN` | GitHub personal access token for API calls and cloning. |
+| `GLASSHOUSE_GITHUB_APP_ID`, `GLASSHOUSE_GITHUB_APP_PRIVATE_KEY` (or `_PATH`) | GitHub App credentials; preferred over a PAT when set. |
+| `GLASSHOUSE_GITHUB_WEBHOOK_SECRET` | Required to accept GitHub webhooks (unsigned deliveries are always rejected). |
 | `SENTRY_DSN`, `SENTRY_ENVIRONMENT` | Optional error monitoring; secrets are redacted before events leave the server. |
-| `PORT`, `HOST`, `AGENTIC_FLOWS_DATA_DIR` | Listen address and data directory. |
+| `PORT`, `HOST`, `GLASSHOUSE_DATA_DIR` | Listen address and data directory. |
 
 ## Security model
 
 - **Authentication**: bearer tokens. The bootstrap admin token comes from
-  `AGENTIC_FLOWS_API_TOKEN`; admins issue per-person/per-integration tokens in
+  `GLASSHOUSE_API_TOKEN`; admins issue per-person/per-integration tokens in
   **Settings** (or `POST /api/tokens`). Only a SHA-256 hash is stored and the
   plaintext is shown once. The web UI asks each user for their own token and
   keeps it only in that browser.
@@ -266,10 +266,10 @@ discovery logic. The web app's **Architecture** tab
 - **Actions runs**: `POST /api/repositories/:repoId/github-runs/sync`
   backfills recent runs (idempotent by run id). For live updates, add a webhook
   on the repository: payload URL `https://<host>/api/webhooks/github`, content
-  type `application/json`, secret = `AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET`,
+  type `application/json`, secret = `GLASSHOUSE_GITHUB_WEBHOOK_SECRET`,
   event **Workflow runs**.
 - **Auth**: a GitHub App (installation tokens, cached until expiry) when
-  `AGENTIC_FLOWS_GITHUB_APP_ID` + private key are set, otherwise a PAT,
+  `GLASSHOUSE_GITHUB_APP_ID` + private key are set, otherwise a PAT,
   otherwise unauthenticated (public repos, low rate limit). The App needs
   read access to *Contents*, *Metadata*, and *Actions*.
 
@@ -285,7 +285,7 @@ import {
   githubActionsCorrelation,
 } from '@brianbrady/glasshouse-telemetry-client';
 
-const client = createTelemetryClient({ baseUrl: process.env.AGENTIC_FLOWS_URL!, apiToken: process.env.AGENTIC_FLOWS_INGEST_TOKEN });
+const client = createTelemetryClient({ baseUrl: process.env.GLASSHOUSE_URL!, apiToken: process.env.GLASSHOUSE_INGEST_TOKEN });
 await client.emit({
   id: crypto.randomUUID(),
   correlation: githubActionsCorrelation()!, // GITHUB_REPOSITORY + GITHUB_RUN_ID

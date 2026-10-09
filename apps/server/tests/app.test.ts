@@ -54,9 +54,9 @@ beforeAll(async () => {
     logger: false,
     resolveGithubToken: async () => undefined,
     env: {
-      AGENTIC_FLOWS_API_TOKEN: BOOTSTRAP,
-      AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET: WEBHOOK_SECRET,
-      AGENTIC_FLOWS_WEB_DIST: join(tmpDir, 'no-web-dist'),
+      GLASSHOUSE_API_TOKEN: BOOTSTRAP,
+      GLASSHOUSE_GITHUB_WEBHOOK_SECRET: WEBHOOK_SECRET,
+      GLASSHOUSE_WEB_DIST: join(tmpDir, 'no-web-dist'),
     },
   });
   app.get('/api/test/boom', async () => {
@@ -104,7 +104,7 @@ describe('API tokens', () => {
     });
     expect(created.statusCode).toBe(201);
     const { id, token } = created.json() as { id: string; token: string };
-    expect(token).toMatch(/^af_/);
+    expect(token).toMatch(/^glasshouse_/);
 
     const listed = await app.inject({ method: 'GET', url: '/api/tokens', headers: admin });
     expect(listed.body).not.toContain(token);

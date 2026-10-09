@@ -52,12 +52,12 @@ jobs:
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci
-          POSTGRES_DB: agentic_flows
+          POSTGRES_DB: glasshouse
         ports: ['5432:5432']
         options: >-
           --health-cmd "pg_isready -U ci" --health-interval 5s --health-timeout 5s --health-retries 20
     env:
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/agentic_flows
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/glasshouse
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -111,7 +111,7 @@ jobs:
     timeout-minutes: 25
     env:
       POSTGRES_PASSWORD: ci-postgres-password
-      AGENTIC_FLOWS_API_TOKEN: ci-bootstrap-token
+      GLASSHOUSE_API_TOKEN: ci-bootstrap-token
     steps:
       - uses: actions/checkout@v7
       - name: Build and start the stack
@@ -128,18 +128,18 @@ jobs:
         run: |
           set -e
           curl -sf http://localhost:4000/api/health
-          curl -sf http://localhost:4000/ | grep -q '<title>Agentic Flows'
+          curl -sf http://localhost:4000/ | grep -q '<title>Glasshouse'
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4000/api/repositories)" = 401
-          curl -sf -H "Authorization: Bearer $AGENTIC_FLOWS_API_TOKEN" http://localhost:4000/api/repositories
+          curl -sf -H "Authorization: Bearer $GLASSHOUSE_API_TOKEN" http://localhost:4000/api/repositories
           curl -sfI http://localhost:4000/ | grep -qi '^content-security-policy:'
-          token=$(curl -sf -X POST -H "Authorization: Bearer $AGENTIC_FLOWS_API_TOKEN" -H 'Content-Type: application/json' \
+          token=$(curl -sf -X POST -H "Authorization: Bearer $GLASSHOUSE_API_TOKEN" -H 'Content-Type: application/json' \
             -d '{"name":"ci","role":"viewer"}' http://localhost:4000/api/tokens | node -pe 'JSON.parse(require("fs").readFileSync(0)).token')
           test "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" http://localhost:4000/api/repositories)" = 200
-          docker compose exec -T db psql -U agentic -d agentic_flows -tAc 'SELECT count(*) FROM "ApiToken"' | grep -qx 1
+          docker compose exec -T db psql -U glasshouse -d glasshouse -tAc 'SELECT count(*) FROM "ApiToken"' | grep -qx 1
           echo "smoke test passed"
       - name: Same image in its default SQLite mode (no DATABASE_URL)
         run: |
-          docker run -d --name af-sqlite -p 4001:4000 -e AGENTIC_FLOWS_API_TOKEN=ci-sqlite-token glasshouse:local
+          docker run -d --name glasshouse-sqlite -p 4001:4000 -e GLASSHOUSE_API_TOKEN=ci-sqlite-token glasshouse:local
           for i in $(seq 1 60); do
             if curl -sf http://localhost:4001/api/ready > /dev/null; then break; fi
             sleep 2
@@ -154,6 +154,6 @@ jobs:
         if: failure()
         run: |
           docker compose logs
-          docker logs af-sqlite || true
+          docker logs glasshouse-sqlite || true
       - run: docker compose down -v
         if: always()

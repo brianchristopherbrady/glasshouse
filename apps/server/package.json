@@ -1,7 +1,7 @@
 {
   "name": "@brianbrady/glasshouse",
-  "version": "0.1.1",
-  "description": "Self-hosted Agentic Flows server and web UI: observability for agentic software-development workflows.",
+  "version": "0.1.2",
+  "description": "Self-hosted Glasshouse server and web UI: observability for agentic software-development workflows.",
   "license": "MIT",
   "repository": {
     "type": "git",

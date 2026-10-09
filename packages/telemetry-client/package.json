@@ -1,7 +1,7 @@
 {
   "name": "@brianbrady/glasshouse-telemetry-client",
-  "version": "0.1.1",
-  "description": "Emit runtime telemetry from agents and CI jobs to an Agentic Flows server.",
+  "version": "0.1.2",
+  "description": "Emit runtime telemetry from agents and CI jobs to a Glasshouse server.",
   "license": "MIT",
   "repository": {
     "type": "git",

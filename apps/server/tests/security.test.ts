@@ -33,14 +33,14 @@ describe('GitHub App JWT', () => {
 
   it('loads a private key from an env var with escaped newlines', () => {
     const config = loadGithubAppConfig({
-      AGENTIC_FLOWS_GITHUB_APP_ID: '1',
-      AGENTIC_FLOWS_GITHUB_APP_PRIVATE_KEY: pem.replace(/\n/g, '\\n'),
+      GLASSHOUSE_GITHUB_APP_ID: '1',
+      GLASSHOUSE_GITHUB_APP_PRIVATE_KEY: pem.replace(/\n/g, '\\n'),
     });
     expect(config?.appId).toBe('1');
   });
 
   it('returns null (PAT mode) when App credentials are incomplete', () => {
-    expect(loadGithubAppConfig({ AGENTIC_FLOWS_GITHUB_APP_ID: '1' })).toBeNull();
+    expect(loadGithubAppConfig({ GLASSHOUSE_GITHUB_APP_ID: '1' })).toBeNull();
   });
 });
 

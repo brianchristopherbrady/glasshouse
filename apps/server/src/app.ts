@@ -40,7 +40,7 @@ export interface AppOptions {
 export function resolveWebDist(env: NodeJS.ProcessEnv = process.env): string | null {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
-    env.AGENTIC_FLOWS_WEB_DIST,
+    env.GLASSHOUSE_WEB_DIST,
     path.join(here, 'web'),
     path.resolve(here, '../../../web/dist'),
     path.resolve(here, '../../web/dist'),
@@ -58,11 +58,11 @@ export async function buildApp({
 }: AppOptions) {
   const app = Fastify({
     logger,
-    trustProxy: env.AGENTIC_FLOWS_TRUST_PROXY === 'true',
+    trustProxy: env.GLASSHOUSE_TRUST_PROXY === 'true',
     bodyLimit: 5 * 1024 * 1024,
   });
 
-  const allowedOrigins = (env.AGENTIC_FLOWS_ALLOWED_ORIGINS ?? 'http://localhost:5173')
+  const allowedOrigins = (env.GLASSHOUSE_ALLOWED_ORIGINS ?? 'http://localhost:5173')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
@@ -70,12 +70,12 @@ export async function buildApp({
 
   // Registered before the auth hook so floods are rejected before any token lookup.
   await app.register(rateLimit, {
-    max: Number(env.AGENTIC_FLOWS_RATE_LIMIT_PER_MINUTE ?? 600),
+    max: Number(env.GLASSHOUSE_RATE_LIMIT_PER_MINUTE ?? 600),
     timeWindow: '1 minute',
     allowList: (req) => !req.url.startsWith('/api/') || UNLIMITED_PATHS.has(req.url.split('?')[0]!),
   });
 
-  const bootstrapToken = env.AGENTIC_FLOWS_API_TOKEN || undefined;
+  const bootstrapToken = env.GLASSHOUSE_API_TOKEN || undefined;
   app.addHook(
     'onRequest',
     createAuthHook({
@@ -88,7 +88,7 @@ export async function buildApp({
   );
   if (!bootstrapToken) {
     app.log.warn(
-      'AGENTIC_FLOWS_API_TOKEN is not set — authentication is disabled and every caller is an admin. ' +
+      'GLASSHOUSE_API_TOKEN is not set — authentication is disabled and every caller is an admin. ' +
         'Fine for local use; set it before exposing this server to anyone else.',
     );
   }
@@ -123,7 +123,7 @@ export async function buildApp({
 
   const resolveToken =
     resolveGithubToken ??
-    createGithubTokenResolver(loadGithubAppConfig(env), env.AGENTIC_FLOWS_GITHUB_TOKEN);
+    createGithubTokenResolver(loadGithubAppConfig(env), env.GLASSHOUSE_GITHUB_TOKEN);
 
   await app.register(adminRoutes, { prisma, authEnabled: Boolean(bootstrapToken) });
   await app.register(repositoriesRoutes, { prisma });
@@ -133,7 +133,7 @@ export async function buildApp({
   await app.register(webhookRoutes, {
     prisma,
     resolveGithubToken: resolveToken,
-    secret: env.AGENTIC_FLOWS_GITHUB_WEBHOOK_SECRET || undefined,
+    secret: env.GLASSHOUSE_GITHUB_WEBHOOK_SECRET || undefined,
   });
 
   if (webDist) {

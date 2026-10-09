@@ -1,4 +1,4 @@
-// One command to demo Agentic Flows on the Agentic City workspace:
+// One command to demo Glasshouse on the Agentic City workspace:
 //
 //   npm run demo
 //
@@ -139,16 +139,16 @@ async function main() {
     ...env,
     PORT: String(API_PORT),
     HOST: '127.0.0.1',
-    AGENTIC_FLOWS_ALLOWED_ORIGINS: webUrl,
+    GLASSHOUSE_ALLOWED_ORIGINS: webUrl,
     PRISMA_HIDE_UPDATE_MESSAGE: '1',
     LOG_LEVEL: process.env.LOG_LEVEL ?? 'warn', // the UI polls; keep the terminal readable
   };
-  delete serverEnv.AGENTIC_FLOWS_API_TOKEN; // loopback-only demo: no auth
+  delete serverEnv.GLASSHOUSE_API_TOKEN; // loopback-only demo: no auth
   start('API server', 'npm run dev --workspace apps/server', serverEnv);
   start(
     'Web UI',
     `npm run dev --workspace apps/web -- --port ${WEB_PORT} --strictPort --clearScreen false`,
-    { ...process.env, AGENTIC_FLOWS_API_PROXY: apiUrl },
+    { ...process.env, GLASSHOUSE_API_PROXY: apiUrl },
   );
 
   await waitForApi();
@@ -175,7 +175,7 @@ async function main() {
 
   console.log(`
 ────────────────────────────────────────────────────────────────────
- Agentic Flows demo is running
+ Glasshouse demo is running
    Web UI  ${webUrl}/repos/${repository.id}/runs
    API     ${apiUrl}  (loopback only, auth disabled)
 

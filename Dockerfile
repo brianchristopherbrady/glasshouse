@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl git ca-
   && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production \
     PORT=4000 \
-    AGENTIC_FLOWS_DATA_DIR=/data
+    GLASSHOUSE_DATA_DIR=/data
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/apps/server/package.json ./apps/server/package.json

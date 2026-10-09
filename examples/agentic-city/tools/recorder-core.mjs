@@ -1,4 +1,4 @@
-// Records Agentic City agent activity (VS Code agent hooks) as Agentic Flows
+// Records Agentic City agent activity (VS Code agent hooks) as Glasshouse
 // telemetry: one chat session = one run; prompts, subagents, and tool calls
 // become spans; edits to the workspace become file changes with real diffs.
 //
@@ -406,11 +406,11 @@ export function loadConfig(root, env = process.env) {
     // optional
   }
   return {
-    serverUrl: String(env.AGENTIC_FLOWS_URL ?? file.serverUrl ?? DEFAULT_SERVER_URL).replace(
+    serverUrl: String(env.GLASSHOUSE_URL ?? file.serverUrl ?? DEFAULT_SERVER_URL).replace(
       /\/+$/,
       '',
     ),
-    token: env.AGENTIC_FLOWS_API_TOKEN ?? file.token,
+    token: env.GLASSHOUSE_API_TOKEN ?? file.token,
     repository: file.repository ?? `local/${slugify(basename(root))}`,
   };
 }
