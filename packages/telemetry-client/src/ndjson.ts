@@ -1,5 +1,5 @@
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
-import type { AgentEvent } from '@poisonsushi/agentic-flows-domain';
+import type { AgentEvent } from '@brianbrady/glasshouse-domain';
 
 /**
  * Appends one event as a single ndjson line — the offline/no-network-access

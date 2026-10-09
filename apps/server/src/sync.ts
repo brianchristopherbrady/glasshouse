@@ -1,4 +1,4 @@
-import { discoverRepository } from '@poisonsushi/agentic-flows-parser';
+import { discoverRepository } from '@brianbrady/glasshouse-parser';
 import type { PrismaClient } from '@prisma/client';
 
 function j(value: unknown): string {

@@ -1,4 +1,4 @@
-import { redactSecretsDeep } from '@poisonsushi/agentic-flows-domain';
+import { redactSecretsDeep } from '@brianbrady/glasshouse-domain';
 
 /**
  * SQLite has no native Json column; JSON-typed fields are stored as text

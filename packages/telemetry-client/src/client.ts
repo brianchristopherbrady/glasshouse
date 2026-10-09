@@ -1,4 +1,4 @@
-import type { AgentEvent, RunCorrelation } from '@poisonsushi/agentic-flows-domain';
+import type { AgentEvent, RunCorrelation } from '@brianbrady/glasshouse-domain';
 
 /**
  * Run correlation for code executing inside a GitHub Actions job, read from

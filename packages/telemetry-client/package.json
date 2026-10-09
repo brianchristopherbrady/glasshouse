@@ -1,5 +1,5 @@
 {
-  "name": "@poisonsushi/agentic-flows-telemetry-client",
+  "name": "@brianbrady/glasshouse-telemetry-client",
   "version": "0.1.0",
   "description": "Emit runtime telemetry from agents and CI jobs to an Agentic Flows server.",
   "license": "MIT",
@@ -31,6 +31,6 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
-    "@poisonsushi/agentic-flows-domain": "^0.1.0"
+    "@brianbrady/glasshouse-domain": "^0.1.0"
   }
 }

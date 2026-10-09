@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { redactSecrets } from '@poisonsushi/agentic-flows-domain';
+import { redactSecrets } from '@brianbrady/glasshouse-domain';
 import { buildSpanTree } from '../trace.js';
 import {
   serializeAgentDefinition,

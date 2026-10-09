@@ -1,5 +1,5 @@
 {
-  "name": "@poisonsushi/agentic-flows",
+  "name": "@brianbrady/glasshouse",
   "version": "0.1.0",
   "description": "Self-hosted Agentic Flows server and web UI: observability for agentic software-development workflows.",
   "license": "MIT",
@@ -52,8 +52,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@poisonsushi/agentic-flows-domain": "*",
-    "@poisonsushi/agentic-flows-parser": "*",
+    "@brianbrady/glasshouse-domain": "*",
+    "@brianbrady/glasshouse-parser": "*",
     "@types/node": "^22.9.0",
     "esbuild": "^0.28.2",
     "tsx": "^4.19.2"

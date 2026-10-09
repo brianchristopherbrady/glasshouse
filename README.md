@@ -86,7 +86,7 @@ SQLite, run `db:sync-postgres`, and add the matching Postgres migration with
 ### As a package
 
 ```bash
-npm install -g @poisonsushi/agentic-flows
+npm install -g @brianbrady/glasshouse
 AGENTIC_FLOWS_API_TOKEN=<long-random-string> agentic-flows
 ```
 
@@ -276,13 +276,13 @@ discovery logic. The web app's **Architecture** tab
 
 GitHub Actions alone can't see inside an agent (model calls, tool calls,
 sub-agents, file edits), so agents report it with
-[`@poisonsushi/agentic-flows-telemetry-client`](packages/telemetry-client):
+[`@brianbrady/glasshouse-telemetry-client`](packages/telemetry-client):
 
 ```ts
 import {
   createTelemetryClient,
   githubActionsCorrelation,
-} from '@poisonsushi/agentic-flows-telemetry-client';
+} from '@brianbrady/glasshouse-telemetry-client';
 
 const client = createTelemetryClient({ baseUrl: process.env.AGENTIC_FLOWS_URL!, apiToken: process.env.AGENTIC_FLOWS_INGEST_TOKEN });
 await client.emit({

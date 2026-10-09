@@ -1,5 +1,5 @@
 {
-  "name": "@poisonsushi/agentic-flows-parser",
+  "name": "@brianbrady/glasshouse-parser",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -13,6 +13,6 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
-    "@poisonsushi/agentic-flows-domain": "*"
+    "@brianbrady/glasshouse-domain": "*"
   }
 }

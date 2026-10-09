@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient, WorkflowRun } from '@prisma/client';
-import type { AgentEvent } from '@poisonsushi/agentic-flows-domain';
+import type { AgentEvent } from '@brianbrady/glasshouse-domain';
 
 type Tx = Prisma.TransactionClient;
 

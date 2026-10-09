@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createTelemetryClient, githubActionsCorrelation } from '../src/client.js';
-import type { AgentEvent } from '@poisonsushi/agentic-flows-domain';
+import type { AgentEvent } from '@brianbrady/glasshouse-domain';
 
 describe('githubActionsCorrelation', () => {
   it('reads the run identity GitHub Actions exposes to every job', () => {

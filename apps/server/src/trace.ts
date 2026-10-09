@@ -1,5 +1,5 @@
 import type { Span as PrismaSpan } from '@prisma/client';
-import { redactSecretsDeep } from '@poisonsushi/agentic-flows-domain';
+import { redactSecretsDeep } from '@brianbrady/glasshouse-domain';
 
 function parseJsonColumn(raw: string): unknown {
   try {

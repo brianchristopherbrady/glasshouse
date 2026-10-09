@@ -1,8 +1,8 @@
 name: Release
 
-# Publishes @poisonsushi/agentic-flows{-domain,-telemetry-client,} when a
+# Publishes @brianbrady/glasshouse{-domain,-telemetry-client,} when a
 # vX.Y.Z tag is pushed. Requires an NPM_TOKEN repository secret with publish
-# rights to the @poisonsushi npm scope.
+# rights to the @brianbrady npm scope.
 on:
   push:
     tags: ['v*']

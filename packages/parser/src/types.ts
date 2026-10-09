@@ -3,7 +3,7 @@ import type {
   Confidence,
   RelationshipType,
   DefinitionKind,
-} from '@poisonsushi/agentic-flows-domain';
+} from '@brianbrady/glasshouse-domain';
 
 /**
  * Discovery-layer types mirror packages/domain's definition schemas but omit

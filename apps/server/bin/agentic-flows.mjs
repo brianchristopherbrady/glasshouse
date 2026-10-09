@@ -88,7 +88,7 @@ async function start() {
 }
 
 // Reads an ndjson file (one JSON event per line, e.g. written by
-// @poisonsushi/agentic-flows-telemetry-client's appendEventToFile) and forwards it to a
+// @brianbrady/glasshouse-telemetry-client's appendEventToFile) and forwards it to a
 // running server's batch telemetry endpoint. Deliberately reimplements the
 // tiny bit of ndjson-parsing logic inline rather than depending on the
 // telemetry-client package here — keeps that package a zero-runtime-deps,
