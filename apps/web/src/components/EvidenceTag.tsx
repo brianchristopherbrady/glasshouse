@@ -32,7 +32,7 @@ export function EvidenceTag({
   return (
     <span
       className={clsx(
-        'mono inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium',
+        'mono inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] font-medium',
         CONFIDENCE_STYLES[normalized],
       )}
       title={`Source: ${source}`}

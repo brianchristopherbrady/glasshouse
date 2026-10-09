@@ -13,7 +13,7 @@ export function ArchitectureNodeView({ data }: { data: ArchNodeData }): JSX.Elem
         meta.colorClass,
       )}
     >
-      <Handle type="target" position={Position.Left} className="!border-none !bg-border-strong" />
+      <Handle type="target" position={Position.Left} className="border-none! bg-border-strong!" />
       <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide opacity-80">
         <Icon size={11} />
         {meta.label}
@@ -24,7 +24,7 @@ export function ArchitectureNodeView({ data }: { data: ArchNodeData }): JSX.Elem
       <div className="mono truncate text-[10px] text-text-muted" title={data.path}>
         {data.path}
       </div>
-      <Handle type="source" position={Position.Right} className="!border-none !bg-border-strong" />
+      <Handle type="source" position={Position.Right} className="border-none! bg-border-strong!" />
     </div>
   );
 }

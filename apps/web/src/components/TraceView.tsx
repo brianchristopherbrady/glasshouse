@@ -80,7 +80,7 @@ export function TraceView({
               onClick={() => onSelectSpan(span)}
               aria-current={isSelected}
               className={clsx(
-                'group flex w-full items-center gap-2 rounded px-1.5 py-1 text-left transition-colors',
+                'group flex w-full items-center gap-2 rounded-sm px-1.5 py-1 text-left transition-colors',
                 isSelected
                   ? 'bg-accent-wash ring-1 ring-inset ring-accent/30'
                   : 'hover:bg-surface-sunken',
@@ -91,10 +91,10 @@ export function TraceView({
                 <span className="mono mr-1.5 text-text-faint">{span.type}</span>
                 {span.name}
               </span>
-              <span className="relative h-4 flex-1 rounded bg-surface-sunken">
+              <span className="relative h-4 flex-1 rounded-sm bg-surface-sunken">
                 <span
                   className={clsx(
-                    'absolute top-0 h-4 rounded',
+                    'absolute top-0 h-4 rounded-sm',
                     TYPE_COLORS[span.type] ?? TYPE_COLORS.custom,
                     span.status === 'failure' && 'ring-2 ring-status-failure',
                   )}

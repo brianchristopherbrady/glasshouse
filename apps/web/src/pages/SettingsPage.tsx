@@ -40,7 +40,7 @@ function Card({
 }
 
 const inputClass =
-  'rounded-md border border-border bg-surface px-2.5 py-1.5 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-none';
+  'rounded-md border border-border bg-surface px-2.5 py-1.5 text-sm text-text placeholder:text-text-faint focus:border-accent focus:outline-hidden';
 const buttonClass =
   'inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-semibold text-accent-contrast hover:bg-accent-strong disabled:opacity-60';
 
@@ -225,7 +225,7 @@ function TokensSection(): JSX.Element {
           </p>
           <div className="mt-2 flex items-center gap-2">
             <code
-              className="mono flex-1 break-all rounded bg-surface px-2 py-1 text-text"
+              className="mono flex-1 break-all rounded-sm bg-surface px-2 py-1 text-text"
               data-testid="new-token"
             >
               {created.token}

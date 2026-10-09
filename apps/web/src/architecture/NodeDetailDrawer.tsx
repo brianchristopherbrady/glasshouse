@@ -49,7 +49,7 @@ export function NodeDetailDrawer({
             {outgoing.map((e) => {
               const target = nodesById.get(e.target);
               return (
-                <div key={e.id} className="rounded border border-border bg-surface-raised p-2 text-xs">
+                <div key={e.id} className="rounded-sm border border-border bg-surface-raised p-2 text-xs">
                   <div className="text-text">
                     {RELATIONSHIP_LABELS[e.relationshipType] ?? e.relationshipType}{' '}
                     <span className="font-medium">{target?.name ?? e.target}</span>
@@ -74,7 +74,7 @@ export function NodeDetailDrawer({
             {incoming.map((e) => {
               const source = nodesById.get(e.source);
               return (
-                <div key={e.id} className="rounded border border-border bg-surface-raised p-2 text-xs">
+                <div key={e.id} className="rounded-sm border border-border bg-surface-raised p-2 text-xs">
                   <div className="text-text">
                     <span className="font-medium">{source?.name ?? e.source}</span>{' '}
                     {RELATIONSHIP_LABELS[e.relationshipType] ?? e.relationshipType} this

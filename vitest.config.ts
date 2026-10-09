@@ -9,5 +9,9 @@ export default defineConfig({
       'examples/**/*.test.ts',
     ],
     exclude: ['**/node_modules/**', '**/dist/**'],
+    // Integration suites spawn `prisma db push` and boot Fastify per file;
+    // cold starts (fresh CI runners, first run after install) need headroom.
+    testTimeout: 20_000,
+    hookTimeout: 90_000,
   },
 });

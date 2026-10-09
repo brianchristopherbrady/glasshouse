@@ -37,7 +37,7 @@ export function FlowsPage(): JSX.Element {
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-medium text-text">{wf.name}</h3>
               {wf.engine && (
-                <span className="mono shrink-0 rounded bg-surface-sunken px-1.5 py-0.5 text-xs text-text-muted">
+                <span className="mono shrink-0 rounded-sm bg-surface-sunken px-1.5 py-0.5 text-xs text-text-muted">
                   {wf.engine}
                 </span>
               )}

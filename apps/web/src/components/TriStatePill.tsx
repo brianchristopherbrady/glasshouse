@@ -23,7 +23,7 @@ export function TriStatePill({ value, label }: { value: TriState; label?: string
   return (
     <span
       className={clsx(
-        'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold',
+        'inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] font-semibold',
         STYLES[value],
       )}
     >

@@ -43,7 +43,7 @@ export function SpanDetail({ span }: { span: TraceSpanNode | null }): JSX.Elemen
           <div className="text-[11px] font-medium uppercase tracking-wide text-text-muted">
             Attributes
           </div>
-          <pre className="mono mt-1.5 max-h-48 overflow-auto rounded bg-surface-sunken p-2 text-[11px] text-text">
+          <pre className="mono mt-1.5 max-h-48 overflow-auto rounded-sm bg-surface-sunken p-2 text-[11px] text-text">
             {JSON.stringify(attrs, null, 2)}
           </pre>
         </div>

@@ -1,6 +1,99 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* inline: utilities resolve straight to the app's own CSS variables below. */
+@theme inline {
+  --color-bg: var(--bg);
+
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-overlay: var(--surface-overlay);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-accent-wash: var(--accent-wash);
+
+  --color-status-success: var(--status-success);
+  --color-status-success-wash: var(--status-success-wash);
+  --color-status-failure: var(--status-failure);
+  --color-status-failure-wash: var(--status-failure-wash);
+  --color-status-running: var(--status-running);
+  --color-status-running-wash: var(--status-running-wash);
+  --color-status-pending: var(--status-pending);
+  --color-status-pending-wash: var(--status-pending-wash);
+  --color-status-unknown: var(--status-unknown);
+  --color-status-unknown-wash: var(--status-unknown-wash);
+
+  --color-evidence-observed: var(--evidence-observed);
+  --color-evidence-observed-wash: var(--evidence-observed-wash);
+  --color-evidence-strong: var(--evidence-strong);
+  --color-evidence-strong-wash: var(--evidence-strong-wash);
+  --color-evidence-inferred: var(--evidence-inferred);
+  --color-evidence-inferred-wash: var(--evidence-inferred-wash);
+  --color-evidence-unknown: var(--evidence-unknown);
+  --color-evidence-unknown-wash: var(--evidence-unknown-wash);
+
+  --color-kind-workflow: var(--kind-workflow);
+  --color-kind-workflow-wash: var(--kind-workflow-wash);
+  --color-kind-compiled-workflow: var(--kind-compiled-workflow);
+  --color-kind-compiled-workflow-wash: var(--kind-compiled-workflow-wash);
+  --color-kind-agent: var(--kind-agent);
+  --color-kind-agent-wash: var(--kind-agent-wash);
+  --color-kind-skill: var(--kind-skill);
+  --color-kind-skill-wash: var(--kind-skill-wash);
+  --color-kind-instruction: var(--kind-instruction);
+  --color-kind-instruction-wash: var(--kind-instruction-wash);
+  --color-kind-prompt: var(--kind-prompt);
+  --color-kind-prompt-wash: var(--kind-prompt-wash);
+  --color-kind-hook: var(--kind-hook);
+  --color-kind-hook-wash: var(--kind-hook-wash);
+  --color-kind-mcp-server: var(--kind-mcp-server);
+  --color-kind-mcp-server-wash: var(--kind-mcp-server-wash);
+
+  --font-sans:
+    Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  --shadow-raised: var(--shadow-raised);
+  --shadow-overlay: var(--shadow-overlay);
+
+  --radius-xl: 10px;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  /* Tailwind v4 dropped v3's pointer cursor on buttons. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
 /*
  * Evidence-grade control room: a cool, forensic dark theme by default, with

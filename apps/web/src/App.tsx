@@ -72,7 +72,7 @@ function SignOut(): JSX.Element | null {
 
 function Header(): JSX.Element {
   return (
-    <header className="sticky top-0 z-20 h-14 shrink-0 border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
+    <header className="sticky top-0 z-20 h-14 shrink-0 border-b border-border bg-surface/95 backdrop-blur-sm supports-backdrop-filter:bg-surface/80">
       <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-5">
           <Link

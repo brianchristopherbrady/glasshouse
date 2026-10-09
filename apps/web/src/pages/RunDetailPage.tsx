@@ -178,7 +178,7 @@ function TimelineTab(): JSX.Element {
             {new Date(e.timestamp).toLocaleTimeString()}
           </span>
           <span className="mono w-44 shrink-0 font-medium text-text">{e.kind}</span>
-          <span className="min-w-[8rem] flex-1 truncate text-text-muted">
+          <span className="min-w-32 flex-1 truncate text-text-muted">
             {e.actorName ?? e.actorType ?? '—'}
           </span>
           <EvidenceTag source={e.evidenceSource} confidence={e.evidenceConfidence} />
@@ -343,7 +343,7 @@ function ToolsTab(): JSX.Element {
             {t.category} · <Duration ms={t.durationMs} />
           </div>
           {t.resultPreview && (
-            <pre className="mono mt-2 overflow-auto rounded bg-surface-sunken p-2 text-[11px] text-text">
+            <pre className="mono mt-2 overflow-auto rounded-sm bg-surface-sunken p-2 text-[11px] text-text">
               {t.resultPreview}
             </pre>
           )}
@@ -523,7 +523,7 @@ function DriftTab(): JSX.Element {
           </div>
           <div className="mt-1.5 text-text">{f.description}</div>
           {(f.expected || f.observed) && (
-            <div className="mono mt-2 grid grid-cols-2 gap-2 rounded bg-surface-raised p-2 text-text-muted">
+            <div className="mono mt-2 grid grid-cols-2 gap-2 rounded-sm bg-surface-raised p-2 text-text-muted">
               <div>
                 <div className="text-[10px] uppercase tracking-wide">Expected</div>
                 <div className="text-text">{f.expected ?? 'Unavailable'}</div>

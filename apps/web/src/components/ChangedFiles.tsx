@@ -108,7 +108,7 @@ function FileRow({
         )}
         <span
           className={clsx(
-            'mono flex h-5 w-5 shrink-0 items-center justify-center rounded text-[11px] font-bold',
+            'mono flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-[11px] font-bold',
             op.className,
           )}
           title={op.label}
@@ -132,7 +132,7 @@ function FileRow({
           {file.deletions != null && <span className="text-status-failure">−{file.deletions}</span>}
         </span>
         {file.actorId && (
-          <span className="shrink-0 rounded bg-surface-sunken px-1.5 py-0.5 text-[11px] text-text-muted">
+          <span className="shrink-0 rounded-sm bg-surface-sunken px-1.5 py-0.5 text-[11px] text-text-muted">
             by {file.actorId}
           </span>
         )}

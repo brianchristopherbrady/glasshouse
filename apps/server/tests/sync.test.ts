@@ -39,7 +39,7 @@ beforeAll(async () => {
     },
   });
   repositoryId = repo.id;
-}, 30_000);
+}, 90_000);
 
 afterAll(async () => {
   await prisma.$disconnect();

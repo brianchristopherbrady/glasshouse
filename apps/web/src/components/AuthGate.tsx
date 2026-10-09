@@ -59,7 +59,7 @@ function TokenLogin(): JSX.Element {
             required
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            className="w-full bg-transparent py-2 text-sm text-text outline-none placeholder:text-text-faint"
+            className="w-full bg-transparent py-2 text-sm text-text outline-hidden placeholder:text-text-faint"
             placeholder="af_…"
           />
         </div>

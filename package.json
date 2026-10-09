@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=20.12"
+    "node": ">=22.12"
   },
   "workspaces": [
     "apps/*",
@@ -35,7 +35,7 @@
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "vitest": "^5.0.3"
   },
   "allowScripts": {
     "@prisma/client@5.22.0": true,
