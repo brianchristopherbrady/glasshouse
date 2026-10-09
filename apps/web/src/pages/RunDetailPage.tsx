@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { CircleCheck, TriangleAlert } from 'lucide-react';
+import { ArrowRight, CircleCheck, TriangleAlert } from 'lucide-react';
 import { api } from '../api/client.js';
 import type { TraceSpanNode } from '../api/types.js';
 import { StatusBadge } from '../components/StatusBadge.js';
@@ -40,21 +40,35 @@ const TAB_LABELS: Record<Tab, string> = {
   drift: 'Drift',
 };
 
+const LIVE_REFRESH_MS = 2500;
+
+function useRun(runId: string | undefined) {
+  return useQuery({
+    queryKey: ['run', runId],
+    queryFn: () => api.getRun(runId!),
+    enabled: !!runId,
+    refetchInterval: (query) => (query.state.data?.status === 'running' ? LIVE_REFRESH_MS : false),
+  });
+}
+
+/** Polls run-scoped data while the run is still executing, e.g. a live agent session. */
+function useLiveInterval(runId: string | undefined): number | false {
+  const { data: run } = useRun(runId);
+  return run?.status === 'running' ? LIVE_REFRESH_MS : false;
+}
+
 function useRunFiles(runId: string | undefined) {
   return useQuery({
     queryKey: ['run-files', runId],
     queryFn: () => api.getRunFiles(runId!),
     enabled: !!runId,
+    refetchInterval: useLiveInterval(runId),
   });
 }
 
 function RunHeader({ onShowFiles }: { onShowFiles: () => void }): JSX.Element | null {
   const { runId } = useParams();
-  const { data: run } = useQuery({
-    queryKey: ['run', runId],
-    queryFn: () => api.getRun(runId!),
-    enabled: !!runId,
-  });
+  const { data: run } = useRun(runId);
   const { data: files } = useRunFiles(runId);
   if (!run) return null;
   const changed = files?.filter((f) => f.operation !== 'read') ?? [];
@@ -79,6 +93,12 @@ function RunHeader({ onShowFiles }: { onShowFiles: () => void }): JSX.Element | 
               </span>
             </button>
           )}
+          {run.status === 'running' && (
+            <span className="flex items-center gap-1.5 text-xs text-status-running">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-status-running" aria-hidden="true" />
+              Live
+            </span>
+          )}
           <StatusBadge status={run.status} />
         </div>
       </div>
@@ -93,7 +113,9 @@ function RunHeader({ onShowFiles }: { onShowFiles: () => void }): JSX.Element | 
         </div>
         <div>
           <dt className="text-[11px] uppercase tracking-wide text-text-muted">Commit</dt>
-          <dd className="mono mt-0.5 text-text">{run.commitSha ?? 'Unavailable'}</dd>
+          <dd className="mono mt-0.5 text-text" title={run.commitSha ?? undefined}>
+            {run.commitSha ? run.commitSha.slice(0, 12) : 'Unavailable'}
+          </dd>
         </div>
         <div>
           <dt className="text-[11px] uppercase tracking-wide text-text-muted">Engine</dt>
@@ -121,6 +143,7 @@ function TraceTab(): JSX.Element {
     queryKey: ['run-trace', runId],
     queryFn: () => api.getRunTrace(runId!),
     enabled: !!runId,
+    refetchInterval: useLiveInterval(runId),
   });
   if (isLoading) return <div className="text-text-muted">Loading trace…</div>;
   return (
@@ -141,6 +164,7 @@ function TimelineTab(): JSX.Element {
     queryKey: ['run-events', runId],
     queryFn: () => api.getRunEvents(runId!),
     enabled: !!runId,
+    refetchInterval: useLiveInterval(runId),
   });
   if (isLoading) return <div className="text-text-muted">Loading timeline…</div>;
   return (
@@ -178,8 +202,13 @@ function AgentsTab(): JSX.Element {
     queryKey: ['run-agents', runId],
     queryFn: () => api.getRunAgents(runId!),
     enabled: !!runId,
+    refetchInterval: useLiveInterval(runId),
   });
   if (isLoading) return <div className="text-text-muted">Loading agents…</div>;
+  const agentName = new Map(data?.agentRuns.map((a) => [a.id, a.name]));
+  const handoffs = [...(data?.handoffs ?? [])].sort((a, b) =>
+    a.timestamp.localeCompare(b.timestamp),
+  );
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
@@ -202,18 +231,29 @@ function AgentsTab(): JSX.Element {
           <div className="text-text-muted">No agents participated in this run.</div>
         )}
       </div>
-      {data && data.handoffs.length > 0 && (
+      {handoffs.length > 0 && (
         <div>
           <div className="mb-2 text-[11px] font-medium uppercase tracking-wide text-text-muted">
             Handoffs
           </div>
           <div className="flex flex-col gap-2">
-            {data.handoffs.map((h) => (
+            {handoffs.map((h) => (
               <div
                 key={h.id}
                 className="rounded-lg border border-border bg-surface-raised p-3 text-xs text-text shadow-raised"
               >
-                {h.reason ?? 'No reason recorded.'}
+                <div className="flex flex-wrap items-center gap-1.5 font-medium">
+                  <span>{agentName.get(h.fromAgentRunId) ?? 'Unknown agent'}</span>
+                  <ArrowRight size={12} className="text-text-muted" aria-label="handed off to" />
+                  <span>{agentName.get(h.toAgentRunId) ?? 'Unknown agent'}</span>
+                  <span className="ml-auto font-normal text-text-faint">
+                    {new Date(h.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+                <div className="mt-1 text-text-muted">{h.reason ?? 'No reason recorded.'}</div>
+                {h.outputSummary && (
+                  <div className="mt-1 whitespace-pre-line text-text-faint">{h.outputSummary}</div>
+                )}
               </div>
             ))}
           </div>
@@ -229,6 +269,7 @@ function SkillsTab(): JSX.Element {
     queryKey: ['run-skills', runId],
     queryFn: () => api.getRunSkills(runId!),
     enabled: !!runId,
+    refetchInterval: useLiveInterval(runId),
   });
   if (isLoading) return <div className="text-text-muted">Loading skills…</div>;
 
@@ -284,6 +325,7 @@ function ToolsTab(): JSX.Element {
     queryKey: ['run-tools', runId],
     queryFn: () => api.getRunTools(runId!),
     enabled: !!runId,
+    refetchInterval: useLiveInterval(runId),
   });
   if (isLoading) return <div className="text-text-muted">Loading tools…</div>;
   return (
@@ -345,6 +387,7 @@ function MetricsTab(): JSX.Element {
     queryKey: ['run-metrics', runId],
     queryFn: () => api.getRunMetrics(runId!),
     enabled: !!runId,
+    refetchInterval: useLiveInterval(runId),
   });
   if (isLoading) return <div className="text-text-muted">Loading metrics…</div>;
   const unavailable = (v: number | null) => (v == null ? 'Unavailable' : v);
@@ -510,6 +553,18 @@ export function RunDetailPage(): JSX.Element {
   const changedCount = files
     ? new Set(files.filter((f) => f.operation !== 'read').map((f) => f.path)).size
     : null;
+
+  // When a live run finishes, refetch every run-scoped query once so the
+  // final events (which arrive after the last poll) are shown.
+  const queryClient = useQueryClient();
+  const { data: run } = useRun(runId);
+  const previousStatus = useRef(run?.status);
+  useEffect(() => {
+    if (previousStatus.current === 'running' && run?.status && run.status !== 'running') {
+      void queryClient.invalidateQueries({ predicate: (q) => q.queryKey[1] === runId });
+    }
+    previousStatus.current = run?.status;
+  }, [run?.status, runId, queryClient]);
 
   return (
     <div className="flex flex-col gap-5">

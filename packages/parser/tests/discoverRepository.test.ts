@@ -104,3 +104,51 @@ describe('discoverRepository', () => {
     ]);
   });
 });
+
+describe('discoverRepository on the Agentic City demo workspace', () => {
+  const CITY_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../examples/agentic-city');
+  const city = discoverRepository(CITY_ROOT);
+  const ofType = (type: string) =>
+    city.relationships
+      .filter((r) => r.relationshipType === type)
+      .map((r) => `${r.sourcePath} -> ${r.targetPath}`)
+      .sort();
+
+  it('discovers the city agents, with inline tool lists parsed as arrays', () => {
+    expect(city.agents.map((a) => a.name).sort()).toEqual([
+      'building-inspector',
+      'city-planner',
+      'mayor',
+      'town-crier',
+      'treasurer',
+    ]);
+    const mayor = city.agents.find((a) => a.name === 'mayor');
+    expect(mayor?.tools).toEqual(['read', 'edit', 'search', 'agent', 'todo']);
+    expect(city.skills).toHaveLength(4);
+    expect(city.prompts).toHaveLength(4);
+  });
+
+  it('links agents to the subagents they can call and the agents they hand off to', () => {
+    expect(ofType('CAN_CALL')).toEqual([
+      '.github/agents/mayor.agent.md -> .github/agents/building-inspector.agent.md',
+      '.github/agents/mayor.agent.md -> .github/agents/city-planner.agent.md',
+      '.github/agents/mayor.agent.md -> .github/agents/town-crier.agent.md',
+      '.github/agents/mayor.agent.md -> .github/agents/treasurer.agent.md',
+    ]);
+    expect(ofType('HANDS_OFF_TO')).toEqual([
+      '.github/agents/mayor.agent.md -> .github/agents/building-inspector.agent.md',
+      '.github/agents/mayor.agent.md -> .github/agents/town-crier.agent.md',
+      '.github/agents/town-crier.agent.md -> .github/agents/mayor.agent.md',
+    ]);
+  });
+
+  it('links prompt files to the agent they run in', () => {
+    expect(ofType('USES')).toEqual([
+      '.github/prompts/build-landmark.prompt.md -> .github/agents/mayor.agent.md',
+      '.github/prompts/city-crisis.prompt.md -> .github/agents/mayor.agent.md',
+      '.github/prompts/found-district.prompt.md -> .github/agents/mayor.agent.md',
+      '.github/prompts/morning-gazette.prompt.md -> .github/agents/town-crier.agent.md',
+    ]);
+    expect(ofType('CONFIGURES')).toHaveLength(5);
+  });
+});

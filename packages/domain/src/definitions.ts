@@ -127,6 +127,7 @@ export const RelationshipTypeSchema = z.enum([
   'COMPILES_TO',
   'TRIGGERS',
   'PERMITS',
+  'HANDS_OFF_TO',
 ]);
 export type RelationshipType = z.infer<typeof RelationshipTypeSchema>;
 

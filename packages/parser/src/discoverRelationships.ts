@@ -2,6 +2,18 @@ import type { DiscoveredRelationship, DiscoveredRepository } from './types.js';
 
 type WithoutRelationships = Omit<DiscoveredRepository, 'relationships'>;
 
+function asStringList(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string');
+  return typeof value === 'string' ? [value] : [];
+}
+
+function handoffTargets(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((h) => (h && typeof h === 'object' ? (h as Record<string, unknown>).agent : undefined))
+    .filter((a): a is string => typeof a === 'string');
+}
+
 /**
  * Extracts relationships between already-discovered definitions. Every
  * relationship here is backed by a concrete, checkable fact (a matching
@@ -32,8 +44,46 @@ export function discoverRelationships(repo: WithoutRelationships): DiscoveredRel
 
   const skillsByName = new Map(repo.skills.map((s) => [s.name, s]));
   const mcpServersByName = new Map(repo.mcpServers.map((m) => [m.name, m]));
+  const agentsByName = new Map(repo.agents.map((a) => [a.name, a]));
 
   for (const agent of repo.agents) {
+    // agent -> agent: `agents:` lists the custom agents this agent may run as
+    // subagents. `*` (any agent) names nothing concrete, so it's skipped.
+    for (const subagentName of new Set(asStringList(agent.frontmatter.agents))) {
+      const subagent = agentsByName.get(subagentName);
+      if (!subagent || subagent === agent) continue;
+      relationships.push({
+        sourcePath: agent.path,
+        sourceKind: 'agent',
+        targetPath: subagent.path,
+        targetKind: 'agent',
+        relationshipType: 'CAN_CALL',
+        evidence: {
+          source: 'parser',
+          confidence: 'strong',
+          note: `${agent.path} frontmatter lists "${subagentName}" as a subagent`,
+        },
+      });
+    }
+
+    // agent -> agent: each `handoffs:` entry names the agent its button switches to.
+    for (const targetName of new Set(handoffTargets(agent.frontmatter.handoffs))) {
+      const target = agentsByName.get(targetName);
+      if (!target || target === agent) continue;
+      relationships.push({
+        sourcePath: agent.path,
+        sourceKind: 'agent',
+        targetPath: target.path,
+        targetKind: 'agent',
+        relationshipType: 'HANDS_OFF_TO',
+        evidence: {
+          source: 'parser',
+          confidence: 'strong',
+          note: `${agent.path} declares a handoff to "${targetName}"`,
+        },
+      });
+    }
+
     // agent -> skill: agent frontmatter names a skill that was also
     // independently discovered under a skills directory. Name-based match,
     // so "strong" rather than "observed" (a rename could desync them).
@@ -73,6 +123,26 @@ export function discoverRelationships(repo: WithoutRelationships): DiscoveredRel
         },
       });
     }
+  }
+
+  // prompt -> agent: a prompt file's `agent:` (legacy `mode:`) names the agent it runs in.
+  for (const prompt of repo.prompts) {
+    const agentName = prompt.frontmatter.agent ?? prompt.frontmatter.mode;
+    if (typeof agentName !== 'string') continue;
+    const agent = agentsByName.get(agentName);
+    if (!agent) continue;
+    relationships.push({
+      sourcePath: prompt.path,
+      sourceKind: 'prompt',
+      targetPath: agent.path,
+      targetKind: 'agent',
+      relationshipType: 'USES',
+      evidence: {
+        source: 'parser',
+        confidence: 'strong',
+        note: `${prompt.path} runs in agent "${agentName}"`,
+      },
+    });
   }
 
   return relationships;

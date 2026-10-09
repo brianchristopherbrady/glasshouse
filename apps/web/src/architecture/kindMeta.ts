@@ -86,4 +86,5 @@ export const RELATIONSHIP_LABELS: Record<string, string> = {
   COMPILES_TO: 'compiles to',
   TRIGGERS: 'triggers',
   PERMITS: 'permits',
+  HANDS_OFF_TO: 'hands off to',
 };

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { AgentEventSchema } from '@agentic-flows/domain';
+import { AgentEventSchema } from '@poisonsushi/agentic-flows-domain';
 import { IngestError, ingestEvent, type IngestScope } from '../correlation.js';
 
 const MAX_BATCH_SIZE = 1000;

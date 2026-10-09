@@ -1,8 +1,8 @@
 name: Release
 
-# Publishes @agentic-flows/{domain,telemetry-client,server} when a vX.Y.Z tag
-# is pushed. Requires an NPM_TOKEN repository secret with publish rights to
-# the @agentic-flows npm scope.
+# Publishes @poisonsushi/agentic-flows{-domain,-telemetry-client,} when a
+# vX.Y.Z tag is pushed. Requires an NPM_TOKEN repository secret with publish
+# rights to the @poisonsushi npm scope.
 on:
   push:
     tags: ['v*']
@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -37,9 +37,16 @@ jobs:
         env:
           REQUIRE_WEB_DIST: 'true'
       - name: Publish
+        # Skips versions already on npm, so a partially failed release can be re-run.
         run: |
-          npm publish -w packages/domain --provenance
-          npm publish -w packages/telemetry-client --provenance
-          npm publish -w apps/server --provenance
+          for pkg in packages/domain packages/telemetry-client apps/server; do
+            name=$(node -p "require('./$pkg/package.json').name")
+            version=$(node -p "require('./$pkg/package.json').version")
+            if npm view "$name@$version" version > /dev/null 2>&1; then
+              echo "$name@$version is already published; skipping"
+            else
+              npm publish -w "$pkg" --provenance --access public
+            fi
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

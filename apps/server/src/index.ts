@@ -9,7 +9,7 @@ const version = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev';
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 const monitoringEnabled = await initMonitoring(version);
-const app = await buildApp({ prisma });
+const app = await buildApp({ prisma, logger: { level: process.env.LOG_LEVEL ?? 'info' } });
 app.log.info({ version }, 'agentic-flows server starting');
 if (monitoringEnabled) app.log.info('error monitoring enabled (Sentry)');
 

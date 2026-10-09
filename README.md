@@ -13,6 +13,24 @@ separately tracks what a repository *declares* (workflows, agents, skills,
 instructions) and what a run *actually did*, with every fact tagged by
 evidence source and confidence. Inference is never presented as fact.
 
+## Local demo: Agentic City
+
+`examples/agentic-city` is a small text-only city run by Copilot agents (Mayor,
+City Planner, Building Inspector, Treasurer, Town Crier) that delegate to each
+other and edit Markdown files. Agent hooks record every chat with them, so
+Agentic Flows shows each prompt as a run: agents, handoffs, skills, and every
+changed file as a diff.
+
+```bash
+npm run demo              # web UI on http://localhost:5410, API on 127.0.0.1:4410
+code examples/agentic-city
+# in Copilot Chat (Local agent): /found-district Noodle Heights, built on a retired noodle factory
+npm run city:replay       # no Copilot? play a scripted session through the same recorder
+npm run city:reset        # restore the city to its committed state
+```
+
+See [examples/agentic-city/README.md](examples/agentic-city/README.md) for details.
+
 ## Architecture
 
 ```
@@ -68,7 +86,7 @@ SQLite, run `db:sync-postgres`, and add the matching Postgres migration with
 ### As a package
 
 ```bash
-npm install -g @agentic-flows/server
+npm install -g @poisonsushi/agentic-flows
 AGENTIC_FLOWS_API_TOKEN=<long-random-string> agentic-flows
 ```
 
@@ -258,10 +276,13 @@ discovery logic. The web app's **Architecture** tab
 
 GitHub Actions alone can't see inside an agent (model calls, tool calls,
 sub-agents, file edits), so agents report it with
-[`@agentic-flows/telemetry-client`](packages/telemetry-client):
+[`@poisonsushi/agentic-flows-telemetry-client`](packages/telemetry-client):
 
 ```ts
-import { createTelemetryClient, githubActionsCorrelation } from '@agentic-flows/telemetry-client';
+import {
+  createTelemetryClient,
+  githubActionsCorrelation,
+} from '@poisonsushi/agentic-flows-telemetry-client';
 
 const client = createTelemetryClient({ baseUrl: process.env.AGENTIC_FLOWS_URL!, apiToken: process.env.AGENTIC_FLOWS_INGEST_TOKEN });
 await client.emit({

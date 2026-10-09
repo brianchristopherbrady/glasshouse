@@ -47,4 +47,22 @@ describe('AgentEventSchema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('accepts a local agent session correlation', () => {
+    const result = AgentEventSchema.safeParse({
+      ...base,
+      runId: undefined,
+      correlation: { repository: 'local/agentic-city', sessionId: 'a1b2c3d4e5' },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a local session id with unsafe characters', () => {
+    const result = AgentEventSchema.safeParse({
+      ...base,
+      runId: undefined,
+      correlation: { repository: 'local/agentic-city', sessionId: '../../../etc/passwd' },
+    });
+    expect(result.success).toBe(false);
+  });
 });

@@ -21,7 +21,9 @@ export function discoverAgents(rootDir: string): DiscoveredAgent[] {
     const raw = readFileSync(file, 'utf-8');
     const { frontmatter, body } = parseFrontmatter(raw);
     const name =
-      typeof frontmatter.name === 'string' ? frontmatter.name : basename(file, '.md');
+      typeof frontmatter.name === 'string'
+        ? frontmatter.name
+        : basename(file).replace(/(\.agent)?\.md$/, '');
 
     return {
       path: toPosix(relative(rootDir, file)),

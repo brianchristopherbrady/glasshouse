@@ -1,5 +1,5 @@
 // Bundles the compiled server (which, via node_modules workspace symlinks,
-// still pulls in @agentic-flows/domain and @agentic-flows/parser at this
+// still pulls in the -domain and -parser workspace packages at this
 // point) into a single self-contained ESM file. Real third-party npm
 // packages stay external/unbundled — @prisma/client in particular resolves
 // its native query-engine binary relative to its own installed location,

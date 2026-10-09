@@ -128,5 +128,10 @@ function coerceScalar(value: string): unknown {
   if (value === 'true') return true;
   if (value === 'false') return false;
   if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+  // Inline flow sequence, e.g. `tools: ['read', 'edit']` (common in agent files).
+  if (value.startsWith('[') && value.endsWith(']')) {
+    const inner = value.slice(1, -1).trim();
+    return inner === '' ? [] : inner.split(',').map((item) => coerceScalar(stripQuotes(item)));
+  }
   return value;
 }

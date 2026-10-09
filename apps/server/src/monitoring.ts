@@ -1,4 +1,4 @@
-import { redactSecretsDeep } from '@agentic-flows/domain';
+import { redactSecretsDeep } from '@poisonsushi/agentic-flows-domain';
 
 type SentryModule = typeof import('@sentry/node');
 

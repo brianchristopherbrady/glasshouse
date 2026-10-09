@@ -27,6 +27,8 @@ export function RunsPage(): JSX.Element {
         workflowId: workflowId === 'all' ? undefined : workflowId,
       }),
     enabled: !!repoId,
+    // New local agent sessions show up without a manual refresh.
+    refetchInterval: 4000,
   });
 
   return (

@@ -3,7 +3,7 @@ import { appendFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { appendEventToFile, readEventsFromFile } from '../src/ndjson.js';
-import type { AgentEvent } from '@agentic-flows/domain';
+import type { AgentEvent } from '@poisonsushi/agentic-flows-domain';
 
 const sampleEvent: AgentEvent = {
   id: 'evt_1',

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
-import { redactSecrets } from '@agentic-flows/domain';
+import { redactSecrets } from '@poisonsushi/agentic-flows-domain';
 import { buildSpanTree } from '../trace.js';
 import {
   serializeAgentDefinition,
@@ -113,7 +113,9 @@ export async function runsRoutes(
     const [modelInvocations, toolInvocations, fileOps, run] = await Promise.all([
       prisma.modelInvocation.findMany({ where: { runId: req.params.runId } }),
       prisma.toolInvocation.count({ where: { runId: req.params.runId } }),
-      prisma.fileOperation.count({ where: { runId: req.params.runId } }),
+      prisma.fileOperation.count({
+        where: { runId: req.params.runId, operation: { not: 'read' } },
+      }),
       prisma.workflowRun.findUnique({ where: { id: req.params.runId } }),
     ]);
     const tokensInput = modelInvocations.reduce((sum, m) => sum + (m.tokensInput ?? 0), 0);

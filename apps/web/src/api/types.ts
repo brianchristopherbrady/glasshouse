@@ -1,6 +1,6 @@
 // Server-shaped view types. These mirror the Prisma models the API returns
 // (dates arrive as ISO strings over JSON), kept separate from
-// @agentic-flows/domain's Zod schemas which describe the deeper conceptual
+// the domain package's Zod schemas which describe the deeper conceptual
 // model. The UI only needs these lighter shapes.
 
 export interface Repository {

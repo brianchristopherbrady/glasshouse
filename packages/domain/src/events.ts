@@ -50,16 +50,35 @@ export const ActorSchema = z.object({
 });
 export type Actor = z.infer<typeof ActorSchema>;
 
+const RepositoryFullNameSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/, 'expected "owner/repo"');
+
 /**
  * Identifies a run by its GitHub Actions identity instead of an internal id
  * — what a producer running inside a workflow actually knows
  * (GITHUB_REPOSITORY + GITHUB_RUN_ID). The server resolves it to a
  * WorkflowRun, creating a placeholder if the Actions run hasn't synced yet.
  */
-export const RunCorrelationSchema = z.object({
-  repository: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/, 'expected "owner/repo"'),
+export const GithubRunCorrelationSchema = z.object({
+  repository: RepositoryFullNameSchema,
   providerRunId: z.string().regex(/^\d+$/, 'expected a numeric GitHub Actions run id'),
 });
+
+/**
+ * Identifies a run by a local agent session (e.g. one VS Code chat session,
+ * reported by agent hooks). Every event from the same session lands in the
+ * same run, which the server creates on first sight.
+ */
+export const LocalSessionCorrelationSchema = z.object({
+  repository: RepositoryFullNameSchema,
+  sessionId: z.string().regex(/^[A-Za-z0-9_.:-]{1,128}$/, 'expected an opaque session id'),
+});
+
+export const RunCorrelationSchema = z.union([
+  GithubRunCorrelationSchema,
+  LocalSessionCorrelationSchema,
+]);
 export type RunCorrelation = z.infer<typeof RunCorrelationSchema>;
 
 /** Normalized event stream entry. Evidence provenance is always attached. */

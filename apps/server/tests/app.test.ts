@@ -292,6 +292,182 @@ describe('telemetry correlation', () => {
   });
 });
 
+describe('local agent workspaces', () => {
+  const cityRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../examples/agentic-city');
+  let cityRepoId: string;
+
+  function local(overrides: Record<string, unknown>) {
+    return event({ correlation: { repository: 'local/agentic-city', sessionId: 'abc123' }, ...overrides });
+  }
+
+  it('registers a workspace from disk and discovers its agents, skills, and prompts', async () => {
+    const relative = await app.inject({
+      method: 'POST',
+      url: '/api/repositories/local',
+      headers: admin,
+      payload: { path: 'examples/agentic-city' },
+    });
+    expect(relative.statusCode).toBe(400);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/repositories/local',
+      headers: admin,
+      payload: { path: cityRoot },
+    });
+    expect(res.statusCode).toBe(201);
+    const { repository, synced } = res.json();
+    expect(repository).toMatchObject({ fullName: 'local/agentic-city', provider: 'local' });
+    expect(synced).toMatchObject({ agents: 5, skills: 4, prompts: 4, instructions: 3 });
+    cityRepoId = repository.id;
+
+    const again = await app.inject({
+      method: 'POST',
+      url: '/api/repositories/local',
+      headers: admin,
+      payload: { path: cityRoot },
+    });
+    expect(again.statusCode).toBe(200);
+    expect(again.json().repository.id).toBe(cityRepoId);
+  });
+
+  it('turns a local chat session into a run with agents, handoffs, skills, and diffs', async () => {
+    const planner = { type: 'agent', id: 'city-planner', name: 'city-planner' };
+    const at = (s: number) => `2026-10-08T13:00:0${s}.000Z`;
+    const events = [
+      local({
+        id: 'l1',
+        kind: 'workflow.started',
+        spanId: 'session',
+        timestamp: at(0),
+        data: { name: '/found-district Noodle Heights', engine: 'VS Code agent (local)' },
+      }),
+      local({
+        id: 'l2',
+        kind: 'agent.started',
+        spanId: 'turn-1',
+        parentSpanId: 'session',
+        timestamp: at(0),
+        actor: { type: 'agent', id: 'mayor', name: 'mayor' },
+      }),
+      local({
+        id: 'l3',
+        kind: 'agent.started',
+        spanId: 'sub-1',
+        parentSpanId: 'turn-1',
+        timestamp: at(1),
+        actor: { type: 'subagent', id: 'city-planner', name: 'city-planner' },
+      }),
+      local({
+        id: 'l4',
+        kind: 'agent.handoff.completed',
+        spanId: 'handoff-sub-1',
+        parentSpanId: 'turn-1',
+        timestamp: at(1),
+        data: { fromSpanId: 'turn-1', toSpanId: 'sub-1', reason: 'Design Noodle Heights' },
+      }),
+      local({
+        id: 'l5',
+        kind: 'skill.loaded',
+        spanId: 'skill-1',
+        parentSpanId: 'sub-1',
+        timestamp: at(2),
+        data: { name: 'zoning-code' },
+      }),
+      local({
+        id: 'l6',
+        kind: 'tool.started',
+        spanId: 'tool-1',
+        parentSpanId: 'sub-1',
+        timestamp: at(2),
+        data: { toolName: 'create_file' },
+      }),
+      local({
+        id: 'l7',
+        kind: 'file.read',
+        spanId: 'tool-1',
+        timestamp: at(3),
+        actor: planner,
+        data: { path: 'city/map.md' },
+      }),
+      local({
+        id: 'l8',
+        kind: 'file.created',
+        spanId: 'tool-1',
+        timestamp: at(3),
+        actor: planner,
+        data: {
+          path: 'city/districts/noodle-heights.md',
+          diff: '@@ -0,0 +1,1 @@\n+# Noodle Heights',
+          additions: 1,
+          deletions: 0,
+        },
+      }),
+      local({
+        id: 'l9',
+        kind: 'tool.completed',
+        spanId: 'tool-1',
+        timestamp: at(3),
+        data: { toolName: 'create_file', status: 'success' },
+      }),
+      local({ id: 'l10', kind: 'agent.completed', spanId: 'sub-1', timestamp: at(4) }),
+      local({ id: 'l11', kind: 'agent.completed', spanId: 'turn-1', timestamp: at(5) }),
+      local({ id: 'l12', kind: 'workflow.completed', spanId: 'session', timestamp: at(5) }),
+    ];
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/telemetry/batch',
+      headers: admin,
+      payload: { events },
+    });
+    expect(res.statusCode).toBe(201);
+
+    const runs = (
+      await app.inject({ method: 'GET', url: `/api/repositories/${cityRepoId}/runs`, headers: admin })
+    ).json();
+    expect(runs).toHaveLength(1);
+    expect(runs[0]).toMatchObject({
+      workflowName: '/found-district Noodle Heights',
+      engine: 'VS Code agent (local)',
+      status: 'success',
+      durationMs: 5000,
+    });
+    const runId = runs[0].id as string;
+    const get = async (path: string) =>
+      (await app.inject({ method: 'GET', url: `/api/runs/${runId}/${path}`, headers: admin })).json();
+
+    const { agentRuns, handoffs } = await get('agents');
+    const mayor = agentRuns.find((a: { name: string }) => a.name === 'mayor');
+    const plannerRun = agentRuns.find((a: { name: string }) => a.name === 'city-planner');
+    expect(plannerRun).toMatchObject({ parentAgentRunId: mayor.id, status: 'success' });
+    expect(plannerRun.agentDefinition.path).toBe('.github/agents/city-planner.agent.md');
+    expect(handoffs).toEqual([
+      expect.objectContaining({
+        fromAgentRunId: mayor.id,
+        toAgentRunId: plannerRun.id,
+        reason: 'Design Noodle Heights',
+      }),
+    ]);
+
+    expect(await get('skills')).toEqual([
+      expect.objectContaining({
+        loaded: 'true',
+        configured: true,
+        skillDefinition: expect.objectContaining({ name: 'zoning-code' }),
+      }),
+    ]);
+
+    const files = await get('files');
+    expect(files.map((f: { operation: string }) => f.operation).sort()).toEqual(['created', 'read']);
+    expect(files.find((f: { operation: string }) => f.operation === 'created')).toMatchObject({
+      actorId: 'city-planner',
+      additions: 1,
+      diff: '@@ -0,0 +1,1 @@\n+# Noodle Heights',
+    });
+    expect((await get('metrics')).filesChanged).toBe(1);
+  });
+});
+
 function signed(body: unknown, event: string) {
   const raw = JSON.stringify(body);
   return {

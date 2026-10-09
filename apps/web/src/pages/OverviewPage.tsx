@@ -30,6 +30,7 @@ export function OverviewPage(): JSX.Element {
     queryKey: ['overview', repoId],
     queryFn: () => api.getOverview(repoId!),
     enabled: !!repoId,
+    refetchInterval: 5000,
   });
 
   if (isLoading) return <div className="text-text-muted">Loading overview…</div>;

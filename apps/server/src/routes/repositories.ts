@@ -1,5 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { PrismaClient } from '@prisma/client';
+import { statSync } from 'node:fs';
+import { basename, isAbsolute, resolve } from 'node:path';
 import { z } from 'zod';
 import { syncRepositoryFromDisk } from '../sync.js';
 import {
@@ -9,11 +11,64 @@ import {
 } from '../serialize.js';
 
 const SyncBodySchema = z.object({ checkoutDir: z.string().min(1) });
+const LocalWorkspaceBodySchema = z.object({ path: z.string().min(1).max(1024) });
+
+/** `local/<folder-name>`, slugged the same way the city recorder derives it. */
+export function localRepositoryName(dir: string): string {
+  const slug = basename(dir)
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || 'workspace';
+}
 
 export async function repositoriesRoutes(
   app: FastifyInstance,
   { prisma }: { prisma: PrismaClient },
 ): Promise<void> {
+  // Registers (or re-syncs) a workspace on the server's own disk as a
+  // `local/<name>` repository. Admin-only, like the checkout-dir sync below:
+  // it reads agent/skill/prompt definitions from a server-side path.
+  app.post('/api/repositories/local', async (req, reply) => {
+    const parsed = LocalWorkspaceBodySchema.safeParse(req.body);
+    if (!parsed.success || !isAbsolute(parsed.data.path)) {
+      return reply
+        .code(400)
+        .send({ error: 'invalid_body', message: 'path must be an absolute directory path' });
+    }
+    const dir = resolve(parsed.data.path);
+    let isDirectory = false;
+    try {
+      isDirectory = statSync(dir).isDirectory();
+    } catch {
+      // reported below
+    }
+    if (!isDirectory) {
+      return reply.code(400).send({ error: 'path_not_found', message: 'not a directory' });
+    }
+    const name = localRepositoryName(dir);
+    const fullName = `local/${name}`;
+    const existing = await prisma.repository.findUnique({ where: { fullName } });
+    if (existing && existing.provider !== 'local') {
+      return reply.code(409).send({ error: 'name_taken', message: `${fullName} already exists` });
+    }
+    const repository = await prisma.repository.upsert({
+      where: { fullName },
+      // For the local provider, the absolute path is the provider identity.
+      create: {
+        owner: 'local',
+        name,
+        fullName,
+        defaultBranch: 'main',
+        provider: 'local',
+        providerRepoId: dir,
+      },
+      update: { providerRepoId: dir },
+    });
+    const synced = await syncRepositoryFromDisk(prisma, repository.id, dir);
+    return reply.code(existing ? 200 : 201).send({ repository, synced });
+  });
+
   app.get('/api/repositories', async () => {
     const repositories = await prisma.repository.findMany({ orderBy: { fullName: 'asc' } });
     return repositories;
@@ -103,7 +158,9 @@ export async function repositoriesRoutes(
 
     const [toolCallCount, fileOpCount, prCount, handoffCount] = await Promise.all([
       prisma.toolInvocation.count({ where: { run: { repositoryId } } }),
-      prisma.fileOperation.count({ where: { run: { repositoryId } } }),
+      prisma.fileOperation.count({
+        where: { run: { repositoryId }, operation: { not: 'read' } },
+      }),
       prisma.pullRequest.count({ where: { run: { repositoryId } } }),
       prisma.agentHandoff.count({ where: { fromAgentRun: { run: { repositoryId } } } }),
     ]);
@@ -126,7 +183,7 @@ export async function repositoriesRoutes(
 
   app.get<{ Params: { repoId: string } }>('/api/repositories/:repoId/files', async (req) => {
     const fileOps = await prisma.fileOperation.findMany({
-      where: { run: { repositoryId: req.params.repoId } },
+      where: { run: { repositoryId: req.params.repoId }, operation: { not: 'read' } },
       include: { run: { select: { id: true, workflowName: true, status: true } } },
     });
 

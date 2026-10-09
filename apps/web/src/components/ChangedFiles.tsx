@@ -131,6 +131,11 @@ function FileRow({
           {file.additions != null && <span className="text-status-success">+{file.additions}</span>}
           {file.deletions != null && <span className="text-status-failure">−{file.deletions}</span>}
         </span>
+        {file.actorId && (
+          <span className="shrink-0 rounded bg-surface-sunken px-1.5 py-0.5 text-[11px] text-text-muted">
+            by {file.actorId}
+          </span>
+        )}
         <EvidenceTag source={file.evidenceSource} confidence={file.evidenceConfidence} />
       </button>
       {file.diff && expanded && (

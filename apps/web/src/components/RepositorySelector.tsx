@@ -1,6 +1,18 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client.js';
+import type { Repository } from '../api/types.js';
+
+/** `local/agentic-city` reads better as "Agentic City (local)". */
+export function repositoryLabel(repo: Repository): string {
+  if (repo.provider !== 'local') return repo.fullName;
+  const title = repo.name
+    .split(/[-_.]+/)
+    .filter(Boolean)
+    .map((word) => word[0]!.toUpperCase() + word.slice(1))
+    .join(' ');
+  return `${title} (local)`;
+}
 
 export function RepositorySelector(): JSX.Element {
   const { repoId } = useParams();
@@ -20,7 +32,7 @@ export function RepositorySelector(): JSX.Element {
       {!repositories?.length && <option value="">Loading repositories…</option>}
       {repositories?.map((repo) => (
         <option key={repo.id} value={repo.id}>
-          {repo.fullName}
+          {repositoryLabel(repo)}
         </option>
       ))}
     </select>

@@ -1,4 +1,9 @@
-import type { EvidenceSource, Confidence, RelationshipType, DefinitionKind } from '@agentic-flows/domain';
+import type {
+  EvidenceSource,
+  Confidence,
+  RelationshipType,
+  DefinitionKind,
+} from '@poisonsushi/agentic-flows-domain';
 
 /**
  * Discovery-layer types mirror packages/domain's definition schemas but omit

@@ -1,5 +1,5 @@
 {
-  "name": "@agentic-flows/server",
+  "name": "@poisonsushi/agentic-flows",
   "version": "0.1.0",
   "description": "Self-hosted Agentic Flows server and web UI: observability for agentic software-development workflows.",
   "license": "MIT",
@@ -52,8 +52,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@agentic-flows/domain": "*",
-    "@agentic-flows/parser": "*",
+    "@poisonsushi/agentic-flows-domain": "*",
+    "@poisonsushi/agentic-flows-parser": "*",
     "@types/node": "^22.9.0",
     "esbuild": "^0.24.0",
     "tsx": "^4.19.2"
